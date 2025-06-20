@@ -1,6 +1,6 @@
-package org.srv;
+package com.gcs.app;
 
-public class Main {
+public class GymApplication {
     public static void main(String[] args) {
         System.out.println("Hello world!");
     }
