@@ -1,1 +1,1 @@
-My Spring project Gym CRM System
+Gym CRM System
