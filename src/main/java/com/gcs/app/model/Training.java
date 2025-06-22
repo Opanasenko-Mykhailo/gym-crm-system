@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
 import java.time.LocalDate;
 
 @Data
@@ -15,5 +16,5 @@ public class Training {
     private String name;
     private TrainingType type;
     private LocalDate date;
-    private Double duration;
+    private Duration duration;
 }
