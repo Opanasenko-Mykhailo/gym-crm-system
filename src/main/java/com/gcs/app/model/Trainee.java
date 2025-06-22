@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Trainee extends User {
+    private Long userId;
     private LocalDate dateOfBirth;
     private String address;
 }

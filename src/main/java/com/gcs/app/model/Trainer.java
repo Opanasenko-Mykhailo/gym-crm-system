@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Trainer extends User {
+    private Long userId;
     private TrainingType specialization;
 }
