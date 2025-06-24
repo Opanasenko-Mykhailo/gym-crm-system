@@ -46,7 +46,7 @@ public class TrainerDaoImpl implements TrainerDao {
         Long userId = trainer.getUserId();
 
         if (!trainerStorage.containsKey(userId)) {
-            throw new EntityNotFoundException("Trainer", userId);
+            throw new EntityNotFoundException("Trainer" + " with ID " + userId + " not found.");
         }
 
         trainerStorage.put(userId, trainer);

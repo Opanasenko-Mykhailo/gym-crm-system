@@ -46,7 +46,7 @@ public class TraineeDaoImpl implements TraineeDao {
         Long userId = trainee.getUserId();
 
         if (!traineeStorage.containsKey(userId)) {
-            throw new EntityNotFoundException("Trainee", userId);
+            throw new EntityNotFoundException("Trainee"  + " with ID " + userId + " not found.");
         }
 
         traineeStorage.put(userId, trainee);
@@ -63,7 +63,8 @@ public class TraineeDaoImpl implements TraineeDao {
             log.info("Deleted trainee with userId: {}", userId);
             return;
         }
-        throw new EntityNotFoundException("Trainee", userId);
+
+        throw new EntityNotFoundException("Trainee"  + " with ID " + userId + " not found.");
     }
 
     @Override

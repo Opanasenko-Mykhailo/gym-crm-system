@@ -50,6 +50,7 @@ public class DataInitializer {
         if (!resource.exists()) {
             throw new StorageInitializationException(String.format("Resource not found: %s", path));
         }
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             processFileLines(reader);
         }
@@ -58,42 +59,59 @@ public class DataInitializer {
     private void processFileLines(BufferedReader reader) throws IOException {
         String line;
         int lineNumber = 0;
+
         while ((line = reader.readLine()) != null) {
             lineNumber++;
+
             if (line.trim().isEmpty()) {
                 continue;
             }
-            String[] parts = line.split(",");
-            if (parts.length < 2) {
+
+            try {
+                String[] parts = line.split(",");
+                if (parts.length < 2) {
+                    throw new StorageInitializationException(
+                            String.format("Invalid format at line %d: %s", lineNumber, line));
+                }
+
+                processEntity(parts, lineNumber);
+            } catch (Exception e) {
                 throw new StorageInitializationException(
-                        String.format("Invalid format at line %d: %s", lineNumber, line));
+                        String.format("Error processing line %d: %s", lineNumber, line), e);
             }
-            processEntity(parts, lineNumber);
         }
     }
 
     private void processEntity(String[] parts, int lineNumber) {
         String entityType = parts[0].trim().toLowerCase();
-        switch (entityType) {
-            case "trainee":
-                processTrainee(parts, lineNumber);
-                break;
-            case "trainer":
-                processTrainer(parts, lineNumber);
-                break;
-            case "training":
-                processTraining(parts, lineNumber);
-                break;
-            default:
-                throw new StorageInitializationException(
-                        String.format("Unknown entity type at line %d: %s", lineNumber, entityType));
+
+        try {
+            switch (entityType) {
+                case "trainee":
+                    processTrainee(parts, lineNumber);
+                    break;
+                case "trainer":
+                    processTrainer(parts, lineNumber);
+                    break;
+                case "training":
+                    processTraining(parts, lineNumber);
+                    break;
+                default:
+                    throw new StorageInitializationException(
+                            String.format("Unknown entity type at line %d: %s", lineNumber, entityType));
+            }
+        } catch (Exception e) {
+            throw new StorageInitializationException(
+                    String.format("Failed to process %s entity at line %d", entityType, lineNumber), e);
         }
     }
 
     private void processTrainee(String[] parts, int lineNumber) {
         if (parts.length != 5) {
-            throw new StorageInitializationException("trainee", lineNumber, String.join(",", parts));
+            throw new StorageInitializationException(
+                    String.format("Invalid trainee format at line %d: %s", lineNumber, String.join(",", parts)));
         }
+
         try {
             Trainee trainee = Trainee.builder()
                     .userId(idGenerator.getAndIncrement())
@@ -105,17 +123,20 @@ public class DataInitializer {
                     .dateOfBirth(LocalDate.parse(parts[3].trim()))
                     .address(parts[4].trim())
                     .build();
+
             traineeStorage.put(trainee.getUserId(), trainee);
         } catch (Exception e) {
             throw new StorageInitializationException(
-                    String.format("Failed to process trainee at line %d: %s", lineNumber, String.join(",", parts)), e);
+                    String.format("Failed to process trainee at line %d", lineNumber), e);
         }
     }
 
     private void processTrainer(String[] parts, int lineNumber) {
         if (parts.length != 4) {
-            throw new StorageInitializationException("trainer", lineNumber, String.join(",", parts));
+            throw new StorageInitializationException(
+                    String.format("Invalid trainer format at line %d: %s", lineNumber, String.join(",", parts)));
         }
+
         try {
             Trainer trainer = Trainer.builder()
                     .userId(idGenerator.getAndIncrement())
@@ -126,17 +147,20 @@ public class DataInitializer {
                     .isActive(true)
                     .specialization(new TrainingType(parts[3].trim()))
                     .build();
+
             trainerStorage.put(trainer.getUserId(), trainer);
         } catch (Exception e) {
             throw new StorageInitializationException(
-                    String.format("Failed to process trainer at line %d: %s", lineNumber, String.join(",", parts)), e);
+                    String.format("Failed to process trainer at line %d", lineNumber), e);
         }
     }
 
     private void processTraining(String[] parts, int lineNumber) {
         if (parts.length != 7) {
-            throw new StorageInitializationException("training", lineNumber, String.join(",", parts));
+            throw new StorageInitializationException(
+                    String.format("Invalid training format at line %d: %s", lineNumber, String.join(",", parts)));
         }
+
         try {
             Training training = Training.builder()
                     .id(idGenerator.getAndIncrement())
@@ -147,10 +171,11 @@ public class DataInitializer {
                     .date(LocalDate.parse(parts[5].trim()))
                     .duration(Duration.parse(parts[6].trim()))
                     .build();
+
             trainingStorage.put(training.getId(), training);
         } catch (Exception e) {
             throw new StorageInitializationException(
-                    String.format("Failed to process training at line %d: %s", lineNumber, String.join(",", parts)), e);
+                    String.format("Failed to process training at line %d", lineNumber), e);
         }
     }
 }
