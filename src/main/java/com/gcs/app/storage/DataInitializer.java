@@ -4,9 +4,11 @@ import com.gcs.app.model.*;
 import com.gcs.app.util.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+import jakarta.annotation.PostConstruct;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,89 +25,121 @@ public class DataInitializer {
 
     private final ResourceLoader resourceLoader;
 
-    public void load(String path,
-                     Map<Long, Trainee> traineeStorage,
-                     Map<Long, Trainer> trainerStorage,
-                     Map<Long, Training> trainingStorage,
-                     AtomicLong idGenerator) throws IOException {
+    private final Map<Long, Trainee> traineeStorage;
+    private final Map<Long, Trainer> trainerStorage;
+    private final Map<Long, Training> trainingStorage;
+    private final AtomicLong idGenerator;
 
-        Resource resource = resourceLoader.getResource(path);
-        if (!resource.exists()) throw new IOException("Resource not found: " + path);
+    @Value("${storage.path}")
+    private String initFilePath;
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-            String line;
-            int lineNumber = 0;
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
-                if (line.trim().isEmpty()) continue;
+    @PostConstruct
+    public void initializeData() {
+        log.info("Initializing in-memory storage from file: {}", initFilePath);
 
-                String[] parts = line.split(",");
-                if (parts.length < 2) {
-                    log.warn("Invalid format at line {}: {}", lineNumber, line);
-                    continue;
-                }
-
-                try {
-                    switch (parts[0].trim().toLowerCase()) {
-                        case "trainee" -> processTrainee(parts, lineNumber, traineeStorage, idGenerator);
-                        case "trainer" -> processTrainer(parts, lineNumber, trainerStorage, idGenerator);
-                        case "training" -> processTraining(parts, lineNumber, trainingStorage, idGenerator);
-                        default -> log.warn("Unknown entity type at line {}: {}", lineNumber, parts[0]);
-                    }
-                } catch (Exception e) {
-                    log.error("Error processing line {}: {}", lineNumber, line, e);
-                }
-            }
+        try {
+            load(initFilePath);
+            log.info("Initialization complete: {} trainees, {} trainers, {} trainings",
+                    traineeStorage.size(), trainerStorage.size(), trainingStorage.size());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to initialize in-memory storage from file: " + initFilePath, e);
         }
     }
 
-    private void processTrainee(String[] parts, int lineNumber, Map<Long, Trainee> storage, AtomicLong idGen) {
+    public void load(String path) throws IOException {
+        Resource resource = resourceLoader.getResource(path);
+
+        if (!resource.exists()) {
+            throw new IOException("Resource not found: " + path);
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
+            processFileLines(reader);
+        }
+    }
+
+    private void processFileLines(BufferedReader reader) throws IOException {
+        String line;
+        int lineNumber = 0;
+
+        while ((line = reader.readLine()) != null) {
+            lineNumber++;
+
+            if (line.trim().isEmpty()) {
+                continue;
+            }
+
+            String[] parts = line.split(",");
+            if (parts.length < 2) {
+                throw new IllegalArgumentException("Invalid format at line " + lineNumber + ": " + line);
+            }
+
+            processEntity(parts, lineNumber);
+        }
+    }
+
+    private void processEntity(String[] parts, int lineNumber) {
+        String entityType = parts[0].trim().toLowerCase();
+
+        switch (entityType) {
+            case "trainee":
+                processTrainee(parts, lineNumber);
+                break;
+            case "trainer":
+                processTrainer(parts, lineNumber);
+                break;
+            case "training":
+                processTraining(parts, lineNumber);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown entity type at line " + lineNumber + ": " + entityType);
+        }
+    }
+
+    private void processTrainee(String[] parts, int lineNumber) {
         if (parts.length != 5) {
-            log.warn("Invalid trainee format at line {}: {}", lineNumber, String.join(",", parts));
-            return;
+            throw new IllegalArgumentException("Invalid trainee format at line " + lineNumber + ": " + String.join(",", parts));
         }
 
         Trainee trainee = Trainee.builder()
-                .userId(idGen.getAndIncrement())
+                .userId(idGenerator.getAndIncrement())
                 .firstName(parts[1].trim())
                 .lastName(parts[2].trim())
-                .username(UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), storage))
+                .username(UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), traineeStorage))
                 .password(UserUtils.generateRandomPassword())
                 .isActive(true)
                 .dateOfBirth(LocalDate.parse(parts[3].trim()))
                 .address(parts[4].trim())
                 .build();
 
-        storage.put(trainee.getUserId(), trainee);
+        traineeStorage.put(trainee.getUserId(), trainee);
     }
 
-    private void processTrainer(String[] parts, int lineNumber, Map<Long, Trainer> storage, AtomicLong idGen) {
+    private void processTrainer(String[] parts, int lineNumber) {
         if (parts.length != 4) {
-            log.warn("Invalid trainer format at line {}: {}", lineNumber, String.join(",", parts));
-            return;
+            throw new IllegalArgumentException("Invalid trainer format at line " + lineNumber + ": " + String.join(",", parts));
         }
 
         Trainer trainer = Trainer.builder()
-                .userId(idGen.getAndIncrement())
+                .userId(idGenerator.getAndIncrement())
                 .firstName(parts[1].trim())
                 .lastName(parts[2].trim())
-                .username(UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), storage))
+                .username(UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), trainerStorage))
                 .password(UserUtils.generateRandomPassword())
                 .isActive(true)
                 .specialization(new TrainingType(parts[3].trim()))
                 .build();
 
-        storage.put(trainer.getUserId(), trainer);
+        trainerStorage.put(trainer.getUserId(), trainer);
     }
 
-    private void processTraining(String[] parts, int lineNumber, Map<Long, Training> storage, AtomicLong idGen) {
+    private void processTraining(String[] parts, int lineNumber) {
         if (parts.length != 7) {
-            log.warn("Invalid training format at line {}: {}", lineNumber, String.join(",", parts));
-            return;
+            throw new IllegalArgumentException("Invalid training format at line " + lineNumber + ": " + String.join(",", parts));
         }
 
         Training training = Training.builder()
-                .id(idGen.getAndIncrement())
+                .id(idGenerator.getAndIncrement())
                 .traineeId(Long.parseLong(parts[1].trim()))
                 .trainerId(Long.parseLong(parts[2].trim()))
                 .name(parts[3].trim())
@@ -114,6 +148,6 @@ public class DataInitializer {
                 .duration(Duration.parse(parts[6].trim()))
                 .build();
 
-        storage.put(training.getId(), training);
+        trainingStorage.put(training.getId(), training);
     }
 }
