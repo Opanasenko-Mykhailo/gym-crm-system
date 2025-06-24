@@ -36,7 +36,6 @@ public class TrainingDaoImpl implements TrainingDao {
     @Override
     public Optional<Training> get(Long id) {
         Training training = trainingStorage.get(id);
-        log.debug("Retrieved training with id: {}, found: {}", id, training != null);
 
         return Optional.ofNullable(training);
     }

@@ -2,6 +2,7 @@ package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.exception.EntityNotFoundException;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,6 @@ public class TraineeDaoImpl implements TraineeDao {
     @Override
     public Optional<Trainee> get(Long userId) {
         Trainee trainee = traineeStorage.get(userId);
-        log.debug("Retrieved trainee with userId: {}, found: {}", userId, trainee != null);
 
         return Optional.ofNullable(trainee);
     }
@@ -46,7 +46,7 @@ public class TraineeDaoImpl implements TraineeDao {
         Long userId = trainee.getUserId();
 
         if (!traineeStorage.containsKey(userId)) {
-            throw new IllegalArgumentException("Trainee with userId " + userId + " not found");
+            throw new EntityNotFoundException("Trainee", userId);
         }
 
         traineeStorage.put(userId, trainee);
@@ -63,8 +63,7 @@ public class TraineeDaoImpl implements TraineeDao {
             log.info("Deleted trainee with userId: {}", userId);
             return;
         }
-
-        throw new IllegalArgumentException("Trainee with userId " + userId + " not found");
+        throw new EntityNotFoundException("Trainee", userId);
     }
 
     @Override
