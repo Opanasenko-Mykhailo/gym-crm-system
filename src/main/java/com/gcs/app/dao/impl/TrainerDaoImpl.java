@@ -1,9 +1,10 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.enums.EntityType;
-import com.gcs.app.storage.StorageGateway;
+import com.gcs.app.storage.InMemoryStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -16,36 +17,45 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TrainerDaoImpl implements TrainerDao {
 
-    private final StorageGateway storage;
+    private final InMemoryStorage storage;
 
     @Override
     public Trainer create(Trainer trainer) {
-        Long id = storage.save(EntityType.TRAINER, trainer);
-        trainer.setUserId(id);
-        log.info("Created trainer with userId: {}", id);
+        Long userId = storage.nextId();
+        trainer.setUserId(userId);
+
+        storage.put(EntityType.TRAINER, userId, trainer);
+        log.info("Created trainer with userId: {}", userId);
 
         return trainer;
     }
 
     @Override
     public Optional<Trainer> get(Long userId) {
-        return storage.find(EntityType.TRAINER, userId, Trainer.class);
-    }
-
-    @Override
-    public Trainer update(Trainer trainer) {
-        Long id = trainer.getUserId();
-        storage.update(EntityType.TRAINER, id, trainer);
-        log.info("Updated trainer with userId: {}", id);
+        Optional<Trainer> trainer = storage.getById(EntityType.TRAINER, userId);
+        log.debug("Retrieved trainer with userId: {}, found: {}", userId, trainer.isPresent());
 
         return trainer;
     }
 
     @Override
-    public List<Trainer> getAll() {
-        List<Trainer> list = storage.findAll(EntityType.TRAINER, Trainer.class);
-        log.debug("Retrieved {} trainers", list.size());
+    public Trainer update(Trainer trainer) {
+        Long userId = trainer.getUserId();
 
-        return list;
+        if (storage.getById(EntityType.TRAINER, userId).isPresent()) {
+            storage.put(EntityType.TRAINER, userId, trainer);
+            log.info("Updated trainer with userId: {}", userId);
+
+            return trainer;
+        }
+        throw new EntityNotFoundException(String.format("Trainer with userId: %s not found", userId));
+    }
+
+    @Override
+    public List<Trainer> getAll() {
+        List<Trainer> trainers = storage.getAll(EntityType.TRAINER);
+        log.debug("Retrieved {} trainers", trainers.size());
+
+        return trainers;
     }
 }

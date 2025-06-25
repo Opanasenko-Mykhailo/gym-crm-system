@@ -7,7 +7,10 @@ import com.gcs.app.model.enums.EntityType;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Component
@@ -38,5 +41,17 @@ public class InMemoryStorage {
 
     public Long nextId() {
         return idGenerator.getAndIncrement();
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Optional<T> getById(EntityType type, Long id) {
+        return Optional.ofNullable((T) getNamespace(type).get(id));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getAll(EntityType type) {
+        return getNamespace(type).values().stream()
+                .map(obj -> (T) obj)
+                .collect(Collectors.toList());
     }
 }

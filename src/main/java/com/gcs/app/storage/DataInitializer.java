@@ -1,11 +1,8 @@
 package com.gcs.app.storage;
 
 import com.gcs.app.exception.StorageInitializationException;
-import com.gcs.app.model.Trainee;
-import com.gcs.app.model.Trainer;
-import com.gcs.app.model.Training;
+import com.gcs.app.model.*;
 import com.gcs.app.model.enums.EntityType;
-import com.gcs.app.model.TrainingType;
 import com.gcs.app.util.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +16,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -27,120 +27,116 @@ import java.util.Map;
 public class DataInitializer {
 
     private final ResourceLoader resourceLoader;
-    private final StorageGateway storage;
 
     @Value("${storage.path}")
     private String initFilePath;
 
-    public void initializeData() {
+    private final Map<Long, User> users = new HashMap<>();
+    private long userIdCounter = 1;
+
+    public Map<EntityType, List<Object>> initializeData() {
         try {
-            load(initFilePath);
-            log.info("Initialization complete");
+            Map<EntityType, List<Object>> data = loadData(initFilePath);
+            log.info("Data initialization complete");
+            return data;
         } catch (IOException e) {
-            throw new StorageInitializationException(
-                    String.format("Failed to initialize in-memory storage from file: %s", initFilePath), e);
+            throw new StorageInitializationException("Failed to initialize data from file: " + initFilePath, e);
         }
     }
 
-    public void load(String path) throws IOException {
+    private Map<EntityType, List<Object>> loadData(String path) throws IOException {
         Resource resource = resourceLoader.getResource(path);
 
         if (!resource.exists()) {
             throw new StorageInitializationException(String.format("Resource not found: %s", path));
         }
 
+        Map<EntityType, List<Object>> data = new HashMap<>();
+        data.put(EntityType.TRAINEE, new ArrayList<>());
+        data.put(EntityType.TRAINER, new ArrayList<>());
+        data.put(EntityType.TRAINING, new ArrayList<>());
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
-            processFileLines(reader);
+            parseFileLines(reader, data);
         }
+
+        return data;
     }
 
-    private void processFileLines(BufferedReader reader) throws IOException {
+    private void parseFileLines(BufferedReader reader, Map<EntityType, List<Object>> data) throws IOException {
         String line;
         int lineNumber = 0;
 
         while ((line = reader.readLine()) != null) {
             lineNumber++;
-
-            if (line.trim().isEmpty()) {
-                continue;
-            }
+            if (line.trim().isEmpty()) continue;
 
             try {
                 String[] parts = line.split(",");
                 if (parts.length < 2) {
-                    throw new StorageInitializationException(
-                            String.format("Invalid format at line %d: %s", lineNumber, line));
+                    throw new StorageInitializationException(String.format("Invalid format at line %d: %s", lineNumber, line));
                 }
-
-                processEntity(parts, lineNumber);
+                parseEntity(parts, lineNumber, data);
             } catch (Exception e) {
-                throw new StorageInitializationException(
-                        String.format("Error processing line %d: %s", lineNumber, line), e);
+                throw new StorageInitializationException(String.format("Error processing line %d: %s", lineNumber, line), e);
             }
         }
     }
 
-    private void processEntity(String[] parts, int lineNumber) {
+    private void parseEntity(String[] parts, int lineNumber, Map<EntityType, List<Object>> data) {
         String entityType = parts[0].trim().toLowerCase();
 
-        try {
-            switch (entityType) {
-                case "trainee":
-                    processTrainee(parts);
-                    break;
-                case "trainer":
-                    processTrainer(parts);
-                    break;
-                case "training":
-                    processTraining(parts);
-                    break;
-                default:
-                    throw new StorageInitializationException(
-                            String.format("Unknown entity type at line %d: %s", lineNumber, entityType));
-            }
-        } catch (Exception e) {
-            throw new StorageInitializationException(
-                    String.format("Failed to process %s entity at line %d", entityType, lineNumber), e);
+        switch (entityType) {
+            case "trainee" -> data.get(EntityType.TRAINEE).add(createTrainee(parts));
+            case "trainer" -> data.get(EntityType.TRAINER).add(createTrainer(parts));
+            case "training" -> data.get(EntityType.TRAINING).add(createTraining(parts));
+            default -> throw new StorageInitializationException(String.format("Unknown entity type at line %d: %s", lineNumber, entityType));
         }
     }
 
-    private void processTrainee(String[] parts) {
-        Map<Long, Trainee> traineeStorage = storage.getNamespace(EntityType.TRAINEE);
+    private Trainee createTrainee(String[] parts) {
+        String firstName = parts[1].trim();
+        String lastName = parts[2].trim();
 
-        String username = UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), traineeStorage);
+        String username = UserUtils.generateUsername(firstName, lastName, users);
+        String password = UserUtils.generateRandomPassword();
 
         Trainee trainee = Trainee.builder()
-                .firstName(parts[1].trim())
-                .lastName(parts[2].trim())
+                .firstName(firstName)
+                .lastName(lastName)
                 .username(username)
-                .password(UserUtils.generateRandomPassword())
+                .password(password)
                 .isActive(true)
                 .dateOfBirth(LocalDate.parse(parts[3].trim()))
                 .address(parts[4].trim())
                 .build();
 
-        storage.save(EntityType.TRAINEE, trainee);
+        users.put(userIdCounter++, trainee);
+        return trainee;
     }
 
-    private void processTrainer(String[] parts) {
-        Map<Long, Trainer> trainerStorage = storage.getNamespace(EntityType.TRAINER);
+    private Trainer createTrainer(String[] parts) {
+        String firstName = parts[1].trim();
+        String lastName = parts[2].trim();
 
-        String username = UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), trainerStorage);
+        String username = UserUtils.generateUsername(firstName, lastName, users);
+        String password = UserUtils.generateRandomPassword();
 
         Trainer trainer = Trainer.builder()
-                .firstName(parts[1].trim())
-                .lastName(parts[2].trim())
+                .firstName(firstName)
+                .lastName(lastName)
                 .username(username)
-                .password(UserUtils.generateRandomPassword())
+                .password(password)
                 .isActive(true)
                 .specialization(new TrainingType(parts[3].trim()))
                 .build();
 
-        storage.save(EntityType.TRAINER, trainer);
+        users.put(userIdCounter++, trainer);
+        return trainer;
     }
 
-    private void processTraining(String[] parts) {
-        Training training = Training.builder()
+    private Training createTraining(String[] parts) {
+        return Training.builder()
                 .traineeId(Long.parseLong(parts[1].trim()))
                 .trainerId(Long.parseLong(parts[2].trim()))
                 .name(parts[3].trim())
@@ -148,7 +144,6 @@ public class DataInitializer {
                 .date(LocalDate.parse(parts[5].trim()))
                 .duration(Duration.parse(parts[6].trim()))
                 .build();
-
-        storage.save(EntityType.TRAINING, training);
     }
 }
+

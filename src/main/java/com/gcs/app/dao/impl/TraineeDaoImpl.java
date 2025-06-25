@@ -1,9 +1,10 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.enums.EntityType;
-import com.gcs.app.storage.StorageGateway;
+import com.gcs.app.storage.InMemoryStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -16,41 +17,54 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TraineeDaoImpl implements TraineeDao {
 
-    private final StorageGateway storage;
+    private final InMemoryStorage storage;
 
     @Override
     public Trainee create(Trainee trainee) {
-        Long id = storage.save(EntityType.TRAINEE, trainee);
-        trainee.setUserId(id);
-        log.info("Created trainee with ID: {}", id);
+        Long userId = storage.nextId();
+        trainee.setUserId(userId);
+
+        storage.put(EntityType.TRAINEE, userId, trainee);
+        log.info("Created trainee with userId: {}", userId);
 
         return trainee;
     }
 
     @Override
     public Optional<Trainee> get(Long userId) {
-        return storage.find(EntityType.TRAINEE, userId, Trainee.class);
-    }
-
-    @Override
-    public Trainee update(Trainee trainee) {
-        storage.update(EntityType.TRAINEE, trainee.getUserId(), trainee);
-        log.info("Updated trainee with ID: {}", trainee.getUserId());
+        Optional<Trainee> trainee = storage.getById(EntityType.TRAINEE, userId);
 
         return trainee;
     }
 
     @Override
+    public Trainee update(Trainee trainee) {
+        Long userId = trainee.getUserId();
+
+        if (storage.getById(EntityType.TRAINEE, userId).isPresent()) {
+            storage.put(EntityType.TRAINEE, userId, trainee);
+            log.info("Updated trainee with userId: {}", userId);
+            return trainee;
+        }
+
+        throw new EntityNotFoundException(String.format("Trainee with userId: {} not found", userId));
+    }
+
+    @Override
     public void delete(Long userId) {
-        storage.delete(EntityType.TRAINEE, userId);
-        log.info("Deleted trainee with ID: {}", userId);
+        if (storage.getById(EntityType.TRAINEE, userId).isPresent()) {
+            storage.getNamespace(EntityType.TRAINEE).remove(userId);
+            log.info("Deleted trainee with userId: {}", userId);
+        } else {
+            throw new EntityNotFoundException(String.format("Trainee with userId: {} not found", userId));
+        }
     }
 
     @Override
     public List<Trainee> getAll() {
-        List<Trainee> all = storage.findAll(EntityType.TRAINEE, Trainee.class);
-        log.debug("Retrieved {} trainees", all.size());
+        List<Trainee> trainees = storage.getAll(EntityType.TRAINEE);
+        log.debug("Retrieved {} trainees", trainees.size());
 
-        return all;
+        return trainees;
     }
 }
