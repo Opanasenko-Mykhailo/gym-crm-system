@@ -3,28 +3,25 @@ package com.gcs.app.dao.impl;
 import com.gcs.app.dao.TrainingDao;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.enums.EntityType;
-import com.gcs.app.storage.InMemoryStorage;
+import com.gcs.app.storage.StorageGateway;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
 @RequiredArgsConstructor
 public class TrainingDaoImpl implements TrainingDao {
 
-    private final InMemoryStorage storage;
+    private final StorageGateway storage;
 
     @Override
     public Training create(Training training) {
-        Long id = storage.getNextId();
+        Long id = storage.save(EntityType.TRAINING, training);
         training.setId(id);
-
-        storage.getNamespace(EntityType.TRAINING).put(id, training);
         log.info("Created training with id: {}", id);
 
         return training;
@@ -32,16 +29,12 @@ public class TrainingDaoImpl implements TrainingDao {
 
     @Override
     public Optional<Training> get(Long id) {
-        Training training = (Training) storage.getNamespace(EntityType.TRAINING).get(id);
-        return Optional.ofNullable(training);
+        return storage.find(EntityType.TRAINING, id, Training.class);
     }
 
     @Override
     public List<Training> getAll() {
-        List<Training> trainings = storage.getNamespace(EntityType.TRAINING).values()
-                .stream()
-                .map(Training.class::cast)
-                .collect(Collectors.toList());
+        List<Training> trainings = storage.findAll(EntityType.TRAINING, Training.class);
         log.debug("Retrieved {} trainings", trainings.size());
 
         return trainings;
