@@ -2,32 +2,29 @@ package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TrainingDao;
 import com.gcs.app.model.Training;
-import lombok.Setter;
+import com.gcs.app.model.enums.EntityType;
+import com.gcs.app.storage.InMemoryStorage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
+@RequiredArgsConstructor
 public class TrainingDaoImpl implements TrainingDao {
 
-    @Setter(onMethod_ = @Autowired)
-    private Map<Long, Training> trainingStorage;
-
-    @Setter(onMethod_ = @Autowired)
-    private AtomicLong idGenerator;
+    private final InMemoryStorage storage;
 
     @Override
     public Training create(Training training) {
-        Long id = idGenerator.getAndIncrement();
+        Long id = storage.getNextId();
         training.setId(id);
 
-        trainingStorage.put(id, training);
+        storage.getNamespace(EntityType.TRAINING).put(id, training);
         log.info("Created training with id: {}", id);
 
         return training;
@@ -35,14 +32,16 @@ public class TrainingDaoImpl implements TrainingDao {
 
     @Override
     public Optional<Training> get(Long id) {
-        Training training = trainingStorage.get(id);
-
+        Training training = (Training) storage.getNamespace(EntityType.TRAINING).get(id);
         return Optional.ofNullable(training);
     }
 
     @Override
     public List<Training> getAll() {
-        List<Training> trainings = List.copyOf(trainingStorage.values());
+        List<Training> trainings = storage.getNamespace(EntityType.TRAINING).values()
+                .stream()
+                .map(Training.class::cast)
+                .collect(Collectors.toList());
         log.debug("Retrieved {} trainings", trainings.size());
 
         return trainings;

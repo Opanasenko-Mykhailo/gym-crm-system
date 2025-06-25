@@ -3,32 +3,29 @@ package com.gcs.app.dao.impl;
 import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.exception.EntityNotFoundException;
-import lombok.Setter;
+import com.gcs.app.model.enums.EntityType;
+import com.gcs.app.storage.InMemoryStorage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
+@RequiredArgsConstructor
 public class TraineeDaoImpl implements TraineeDao {
 
-    @Setter(onMethod_ = @Autowired)
-    private Map<Long, Trainee> traineeStorage;
-
-    @Setter(onMethod_ = @Autowired)
-    private AtomicLong idGenerator;
+    private final InMemoryStorage storage;
 
     @Override
     public Trainee create(Trainee trainee) {
-        Long userId = idGenerator.getAndIncrement();
+        Long userId = storage.getNextId();
         trainee.setUserId(userId);
 
-        traineeStorage.put(userId, trainee);
+        storage.getNamespace(EntityType.TRAINEE).put(userId, trainee);
         log.info("Created trainee with userId: {}", userId);
 
         return trainee;
@@ -36,8 +33,7 @@ public class TraineeDaoImpl implements TraineeDao {
 
     @Override
     public Optional<Trainee> get(Long userId) {
-        Trainee trainee = traineeStorage.get(userId);
-
+        Trainee trainee = (Trainee) storage.getNamespace(EntityType.TRAINEE).get(userId);
         return Optional.ofNullable(trainee);
     }
 
@@ -45,11 +41,11 @@ public class TraineeDaoImpl implements TraineeDao {
     public Trainee update(Trainee trainee) {
         Long userId = trainee.getUserId();
 
-        if (!traineeStorage.containsKey(userId)) {
-            throw new EntityNotFoundException("Trainee"  + " with ID " + userId + " not found.");
+        if (!storage.getNamespace(EntityType.TRAINEE).containsKey(userId)) {
+            throw new EntityNotFoundException("Trainee with ID " + userId + " not found.");
         }
 
-        traineeStorage.put(userId, trainee);
+        storage.getNamespace(EntityType.TRAINEE).put(userId, trainee);
         log.info("Updated trainee with userId: {}", userId);
 
         return trainee;
@@ -57,19 +53,22 @@ public class TraineeDaoImpl implements TraineeDao {
 
     @Override
     public void delete(Long userId) {
-        Trainee removedTrainee = traineeStorage.remove(userId);
+        Trainee removedTrainee = (Trainee) storage.getNamespace(EntityType.TRAINEE).remove(userId);
 
         if (removedTrainee != null) {
             log.info("Deleted trainee with userId: {}", userId);
             return;
         }
 
-        throw new EntityNotFoundException("Trainee"  + " with ID " + userId + " not found.");
+        throw new EntityNotFoundException("Trainee with ID " + userId + " not found.");
     }
 
     @Override
     public List<Trainee> getAll() {
-        List<Trainee> trainees = List.copyOf(traineeStorage.values());
+        List<Trainee> trainees = storage.getNamespace(EntityType.TRAINEE).values()
+                .stream()
+                .map(Trainee.class::cast)
+                .collect(Collectors.toList());
         log.debug("Retrieved {} trainees", trainees.size());
 
         return trainees;

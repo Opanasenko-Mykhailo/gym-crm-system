@@ -2,6 +2,7 @@ package com.gcs.app.storage;
 
 import com.gcs.app.model.*;
 import com.gcs.app.exception.StorageInitializationException;
+import com.gcs.app.model.enums.EntityType;
 import com.gcs.app.util.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +17,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 @RequiredArgsConstructor
@@ -25,10 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DataInitializer {
 
     private final ResourceLoader resourceLoader;
-    private final Map<Long, Trainee> traineeStorage;
-    private final Map<Long, Trainer> trainerStorage;
-    private final Map<Long, Training> trainingStorage;
-    private final AtomicLong idGenerator;
+    private final InMemoryStorage storage;
 
     @Value("${storage.path}")
     private String initFilePath;
@@ -38,7 +34,9 @@ public class DataInitializer {
         try {
             load(initFilePath);
             log.info("Initialization complete: {} trainees, {} trainers, {} trainings",
-                    traineeStorage.size(), trainerStorage.size(), trainingStorage.size());
+                    storage.getNamespace(EntityType.TRAINEE).size(),
+                    storage.getNamespace(EntityType.TRAINER).size(),
+                    storage.getNamespace(EntityType.TRAINING).size());
         } catch (IOException e) {
             throw new StorageInitializationException(
                     String.format("Failed to initialize in-memory storage from file: %s", initFilePath), e);
@@ -114,17 +112,17 @@ public class DataInitializer {
 
         try {
             Trainee trainee = Trainee.builder()
-                    .userId(idGenerator.getAndIncrement())
+                    .userId(storage.getNextId())
                     .firstName(parts[1].trim())
                     .lastName(parts[2].trim())
-                    .username(UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), traineeStorage))
+                    .username(UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), storage.getNamespace(EntityType.TRAINEE)))
                     .password(UserUtils.generateRandomPassword())
                     .isActive(true)
                     .dateOfBirth(LocalDate.parse(parts[3].trim()))
                     .address(parts[4].trim())
                     .build();
 
-            traineeStorage.put(trainee.getUserId(), trainee);
+            storage.getNamespace(EntityType.TRAINEE).put(trainee.getUserId(), trainee);
         } catch (Exception e) {
             throw new StorageInitializationException(
                     String.format("Failed to process trainee at line %d", lineNumber), e);
@@ -139,16 +137,16 @@ public class DataInitializer {
 
         try {
             Trainer trainer = Trainer.builder()
-                    .userId(idGenerator.getAndIncrement())
+                    .userId(storage.getNextId())
                     .firstName(parts[1].trim())
                     .lastName(parts[2].trim())
-                    .username(UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), trainerStorage))
+                    .username(UserUtils.generateUsername(parts[1].trim(), parts[2].trim(), storage.getNamespace(EntityType.TRAINER)))
                     .password(UserUtils.generateRandomPassword())
                     .isActive(true)
                     .specialization(new TrainingType(parts[3].trim()))
                     .build();
 
-            trainerStorage.put(trainer.getUserId(), trainer);
+            storage.getNamespace(EntityType.TRAINER).put(trainer.getUserId(), trainer);
         } catch (Exception e) {
             throw new StorageInitializationException(
                     String.format("Failed to process trainer at line %d", lineNumber), e);
@@ -163,7 +161,7 @@ public class DataInitializer {
 
         try {
             Training training = Training.builder()
-                    .id(idGenerator.getAndIncrement())
+                    .id(storage.getNextId())
                     .traineeId(Long.parseLong(parts[1].trim()))
                     .trainerId(Long.parseLong(parts[2].trim()))
                     .name(parts[3].trim())
@@ -172,7 +170,7 @@ public class DataInitializer {
                     .duration(Duration.parse(parts[6].trim()))
                     .build();
 
-            trainingStorage.put(training.getId(), training);
+            storage.getNamespace(EntityType.TRAINING).put(training.getId(), training);
         } catch (Exception e) {
             throw new StorageInitializationException(
                     String.format("Failed to process training at line %d", lineNumber), e);
