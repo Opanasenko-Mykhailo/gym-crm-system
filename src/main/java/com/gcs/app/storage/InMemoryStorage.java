@@ -19,11 +19,7 @@ public class InMemoryStorage {
     private final Map<EntityType, Map<Long, ?>> namespaces;
     private final AtomicLong idGenerator = new AtomicLong(1);
 
-    public InMemoryStorage(
-            Map<Long, Trainee> traineeStorage,
-            Map<Long, Trainer> trainerStorage,
-            Map<Long, Training> trainingStorage
-    ) {
+    public InMemoryStorage(Map<Long, Trainee> traineeStorage, Map<Long, Trainer> trainerStorage, Map<Long, Training> trainingStorage) {
         namespaces = new HashMap<>();
         namespaces.put(EntityType.TRAINEE, traineeStorage);
         namespaces.put(EntityType.TRAINER, trainerStorage);

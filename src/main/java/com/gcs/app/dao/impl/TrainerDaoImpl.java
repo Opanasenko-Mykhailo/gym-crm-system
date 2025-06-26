@@ -23,7 +23,6 @@ public class TrainerDaoImpl implements TrainerDao {
     public Trainer create(Trainer trainer) {
         Long userId = storage.nextId();
         trainer.setUserId(userId);
-
         storage.put(EntityType.TRAINER, userId, trainer);
         log.info("Created trainer with userId: {}", userId);
 
@@ -32,23 +31,20 @@ public class TrainerDaoImpl implements TrainerDao {
 
     @Override
     public Optional<Trainer> get(Long userId) {
-        Optional<Trainer> trainer = storage.getById(EntityType.TRAINER, userId);
-        log.debug("Retrieved trainer with userId: {}, found: {}", userId, trainer.isPresent());
-
-        return trainer;
+        return storage.getById(EntityType.TRAINER, userId);
     }
 
     @Override
     public Trainer update(Trainer trainer) {
         Long userId = trainer.getUserId();
-
-        if (storage.getById(EntityType.TRAINER, userId).isPresent()) {
-            storage.put(EntityType.TRAINER, userId, trainer);
-            log.info("Updated trainer with userId: {}", userId);
-
-            return trainer;
+        if (storage.getById(EntityType.TRAINER, userId).isEmpty()) {
+            throw new EntityNotFoundException(String.format("Trainer with userId: %d not found", userId));
         }
-        throw new EntityNotFoundException(String.format("Trainer with userId: %s not found", userId));
+
+        storage.put(EntityType.TRAINER, userId, trainer);
+        log.info("Updated trainer with userId: {}", userId);
+
+        return trainer;
     }
 
     @Override

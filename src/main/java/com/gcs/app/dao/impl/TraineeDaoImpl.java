@@ -32,32 +32,31 @@ public class TraineeDaoImpl implements TraineeDao {
 
     @Override
     public Optional<Trainee> get(Long userId) {
-        Optional<Trainee> trainee = storage.getById(EntityType.TRAINEE, userId);
-
-        return trainee;
+        return storage.getById(EntityType.TRAINEE, userId);
     }
 
     @Override
     public Trainee update(Trainee trainee) {
         Long userId = trainee.getUserId();
 
-        if (storage.getById(EntityType.TRAINEE, userId).isPresent()) {
-            storage.put(EntityType.TRAINEE, userId, trainee);
-            log.info("Updated trainee with userId: {}", userId);
-            return trainee;
+        if (storage.getById(EntityType.TRAINEE, userId).isEmpty()) {
+            throw new EntityNotFoundException(String.format("Trainee with userId: %d not found", userId));
         }
 
-        throw new EntityNotFoundException(String.format("Trainee with userId: {} not found", userId));
+        storage.put(EntityType.TRAINEE, userId, trainee);
+        log.info("Updated trainee with userId: {}", userId);
+
+        return trainee;
     }
 
     @Override
     public void delete(Long userId) {
-        if (storage.getById(EntityType.TRAINEE, userId).isPresent()) {
-            storage.getNamespace(EntityType.TRAINEE).remove(userId);
-            log.info("Deleted trainee with userId: {}", userId);
-        } else {
-            throw new EntityNotFoundException(String.format("Trainee with userId: {} not found", userId));
+        if (storage.getById(EntityType.TRAINEE, userId).isEmpty()) {
+            throw new EntityNotFoundException(String.format("Trainee with userId: %d not found", userId));
         }
+
+        storage.getNamespace(EntityType.TRAINEE).remove(userId);
+        log.info("Deleted trainee with userId: {}", userId);
     }
 
     @Override

@@ -1,7 +1,10 @@
 package com.gcs.app.storage;
 
 import com.gcs.app.exception.StorageInitializationException;
-import com.gcs.app.model.*;
+import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Trainer;
+import com.gcs.app.model.Training;
+import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.enums.EntityType;
 import com.gcs.app.util.UserUtils;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +30,10 @@ import java.util.Map;
 public class DataInitializer {
 
     private final ResourceLoader resourceLoader;
+    private final List<String> users = new ArrayList<>();
 
     @Value("${storage.path}")
     private String initFilePath;
-
-    private final Map<Long, User> users = new HashMap<>();
-    private long userIdCounter = 1;
 
     public Map<EntityType, List<Object>> initializeData() {
         try {
@@ -69,7 +70,10 @@ public class DataInitializer {
 
         while ((line = reader.readLine()) != null) {
             lineNumber++;
-            if (line.trim().isEmpty()) continue;
+
+            if (line.trim().isEmpty()){
+                continue;
+            }
 
             try {
                 String[] parts = line.split(",");
@@ -111,7 +115,7 @@ public class DataInitializer {
                 .address(parts[4].trim())
                 .build();
 
-        users.put(userIdCounter++, trainee);
+        users.add(username);
         return trainee;
     }
 
@@ -131,7 +135,7 @@ public class DataInitializer {
                 .specialization(new TrainingType(parts[3].trim()))
                 .build();
 
-        users.put(userIdCounter++, trainer);
+        users.add(username);
         return trainer;
     }
 
