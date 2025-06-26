@@ -22,6 +22,11 @@ public class InMemoryStoragePostProcessor implements BeanPostProcessor, Applicat
     private ApplicationContext applicationContext;
 
     @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof InMemoryStorage inMemoryStorage) {
 
@@ -38,7 +43,6 @@ public class InMemoryStoragePostProcessor implements BeanPostProcessor, Applicat
             } catch (Exception e) {
                 throw new StorageInitializationException("Failed to populate InMemoryStorage", e);
             }
-
         }
 
         return bean;
@@ -67,10 +71,5 @@ public class InMemoryStoragePostProcessor implements BeanPostProcessor, Applicat
                 default -> log.warn("Unknown EntityType: {}", entityType);
             }
         }
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 }

@@ -10,8 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
+import static com.gcs.app.model.enums.EntityType.TRAINEE;
+import static com.gcs.app.model.enums.EntityType.TRAINER;
+import static com.gcs.app.model.enums.EntityType.TRAINING;
 
 @Component
 public class InMemoryStorage {
@@ -21,9 +25,9 @@ public class InMemoryStorage {
 
     public InMemoryStorage(Map<Long, Trainee> traineeStorage, Map<Long, Trainer> trainerStorage, Map<Long, Training> trainingStorage) {
         namespaces = new HashMap<>();
-        namespaces.put(EntityType.TRAINEE, traineeStorage);
-        namespaces.put(EntityType.TRAINER, trainerStorage);
-        namespaces.put(EntityType.TRAINING, trainingStorage);
+        namespaces.put(TRAINEE, traineeStorage);
+        namespaces.put(TRAINER, trainerStorage);
+        namespaces.put(TRAINING, trainingStorage);
     }
 
     @SuppressWarnings("unchecked")

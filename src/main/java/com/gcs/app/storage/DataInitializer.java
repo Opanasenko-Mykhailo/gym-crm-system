@@ -24,13 +24,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.gcs.app.model.enums.EntityType.TRAINEE;
+import static com.gcs.app.model.enums.EntityType.TRAINER;
+import static com.gcs.app.model.enums.EntityType.TRAINING;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer {
 
     private final ResourceLoader resourceLoader;
-    private final List<String> users = new ArrayList<>();
 
     @Value("${storage.path}")
     private String initFilePath;
@@ -53,9 +56,9 @@ public class DataInitializer {
         }
 
         Map<EntityType, List<Object>> data = new HashMap<>();
-        data.put(EntityType.TRAINEE, new ArrayList<>());
-        data.put(EntityType.TRAINER, new ArrayList<>());
-        data.put(EntityType.TRAINING, new ArrayList<>());
+        data.put(TRAINEE, new ArrayList<>());
+        data.put(TRAINER, new ArrayList<>());
+        data.put(TRAINING, new ArrayList<>());
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             parseFileLines(reader, data);
@@ -71,7 +74,7 @@ public class DataInitializer {
         while ((line = reader.readLine()) != null) {
             lineNumber++;
 
-            if (line.trim().isEmpty()){
+            if (line.trim().isEmpty()) {
                 continue;
             }
 
@@ -91,62 +94,45 @@ public class DataInitializer {
         String entityType = parts[0].trim().toLowerCase();
 
         switch (entityType) {
-            case "trainee" -> data.get(EntityType.TRAINEE).add(createTrainee(parts));
-            case "trainer" -> data.get(EntityType.TRAINER).add(createTrainer(parts));
-            case "training" -> data.get(EntityType.TRAINING).add(createTraining(parts));
-            default -> throw new StorageInitializationException(String.format("Unknown entity type at line %d: %s", lineNumber, entityType));
+            case "trainee" -> data.get(TRAINEE).add(createTrainee(parts));
+            case "trainer" -> data.get(TRAINER).add(createTrainer(parts));
+            case "training" -> data.get(TRAINING).add(createTraining(parts));
+            default ->
+                    throw new StorageInitializationException(String.format("Unknown entity type at line %d: %s", lineNumber, entityType));
         }
     }
 
     private Trainee createTrainee(String[] parts) {
-        String firstName = parts[1].trim();
-        String lastName = parts[2].trim();
-
-        String username = UserUtils.generateUsername(firstName, lastName, users);
-        String password = UserUtils.generateRandomPassword();
-
-        Trainee trainee = Trainee.builder()
-                .firstName(firstName)
-                .lastName(lastName)
-                .username(username)
-                .password(password)
+        return Trainee.builder()
+                .firstName(parts[1].trim())
+                .lastName(parts[2].trim())
+                .username(parts[3].trim())
+                .password(UserUtils.generateRandomPassword())
                 .isActive(true)
-                .dateOfBirth(LocalDate.parse(parts[3].trim()))
-                .address(parts[4].trim())
+                .dateOfBirth(LocalDate.parse(parts[4].trim()))
+                .address(parts[5].trim())
                 .build();
-
-        users.add(username);
-        return trainee;
     }
 
     private Trainer createTrainer(String[] parts) {
-        String firstName = parts[1].trim();
-        String lastName = parts[2].trim();
-
-        String username = UserUtils.generateUsername(firstName, lastName, users);
-        String password = UserUtils.generateRandomPassword();
-
-        Trainer trainer = Trainer.builder()
-                .firstName(firstName)
-                .lastName(lastName)
-                .username(username)
-                .password(password)
+        return Trainer.builder()
+                .firstName(parts[1].trim())
+                .lastName(parts[2].trim())
+                .username(parts[3].trim())
+                .password(UserUtils.generateRandomPassword())
                 .isActive(true)
-                .specialization(new TrainingType(parts[3].trim()))
+                .specialization(new TrainingType(parts[4].trim()))
                 .build();
-
-        users.add(username);
-        return trainer;
     }
 
     private Training createTraining(String[] parts) {
         return Training.builder()
                 .traineeId(Long.parseLong(parts[1].trim()))
                 .trainerId(Long.parseLong(parts[2].trim()))
-                .name(parts[3].trim())
-                .type(new TrainingType(parts[4].trim()))
-                .date(LocalDate.parse(parts[5].trim()))
-                .duration(Duration.parse(parts[6].trim()))
+                .name(parts[4].trim())
+                .type(new TrainingType(parts[5].trim()))
+                .date(LocalDate.parse(parts[6].trim()))
+                .duration(Duration.parse(parts[7].trim()))
                 .build();
     }
 }
