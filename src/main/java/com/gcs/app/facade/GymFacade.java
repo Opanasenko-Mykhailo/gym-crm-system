@@ -38,11 +38,12 @@ public class GymFacade {
         return traineeMapper.toDto(saved);
     }
 
-    public TraineeDto updateTrainee(Long userId, TraineeDto updatedDto) {
+    public TraineeDto updateTrainee(TraineeDto updatedDto) {
+        Long userId = updatedDto.getUserId();
         log.info("Updating trainee with userId: {}", userId);
 
         Trainee updatedEntity = traineeMapper.toEntity(updatedDto);
-        Trainee updated = traineeService.updateTrainee(userId, updatedEntity);
+        Trainee updated = traineeService.updateTrainee(updatedEntity);
 
         return traineeMapper.toDto(updated);
     }
@@ -68,11 +69,12 @@ public class GymFacade {
         return trainerMapper.toDto(saved);
     }
 
-    public TrainerDto updateTrainer(Long userId, TrainerDto updatedDto) {
+    public TrainerDto updateTrainer(TrainerDto updatedDto) {
+        Long userId =updatedDto.getUserId();
         log.info("Updating trainer with userId: {}", userId);
 
         Trainer updatedEntity = trainerMapper.toEntity(updatedDto);
-        Trainer updated = trainerService.updateTrainer(userId, updatedEntity);
+        Trainer updated = trainerService.updateTrainer(updatedEntity);
 
         return trainerMapper.toDto(updated);
     }

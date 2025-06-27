@@ -35,7 +35,8 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public Trainer updateTrainer(Long userId, Trainer updatedTrainer) {
+    public Trainer updateTrainer(Trainer updatedTrainer) {
+        Long userId = updatedTrainer.getUserId();
         log.info("Updating trainer with userId: {}", userId);
 
         validateTrainerExists(userId);

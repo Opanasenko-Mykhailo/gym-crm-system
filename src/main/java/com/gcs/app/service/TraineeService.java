@@ -4,7 +4,7 @@ import com.gcs.app.model.Trainee;
 
 public interface TraineeService {
     Trainee createTrainee(Trainee trainee);
-    Trainee updateTrainee(Long userId, Trainee updatedTrainee);
+    Trainee updateTrainee(Trainee updatedTrainee);
     void deleteTrainee(Long userId);
     Trainee getTrainee(Long userId);
 }

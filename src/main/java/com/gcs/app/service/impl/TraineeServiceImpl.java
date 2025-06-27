@@ -35,7 +35,8 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public Trainee updateTrainee(Long userId, Trainee updatedTrainee) {
+    public Trainee updateTrainee(Trainee updatedTrainee) {
+        Long userId = updatedTrainee.getUserId();
         log.info("Updating trainee with userId: {}", userId);
 
         validateTraineeExists(userId);
