@@ -1,7 +1,9 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainingDao;
+import com.gcs.app.dto.TrainingCreateRequestDto;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Training;
 import com.gcs.app.service.TrainingService;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +18,11 @@ import java.util.Optional;
 public class TrainingServiceImpl implements TrainingService {
 
     private final TrainingDao trainingDao;
+    private final TrainingMapper trainingMapper;
 
     @Override
-    public Training createTraining(Training training) {
+    public Training createTraining(TrainingCreateRequestDto createRequestDto) {
+        Training training = trainingMapper.toEntity(createRequestDto);
         log.info("Creating training: {}", training.getName());
 
         Training createdTraining = trainingDao.create(training);

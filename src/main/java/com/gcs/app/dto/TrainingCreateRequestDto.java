@@ -7,8 +7,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 
 @Data
-public class TrainingDto {
-    private Long id;
+public class TrainingCreateRequestDto {
     private Long traineeId;
     private Long trainerId;
     private String name;

@@ -1,7 +1,10 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.dto.TraineeCreateRequestDto;
+import com.gcs.app.dto.TraineeUpdateRequestDto;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.service.TraineeService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +22,11 @@ import static com.gcs.app.util.UserUtils.generateUsername;
 public class TraineeServiceImpl implements TraineeService {
 
     private final TraineeDao traineeDao;
+    private final TraineeMapper traineeMapper;
 
     @Override
-    public Trainee createTrainee(Trainee trainee) {
+    public Trainee createTrainee(TraineeCreateRequestDto traineeCreateRequestDto) {
+        Trainee trainee = traineeMapper.toEntity(traineeCreateRequestDto);
         log.info("Creating trainee: {} {}", trainee.getFirstName(), trainee.getLastName());
 
         trainee.setUsername(generateUsername(trainee.getFirstName(), trainee.getLastName(), traineeDao.getAllUsernames()));
@@ -35,7 +40,9 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public Trainee updateTrainee(Trainee updatedTrainee) {
+    public Trainee updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
+        Trainee updatedTrainee = traineeMapper.toUpdateEntity(traineeUpdateRequestDto);
+
         Long userId = updatedTrainee.getUserId();
         log.info("Updating trainee with userId: {}", userId);
 

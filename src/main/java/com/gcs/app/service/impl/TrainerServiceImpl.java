@@ -1,7 +1,10 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.dto.TrainerCreateRequestDto;
+import com.gcs.app.dto.TrainerUpdateRequestDto;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.service.TrainerService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +22,11 @@ import static com.gcs.app.util.UserUtils.generateUsername;
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerDao trainerDao;
+    private final TrainerMapper trainerMapper;
 
     @Override
-    public Trainer createTrainer(Trainer trainer) {
+    public Trainer createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
+        Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
         log.info("Creating trainer: {} {}", trainer.getFirstName(), trainer.getLastName());
 
         trainer.setUsername(generateUsername(trainer.getFirstName(), trainer.getLastName(), trainerDao.getAllUsernames()));
@@ -35,7 +40,9 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public Trainer updateTrainer(Trainer updatedTrainer) {
+    public Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
+        Trainer updatedTrainer = trainerMapper.toUpdateEntity(trainerUpdateRequestDto);
+
         Long userId = updatedTrainer.getUserId();
         log.info("Updating trainer with userId: {}", userId);
 
