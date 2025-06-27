@@ -2,11 +2,13 @@ package com.gcs.app.dao;
 
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
+import com.gcs.app.model.enums.EntityType;
 import com.gcs.app.storage.InMemoryStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,8 +23,12 @@ public class UserDao {
 
     public Set<String> getAllUsernames() {
         return Stream.concat(
-                storage.getNamespace(TRAINEE).values().stream().map(trainee -> ((Trainee) trainee).getUsername()),
-                storage.getNamespace(TRAINER).values().stream().map(trainer -> ((Trainer) trainer).getUsername())
+                getUsernamesFromNamespace(TRAINEE, trainee -> ((Trainee) trainee).getUsername()),
+                getUsernamesFromNamespace(TRAINER, trainer -> ((Trainer) trainer).getUsername())
         ).collect(Collectors.toSet());
+    }
+
+    private Stream<String> getUsernamesFromNamespace(EntityType type, Function<Object, String> usernameMapper) {
+        return storage.getNamespace(type).values().stream().map(usernameMapper);
     }
 }

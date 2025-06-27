@@ -1,5 +1,12 @@
 package com.gcs.app.facade;
 
+
+import com.gcs.app.dto.TraineeDto;
+import com.gcs.app.dto.TrainerDto;
+import com.gcs.app.dto.TrainingDto;
+import com.gcs.app.mapper.TraineeMapper;
+import com.gcs.app.mapper.TrainerMapper;
+import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
@@ -18,17 +25,26 @@ public class GymFacade {
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
+    private final TraineeMapper traineeMapper;
+    private final TrainerMapper trainerMapper;
+    private final TrainingMapper trainingMapper;
 
-    public Trainee createTrainee(Trainee trainee) {
-        log.info("Creating trainee: {} {}", trainee.getFirstName(), trainee.getLastName());
+    public TraineeDto createTrainee(TraineeDto traineeDto) {
+        log.info("Creating trainee: {} {}", traineeDto.getFirstName(), traineeDto.getLastName());
 
-        return traineeService.createTrainee(trainee);
+        Trainee trainee = traineeMapper.toEntity(traineeDto);
+        Trainee saved = traineeService.createTrainee(trainee);
+
+        return traineeMapper.toDto(saved);
     }
 
-    public Trainee updateTrainee(Long userId, Trainee updatedTrainee) {
+    public TraineeDto updateTrainee(Long userId, TraineeDto updatedDto) {
         log.info("Updating trainee with userId: {}", userId);
 
-        return traineeService.updateTrainee(userId, updatedTrainee);
+        Trainee updatedEntity = traineeMapper.toEntity(updatedDto);
+        Trainee updated = traineeService.updateTrainee(userId, updatedEntity);
+
+        return traineeMapper.toDto(updated);
     }
 
     public void deleteTrainee(Long userId) {
@@ -37,39 +53,48 @@ public class GymFacade {
         traineeService.deleteTrainee(userId);
     }
 
-    public Trainee getTrainee(Long userId) {
+    public TraineeDto getTrainee(Long userId) {
         log.info("Retrieving trainee with userId: {}", userId);
 
-        return traineeService.getTrainee(userId);
+        return traineeMapper.toDto(traineeService.getTrainee(userId));
     }
 
-    public Trainer createTrainer(Trainer trainer) {
-        log.info("Creating trainer: {} {}", trainer.getFirstName(), trainer.getLastName());
+    public TrainerDto createTrainer(TrainerDto trainerDto) {
+        log.info("Creating trainer: {} {}", trainerDto.getFirstName(), trainerDto.getLastName());
 
-        return trainerService.createTrainer(trainer);
+        Trainer trainer = trainerMapper.toEntity(trainerDto);
+        Trainer saved = trainerService.createTrainer(trainer);
+
+        return trainerMapper.toDto(saved);
     }
 
-    public Trainer updateTrainer(Long userId, Trainer updatedTrainer) {
+    public TrainerDto updateTrainer(Long userId, TrainerDto updatedDto) {
         log.info("Updating trainer with userId: {}", userId);
 
-        return trainerService.updateTrainer(userId, updatedTrainer);
+        Trainer updatedEntity = trainerMapper.toEntity(updatedDto);
+        Trainer updated = trainerService.updateTrainer(userId, updatedEntity);
+
+        return trainerMapper.toDto(updated);
     }
 
-    public Trainer getTrainer(Long userId) {
+    public TrainerDto getTrainer(Long userId) {
         log.info("Retrieving trainer with userId: {}", userId);
 
-        return trainerService.getTrainer(userId);
+        return trainerMapper.toDto(trainerService.getTrainer(userId));
     }
 
-    public Training createTraining(Training training) {
-        log.info("Creating training: {}", training.getName());
+    public TrainingDto createTraining(TrainingDto trainingDto) {
+        log.info("Creating training: {}", trainingDto.getName());
 
-        return trainingService.createTraining(training);
+        Training training = trainingMapper.toEntity(trainingDto);
+        Training saved = trainingService.createTraining(training);
+
+        return trainingMapper.toDto(saved);
     }
 
-    public Training getTraining(Long id) {
+    public TrainingDto getTraining(Long id) {
         log.info("Retrieving training with id: {}", id);
 
-        return trainingService.getTraining(id);
+        return trainingMapper.toDto(trainingService.getTraining(id));
     }
 }
