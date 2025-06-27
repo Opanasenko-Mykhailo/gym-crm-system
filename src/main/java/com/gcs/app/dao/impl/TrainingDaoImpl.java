@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import static com.gcs.app.model.enums.EntityType.TRAINING;
@@ -36,13 +35,5 @@ public class TrainingDaoImpl implements TrainingDao {
         log.debug("Retrieved training with id: {}, found: {}", id, training.isPresent());
 
         return training;
-    }
-
-    @Override
-    public List<Training> getAll() {
-        List<Training> trainings = storage.getAll(TRAINING);
-        log.debug("Retrieved {} trainings", trainings.size());
-
-        return trainings;
     }
 }
