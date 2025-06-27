@@ -24,11 +24,14 @@ public class UserDao {
     public Set<String> getAllUsernames() {
         return Stream.concat(
                 getUsernamesFromNamespace(TRAINEE, trainee -> ((Trainee) trainee).getUsername()),
-                getUsernamesFromNamespace(TRAINER, trainer -> ((Trainer) trainer).getUsername())
-        ).collect(Collectors.toSet());
+                getUsernamesFromNamespace(TRAINER, trainer -> ((Trainer) trainer).getUsername()))
+                .collect(Collectors.toSet());
     }
 
     private Stream<String> getUsernamesFromNamespace(EntityType type, Function<Object, String> usernameMapper) {
-        return storage.getNamespace(type).values().stream().map(usernameMapper);
+        return storage.getNamespace(type)
+                .values()
+                .stream()
+                .map(usernameMapper);
     }
 }
