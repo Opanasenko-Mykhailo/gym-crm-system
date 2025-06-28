@@ -1,4 +1,4 @@
-package com.gcs.app.dto;
+package com.gcs.app.facade.dto;
 
 import lombok.Data;
 

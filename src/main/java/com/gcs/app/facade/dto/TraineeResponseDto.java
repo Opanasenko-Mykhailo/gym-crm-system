@@ -1,14 +1,16 @@
-package com.gcs.app.dto;
+package com.gcs.app.facade.dto;
 
-import com.gcs.app.model.TrainingType;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
-public class TrainerResponseDto {
+public class TraineeResponseDto {
     private Long userId;
     private String firstName;
     private String lastName;
     private String username;
     private Boolean isActive;
-    private TrainingType specialization;
+    private LocalDate dateOfBirth;
+    private String address;
 }

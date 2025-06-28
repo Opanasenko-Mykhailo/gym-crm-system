@@ -1,6 +1,6 @@
 package com.gcs.app.service;
 
-import com.gcs.app.dto.TrainingCreateRequestDto;
+import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.model.Training;
 
 public interface TrainingService {

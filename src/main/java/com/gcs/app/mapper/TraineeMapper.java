@@ -1,8 +1,8 @@
 package com.gcs.app.mapper;
 
-import com.gcs.app.dto.TraineeCreateRequestDto;
-import com.gcs.app.dto.TraineeResponseDto;
-import com.gcs.app.dto.TraineeUpdateRequestDto;
+import com.gcs.app.facade.dto.TraineeCreateRequestDto;
+import com.gcs.app.facade.dto.TraineeResponseDto;
+import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.model.Trainee;
 import org.mapstruct.Mapper;
 

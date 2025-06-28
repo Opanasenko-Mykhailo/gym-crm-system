@@ -1,7 +1,7 @@
 package com.gcs.app.service;
 
-import com.gcs.app.dto.TraineeCreateRequestDto;
-import com.gcs.app.dto.TraineeUpdateRequestDto;
+import com.gcs.app.facade.dto.TraineeCreateRequestDto;
+import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.model.Trainee;
 
 public interface TraineeService {

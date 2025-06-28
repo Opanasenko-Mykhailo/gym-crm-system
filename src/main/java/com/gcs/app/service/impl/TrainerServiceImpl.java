@@ -1,8 +1,8 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainerDao;
-import com.gcs.app.dto.TrainerCreateRequestDto;
-import com.gcs.app.dto.TrainerUpdateRequestDto;
+import com.gcs.app.facade.dto.TrainerCreateRequestDto;
+import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
@@ -29,8 +29,11 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
         log.info("Creating trainer: {} {}", trainer.getFirstName(), trainer.getLastName());
 
-        trainer.setUsername(generateUsername(trainer.getFirstName(), trainer.getLastName(), trainerDao.getAllUsernames()));
-        trainer.setPassword(generateRandomPassword());
+        String username = generateUsername(trainer.getFirstName(), trainer.getLastName(), trainerDao.getAllUsernames());
+        String password = generateRandomPassword();
+
+        trainer.setUsername(username);
+        trainer.setPassword(password);
         trainer.setIsActive(true);
 
         Trainer createdTrainer = trainerDao.create(trainer);
@@ -49,7 +52,6 @@ public class TrainerServiceImpl implements TrainerService {
         validateTrainerExists(userId);
 
         updatedTrainer.setUserId(userId);
-        updatedTrainer.setUsername(generateUsername(updatedTrainer.getFirstName(), updatedTrainer.getLastName(), trainerDao.getAllUsernames()));
 
         Trainer savedTrainer = trainerDao.update(updatedTrainer);
         log.debug("Trainer updated: {}", savedTrainer);

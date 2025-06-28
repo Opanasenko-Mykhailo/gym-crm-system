@@ -1,6 +1,14 @@
 package com.gcs.app.facade;
 
 import com.gcs.app.dto.*;
+import com.gcs.app.facade.dto.TraineeCreateRequestDto;
+import com.gcs.app.facade.dto.TraineeResponseDto;
+import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
+import com.gcs.app.facade.dto.TrainerCreateRequestDto;
+import com.gcs.app.facade.dto.TrainerResponseDto;
+import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
+import com.gcs.app.facade.dto.TrainingCreateRequestDto;
+import com.gcs.app.facade.dto.TrainingResponseDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.mapper.TrainingMapper;

@@ -1,7 +1,7 @@
 package com.gcs.app.service;
 
-import com.gcs.app.dto.TrainerCreateRequestDto;
-import com.gcs.app.dto.TrainerUpdateRequestDto;
+import com.gcs.app.facade.dto.TrainerCreateRequestDto;
+import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.model.Trainer;
 
 public interface TrainerService {

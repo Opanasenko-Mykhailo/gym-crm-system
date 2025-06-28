@@ -1,8 +1,8 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
-import com.gcs.app.dto.TraineeCreateRequestDto;
-import com.gcs.app.dto.TraineeUpdateRequestDto;
+import com.gcs.app.facade.dto.TraineeCreateRequestDto;
+import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
@@ -25,12 +25,16 @@ public class TraineeServiceImpl implements TraineeService {
     private final TraineeMapper traineeMapper;
 
     @Override
-    public Trainee createTrainee(TraineeCreateRequestDto traineeCreateRequestDto) {
-        Trainee trainee = traineeMapper.toEntity(traineeCreateRequestDto);
+    public Trainee createTrainee(TraineeCreateRequestDto requestDto) {
+        Trainee trainee = traineeMapper.toEntity(requestDto);
+
         log.info("Creating trainee: {} {}", trainee.getFirstName(), trainee.getLastName());
 
-        trainee.setUsername(generateUsername(trainee.getFirstName(), trainee.getLastName(), traineeDao.getAllUsernames()));
-        trainee.setPassword(generateRandomPassword());
+        String username = generateUsername(trainee.getFirstName(), trainee.getLastName(), traineeDao.getAllUsernames());
+        String password = generateRandomPassword();
+
+        trainee.setUsername(username);
+        trainee.setPassword(password);
         trainee.setIsActive(true);
 
         Trainee createdTrainee = traineeDao.create(trainee);
@@ -38,6 +42,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         return createdTrainee;
     }
+
 
     @Override
     public Trainee updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
@@ -49,7 +54,6 @@ public class TraineeServiceImpl implements TraineeService {
         validateTraineeExists(userId);
 
         updatedTrainee.setUserId(userId);
-        updatedTrainee.setUsername(generateUsername(updatedTrainee.getFirstName(), updatedTrainee.getLastName(), traineeDao.getAllUsernames()));
 
         Trainee savedTrainee = traineeDao.update(updatedTrainee);
         log.debug("Trainee updated: {}", savedTrainee);
