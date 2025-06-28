@@ -1,13 +1,13 @@
 package com.gcs.app.util;
 
-import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class UserUtils {
 
     private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    public static String generateUsername(String firstName, String lastName, List<String> existUsernames) {
+    public static String generateUsername(String firstName, String lastName, Set<String> existUsernames) {
         String baseUsername = firstName + "." + lastName;
         String username = baseUsername;
         int suffix = 1;
@@ -19,8 +19,8 @@ public class UserUtils {
         return username;
     }
 
-    private static boolean isUsernameExists(String username, List<String> existUsernames) {
-        if (existUsernames.isEmpty()){
+    private static boolean isUsernameExists(String username, Set<String> existUsernames) {
+        if (existUsernames.isEmpty()) {
             return false;
         }
         return existUsernames.stream()

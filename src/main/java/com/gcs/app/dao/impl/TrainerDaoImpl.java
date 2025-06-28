@@ -1,10 +1,10 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.storage.InMemoryStorage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -15,10 +15,11 @@ import static com.gcs.app.model.enums.EntityType.TRAINER;
 
 @Repository
 @Slf4j
-@RequiredArgsConstructor
-public class TrainerDaoImpl implements TrainerDao {
+public class TrainerDaoImpl extends UserDao implements TrainerDao {
 
-    private final InMemoryStorage storage;
+    public TrainerDaoImpl(InMemoryStorage storage) {
+        super(storage);
+    }
 
     @Override
     public Trainer create(Trainer trainer) {
@@ -46,13 +47,5 @@ public class TrainerDaoImpl implements TrainerDao {
         log.info("Updated trainer with userId: {}", userId);
 
         return trainer;
-    }
-
-    @Override
-    public List<Trainer> getAll() {
-        List<Trainer> trainers = storage.getAll(TRAINER);
-        log.debug("Retrieved {} trainers", trainers.size());
-
-        return trainers;
     }
 }

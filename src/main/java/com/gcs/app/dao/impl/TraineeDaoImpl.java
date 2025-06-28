@@ -1,24 +1,24 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.storage.InMemoryStorage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import static com.gcs.app.model.enums.EntityType.TRAINEE;
 
 @Repository
 @Slf4j
-@RequiredArgsConstructor
-public class TraineeDaoImpl implements TraineeDao {
+public class TraineeDaoImpl extends UserDao implements TraineeDao {
 
-    private final InMemoryStorage storage;
+    public TraineeDaoImpl(InMemoryStorage storage) {
+        super(storage);
+    }
 
     @Override
     public Trainee create(Trainee trainee) {
@@ -58,13 +58,5 @@ public class TraineeDaoImpl implements TraineeDao {
 
         storage.getNamespace(TRAINEE).remove(userId);
         log.info("Deleted trainee with userId: {}", userId);
-    }
-
-    @Override
-    public List<Trainee> getAll() {
-        List<Trainee> trainees = storage.getAll(TRAINEE);
-        log.debug("Retrieved {} trainees", trainees.size());
-
-        return trainees;
     }
 }
