@@ -23,9 +23,9 @@ public class TraineeDaoImpl extends UserDao implements TraineeDao {
     @Override
     public Trainee create(Trainee trainee) {
         Long userId = storage.nextId();
-        trainee.toBuilder().userId(userId).build();
+        Trainee traineeWithId = trainee.toBuilder().userId(userId).build();
 
-        storage.put(TRAINEE, userId, trainee);
+        storage.put(TRAINEE, userId, traineeWithId);
         log.info("Created trainee with userId: {}", userId);
 
         return trainee;

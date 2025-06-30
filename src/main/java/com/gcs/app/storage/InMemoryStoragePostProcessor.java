@@ -55,18 +55,18 @@ public class InMemoryStoragePostProcessor implements BeanPostProcessor, Applicat
             switch (entityType) {
                 case TRAINEE -> {
                     Trainee trainee = (Trainee) entity;
-                    trainee.toBuilder().userId(id).build();
-                    inMemoryStorage.put(entityType, id, trainee);
+                    Trainee traineeWithId = trainee.toBuilder().userId(id).build();
+                    inMemoryStorage.put(entityType, id, traineeWithId);
                 }
                 case TRAINER -> {
                     Trainer trainer = (Trainer) entity;
-                    trainer.toBuilder().userId(id).build();
-                    inMemoryStorage.put(entityType, id, trainer);
+                    Trainer trainerWithId = trainer.toBuilder().userId(id).build();
+                    inMemoryStorage.put(entityType, id, trainerWithId);
                 }
                 case TRAINING -> {
                     Training training = (Training) entity;
-                    training.toBuilder().id(id).build();
-                    inMemoryStorage.put(entityType, id, training);
+                    Training trainingWithId = training.toBuilder().id(id).build();
+                    inMemoryStorage.put(entityType, id, trainingWithId);
                 }
                 default -> log.warn("Unknown EntityType: {}", entityType);
             }
