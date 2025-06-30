@@ -21,9 +21,10 @@ import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class GymFacadeTest {
 
     private static final Long TRAINEE_ID = 1L;
@@ -88,7 +90,6 @@ class GymFacadeTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         trainee = buildTrainee();
         trainer = buildTrainer();
         training = buildTraining();

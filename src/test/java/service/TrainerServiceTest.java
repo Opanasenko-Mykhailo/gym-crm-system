@@ -10,9 +10,10 @@ import com.gcs.app.model.TrainingType;
 import com.gcs.app.service.impl.TrainerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TrainerServiceTest {
 
     private static final Long USER_ID = 1L;
@@ -48,7 +50,6 @@ class TrainerServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         expected = buildTrainer();
         createRequestDto = buildCreateRequestDto();
         updateRequestDto = buildUpdateRequestDto();

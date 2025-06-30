@@ -7,9 +7,10 @@ import com.gcs.app.model.TrainingType;
 import com.gcs.app.storage.InMemoryStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TrainerDaoTest {
 
     private static final Long USER_ID = 1L;
@@ -45,7 +47,6 @@ class TrainerDaoTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         expected = buildTrainer();
     }
 
@@ -64,7 +65,6 @@ class TrainerDaoTest {
     @Test
     void create_assignsUserIdAndStoresTrainer_returnsTrainer() {
         when(storage.nextId()).thenReturn(USER_ID);
-        when(storage.getNamespace(TRAINER)).thenReturn(trainerNamespace);
 
         Trainer actual = dao.create(expected);
 
@@ -109,7 +109,6 @@ class TrainerDaoTest {
     @Test
     void update_whenTrainerExists_updatesAndReturnsTrainer() {
         when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.of(expected));
-        when(storage.getNamespace(TRAINER)).thenReturn(trainerNamespace);
 
         Trainer actual = dao.update(expected);
 

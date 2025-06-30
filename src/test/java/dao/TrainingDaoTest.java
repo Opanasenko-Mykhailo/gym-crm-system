@@ -6,9 +6,10 @@ import com.gcs.app.model.TrainingType;
 import com.gcs.app.storage.InMemoryStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TrainingDaoTest {
 
     private static final Long ID = 1L;
@@ -45,7 +47,6 @@ class TrainingDaoTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         expected = buildTraining();
     }
 
@@ -64,7 +65,6 @@ class TrainingDaoTest {
     @Test
     void create_assignsIdAndStoresTraining_returnsTraining() {
         when(storage.nextId()).thenReturn(ID);
-        when(storage.getNamespace(TRAINING)).thenReturn(trainingNamespace);
 
         Training actual = dao.create(expected);
 

@@ -9,9 +9,10 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.service.impl.TraineeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TraineeServiceTest {
 
     private static final Long USER_ID = 1L;
@@ -49,7 +51,6 @@ class TraineeServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         expected = buildTrainee();
         createRequestDto = buildCreateRequestDto();
         updateRequestDto = buildUpdateRequestDto();
