@@ -1,4 +1,4 @@
-package service.impl;
+package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.exception.ServiceException;
@@ -6,7 +6,6 @@ import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
-import com.gcs.app.service.impl.TraineeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

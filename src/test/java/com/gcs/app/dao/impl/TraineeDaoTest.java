@@ -1,6 +1,5 @@
-package dao.impl;
+package com.gcs.app.dao.impl;
 
-import com.gcs.app.dao.impl.TraineeDaoImpl;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.storage.InMemoryStorage;

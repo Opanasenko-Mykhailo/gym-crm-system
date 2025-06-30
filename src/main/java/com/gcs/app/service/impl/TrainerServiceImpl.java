@@ -32,9 +32,11 @@ public class TrainerServiceImpl implements TrainerService {
         String username = generateUsername(trainer.getFirstName(), trainer.getLastName(), trainerDao.getAllUsernames());
         String password = generateRandomPassword();
 
-        trainer.setUsername(username);
-        trainer.setPassword(password);
-        trainer.setIsActive(true);
+        trainer.toBuilder()
+                .username(username)
+                .password(password)
+                .isActive(true)
+                .build();
 
         Trainer createdTrainer = trainerDao.create(trainer);
         log.debug("Trainer created: {}", createdTrainer);
@@ -51,7 +53,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         validateTrainerExists(userId);
 
-        updatedTrainer.setUserId(userId);
+        updatedTrainer.toBuilder().userId(userId).build();
 
         Trainer savedTrainer = trainerDao.update(updatedTrainer);
         log.debug("Trainer updated: {}", savedTrainer);

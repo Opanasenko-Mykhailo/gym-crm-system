@@ -1,6 +1,5 @@
-package dao.impl;
+package com.gcs.app.dao.impl;
 
-import com.gcs.app.dao.impl.TrainerDaoImpl;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
@@ -12,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
 import java.util.Optional;
 
 import static com.gcs.app.model.enums.EntityType.TRAINER;
@@ -36,9 +34,6 @@ class TrainerDaoTest {
 
     @Mock
     private InMemoryStorage storage;
-
-    @Mock
-    private Map<Long, Object> trainerNamespace;
 
     @InjectMocks
     private TrainerDaoImpl dao;

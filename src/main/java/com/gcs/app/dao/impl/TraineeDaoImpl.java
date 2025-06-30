@@ -23,7 +23,7 @@ public class TraineeDaoImpl extends UserDao implements TraineeDao {
     @Override
     public Trainee create(Trainee trainee) {
         Long userId = storage.nextId();
-        trainee.setUserId(userId);
+        trainee.toBuilder().userId(userId).build();
 
         storage.put(TRAINEE, userId, trainee);
         log.info("Created trainee with userId: {}", userId);

@@ -21,7 +21,7 @@ public class TrainingDaoImpl implements TrainingDao {
     @Override
     public Training create(Training training) {
         Long id = storage.nextId();
-        training.setId(id);
+        training.toBuilder().trainerId(id).build();
 
         storage.put(TRAINING, id, training);
         log.info("Created training with id: {}", id);

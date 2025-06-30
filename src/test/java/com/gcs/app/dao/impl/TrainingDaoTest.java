@@ -1,6 +1,5 @@
-package dao.impl;
+package com.gcs.app.dao.impl;
 
-import com.gcs.app.dao.impl.TrainingDaoImpl;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.storage.InMemoryStorage;
@@ -13,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.gcs.app.model.enums.EntityType.TRAINING;
@@ -36,9 +34,6 @@ class TrainingDaoTest {
 
     @Mock
     private InMemoryStorage storage;
-
-    @Mock
-    private Map<Long, Object> trainingNamespace;
 
     @InjectMocks
     private TrainingDaoImpl dao;

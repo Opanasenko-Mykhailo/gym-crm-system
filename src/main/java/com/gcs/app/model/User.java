@@ -1,18 +1,21 @@
 package com.gcs.app.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-@Data
-@NoArgsConstructor
+@ToString
+@Getter
 @AllArgsConstructor
-@SuperBuilder
+@NoArgsConstructor(force = true)
+@SuperBuilder(toBuilder = true)
 public class User {
-    private String firstName;
-    private String lastName;
-    private String username;
-    private String password;
-    private Boolean isActive;
+    private final String firstName;
+    private final String lastName;
+    private final String username;
+    @ToString.Exclude
+    private final String password;
+    private final Boolean isActive;
 }

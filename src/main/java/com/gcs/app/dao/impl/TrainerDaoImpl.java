@@ -24,7 +24,8 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
     @Override
     public Trainer create(Trainer trainer) {
         Long userId = storage.nextId();
-        trainer.setUserId(userId);
+        trainer.toBuilder().userId(userId).build();
+
         storage.put(TRAINER, userId, trainer);
         log.info("Created trainer with userId: {}", userId);
 
