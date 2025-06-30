@@ -46,13 +46,16 @@ class UserUtilsTest {
         String lastName = "";
         Set<String> existingUsernames = Collections.emptySet();
         String expected = ".";
+
         String actual = UserUtils.generateUsername(firstName, lastName, existingUsernames);
+
         assertEquals(expected, actual);
     }
 
     @Test
     void generateRandomPassword_returnsTenCharacterPassword() {
         String actual = UserUtils.generateRandomPassword();
+
         assertEquals(10, actual.length());
         assertTrue(actual.chars().allMatch(c -> CHARS.indexOf(c) >= 0), "Password should only contain characters from CHARS");
     }

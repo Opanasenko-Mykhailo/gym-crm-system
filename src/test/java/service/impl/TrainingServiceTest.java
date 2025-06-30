@@ -91,8 +91,8 @@ class TrainingServiceTest {
         when(trainingDao.get(ID)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getTraining(ID));
-        assertEquals("Training with id 1 not found", ex.getMessage());
 
+        assertEquals("Training with id 1 not found", ex.getMessage());
         verify(trainingDao).get(ID);
     }
 

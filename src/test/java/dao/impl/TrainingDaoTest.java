@@ -73,6 +73,7 @@ class TrainingDaoTest {
         when(storage.getById(TRAINING, ID)).thenReturn(Optional.of(expected));
 
         Optional<Training> actual = dao.get(ID);
+
         assertTrue(actual.isPresent());
         assertEquals(TRAINEE_ID, actual.get().getTraineeId());
         assertEquals(TRAINER_ID, actual.get().getTrainerId());
@@ -89,8 +90,8 @@ class TrainingDaoTest {
         when(storage.getById(TRAINING, ID)).thenReturn(Optional.empty());
 
         Optional<Training> actual = dao.get(ID);
-        assertFalse(actual.isPresent());
 
+        assertFalse(actual.isPresent());
         verify(storage).getById(TRAINING, ID);
     }
 

@@ -75,6 +75,7 @@ class TraineeDaoTest {
         when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.of(expected));
 
         Optional<Trainee> actual = dao.get(USER_ID);
+
         assertTrue(actual.isPresent());
         assertEquals(FIRST_NAME, actual.get().getFirstName());
         assertEquals(LAST_NAME, actual.get().getLastName());
@@ -88,8 +89,8 @@ class TraineeDaoTest {
         when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
 
         Optional<Trainee> actual = dao.get(USER_ID);
-        assertFalse(actual.isPresent());
 
+        assertFalse(actual.isPresent());
         verify(storage).getById(TRAINEE, USER_ID);
     }
 
@@ -112,8 +113,8 @@ class TraineeDaoTest {
         when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(expected));
-        assertEquals("Trainee with userId: 1 not found", ex.getMessage());
 
+        assertEquals("Trainee with userId: 1 not found", ex.getMessage());
         verify(storage).getById(TRAINEE, USER_ID);
         verify(storage, never()).put(TRAINEE, USER_ID, expected);
     }
@@ -134,8 +135,8 @@ class TraineeDaoTest {
         when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.delete(USER_ID));
-        assertEquals("Trainee with userId: 1 not found", ex.getMessage());
 
+        assertEquals("Trainee with userId: 1 not found", ex.getMessage());
         verify(storage).getById(TRAINEE, USER_ID);
         verify(storage, never()).getNamespace(TRAINEE);
     }

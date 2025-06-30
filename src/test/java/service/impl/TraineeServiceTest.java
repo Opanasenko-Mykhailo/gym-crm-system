@@ -63,6 +63,7 @@ class TraineeServiceTest {
         when(traineeDao.create(expected)).thenReturn(expected);
 
         Trainee actual = service.createTrainee(createRequestDto);
+
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());
@@ -82,6 +83,7 @@ class TraineeServiceTest {
         when(traineeDao.update(expected)).thenReturn(expected);
 
         Trainee actual = service.updateTrainee(updateRequestDto);
+
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());
@@ -101,8 +103,8 @@ class TraineeServiceTest {
         when(traineeDao.get(USER_ID)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainee(updateRequestDto));
-        assertEquals("Trainee with userId 1 not found", ex.getMessage());
 
+        assertEquals("Trainee with userId 1 not found", ex.getMessage());
         verify(traineeMapper).toUpdateEntity(updateRequestDto);
         verify(traineeDao).get(USER_ID);
         verify(traineeDao, times(0)).update(expected);
@@ -123,8 +125,8 @@ class TraineeServiceTest {
         when(traineeDao.get(USER_ID)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.deleteTrainee(USER_ID));
-        assertEquals("Trainee with userId 1 not found", ex.getMessage());
 
+        assertEquals("Trainee with userId 1 not found", ex.getMessage());
         verify(traineeDao).get(USER_ID);
         verify(traineeDao, times(0)).delete(USER_ID);
     }
@@ -134,6 +136,7 @@ class TraineeServiceTest {
         when(traineeDao.get(USER_ID)).thenReturn(Optional.of(expected));
 
         Trainee actual = service.getTrainee(USER_ID);
+
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());

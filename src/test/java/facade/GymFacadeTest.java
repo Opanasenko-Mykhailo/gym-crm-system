@@ -109,6 +109,7 @@ class GymFacadeTest {
         when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
 
         TraineeResponseDto actual = facade.createTrainee(traineeCreateRequestDto);
+
         assertEquals(TRAINEE_ID, actual.getUserId());
         assertEquals(TRAINEE_FIRST_NAME, actual.getFirstName());
         assertEquals(TRAINEE_LAST_NAME, actual.getLastName());
@@ -127,6 +128,7 @@ class GymFacadeTest {
         when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
 
         TraineeResponseDto actual = facade.updateTrainee(traineeUpdateRequestDto);
+
         assertEquals(TRAINEE_ID, actual.getUserId());
         assertEquals(TRAINEE_FIRST_NAME, actual.getFirstName());
         assertEquals(TRAINEE_LAST_NAME, actual.getLastName());
@@ -142,7 +144,6 @@ class GymFacadeTest {
     @Test
     void deleteTrainee_callsService() {
         facade.deleteTrainee(TRAINEE_ID);
-
         verify(traineeService).deleteTrainee(TRAINEE_ID);
     }
 
@@ -152,6 +153,7 @@ class GymFacadeTest {
         when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
 
         TraineeResponseDto actual = facade.getTrainee(TRAINEE_ID);
+
         assertEquals(TRAINEE_ID, actual.getUserId());
         assertEquals(TRAINEE_FIRST_NAME, actual.getFirstName());
         assertEquals(TRAINEE_LAST_NAME, actual.getLastName());
@@ -170,6 +172,7 @@ class GymFacadeTest {
         when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
         TrainerResponseDto actual = facade.createTrainer(trainerCreateRequestDto);
+
         assertEquals(TRAINER_ID, actual.getUserId());
         assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
         assertEquals(TRAINER_LAST_NAME, actual.getLastName());
@@ -187,6 +190,7 @@ class GymFacadeTest {
         when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
         TrainerResponseDto actual = facade.updateTrainer(trainerUpdateRequestDto);
+
         assertEquals(TRAINER_ID, actual.getUserId());
         assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
         assertEquals(TRAINER_LAST_NAME, actual.getLastName());
@@ -204,6 +208,7 @@ class GymFacadeTest {
         when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
         TrainerResponseDto actual = facade.getTrainer(TRAINER_ID);
+
         assertEquals(TRAINER_ID, actual.getUserId());
         assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
         assertEquals(TRAINER_LAST_NAME, actual.getLastName());
@@ -221,6 +226,7 @@ class GymFacadeTest {
         when(trainingMapper.toDto(training)).thenReturn(expectedTrainingResponse);
 
         TrainingResponseDto actual = facade.createTraining(trainingCreateRequestDto);
+
         assertEquals(TRAINING_ID, actual.getId());
         assertEquals(TRAINEE_ID, actual.getTraineeId());
         assertEquals(TRAINER_ID, actual.getTrainerId());
@@ -239,6 +245,7 @@ class GymFacadeTest {
         when(trainingMapper.toDto(training)).thenReturn(expectedTrainingResponse);
 
         TrainingResponseDto actual = facade.getTraining(TRAINING_ID);
+
         assertEquals(TRAINING_ID, actual.getId());
         assertEquals(TRAINEE_ID, actual.getTraineeId());
         assertEquals(TRAINER_ID, actual.getTrainerId());

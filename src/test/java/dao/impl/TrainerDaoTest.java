@@ -73,6 +73,7 @@ class TrainerDaoTest {
         when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.of(expected));
 
         Optional<Trainer> actual = dao.get(USER_ID);
+
         assertTrue(actual.isPresent());
         assertEquals(FIRST_NAME, actual.get().getFirstName());
         assertEquals(LAST_NAME, actual.get().getLastName());
@@ -87,8 +88,8 @@ class TrainerDaoTest {
         when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.empty());
 
         Optional<Trainer> actual = dao.get(USER_ID);
-        assertFalse(actual.isPresent());
 
+        assertFalse(actual.isPresent());
         verify(storage).getById(TRAINER, USER_ID);
     }
 
@@ -112,8 +113,8 @@ class TrainerDaoTest {
         when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(expected));
-        assertEquals("Trainer with userId: 1 not found", ex.getMessage());
 
+        assertEquals("Trainer with userId: 1 not found", ex.getMessage());
         verify(storage).getById(TRAINER, USER_ID);
         verify(storage, never()).put(TRAINER, USER_ID, expected);
     }
