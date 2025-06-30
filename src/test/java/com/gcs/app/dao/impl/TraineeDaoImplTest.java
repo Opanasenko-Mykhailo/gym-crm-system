@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TraineeDaoTest {
+class TraineeDaoImplTest {
 
     private static final Long USER_ID = 1L;
     private static final String FIRST_NAME = "John";

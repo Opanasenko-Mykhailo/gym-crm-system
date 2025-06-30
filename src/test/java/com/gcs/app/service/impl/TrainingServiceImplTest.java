@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TrainingServiceTest {
+class TrainingServiceImplTest {
 
     private static final Long ID = 1L;
     private static final Long TRAINEE_ID = 2L;
