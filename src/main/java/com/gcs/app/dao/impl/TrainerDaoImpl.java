@@ -28,7 +28,7 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
         storage.put(TRAINER, userId, trainerWithId);
         log.info("Created trainer with userId: {}", userId);
 
-        return trainer;
+        return trainerWithId;
     }
 
     @Override

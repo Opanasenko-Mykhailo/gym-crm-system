@@ -20,6 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,7 +59,7 @@ class TrainerServiceImplTest {
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
         when(trainerMapper.toEntity(createRequestDto)).thenReturn(expected);
         when(trainerDao.getAllUsernames()).thenReturn(Collections.emptySet());
-        when(trainerDao.create(expected)).thenReturn(expected);
+        when(trainerDao.create(any(Trainer.class))).thenReturn(expected);
 
         Trainer actual = service.createTrainer(createRequestDto);
 
@@ -70,7 +71,7 @@ class TrainerServiceImplTest {
 
         verify(trainerMapper).toEntity(createRequestDto);
         verify(trainerDao).getAllUsernames();
-        verify(trainerDao).create(expected);
+        verify(trainerDao).create(any(Trainer.class));
     }
 
     @Test

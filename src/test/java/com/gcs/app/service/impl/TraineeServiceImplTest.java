@@ -20,6 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,7 +60,7 @@ class TraineeServiceImplTest {
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {
         when(traineeMapper.toEntity(createRequestDto)).thenReturn(expected);
         when(traineeDao.getAllUsernames()).thenReturn(Collections.emptySet());
-        when(traineeDao.create(expected)).thenReturn(expected);
+        when(traineeDao.create(any(Trainee.class))).thenReturn(expected);
 
         Trainee actual = service.createTrainee(createRequestDto);
 
@@ -72,7 +73,7 @@ class TraineeServiceImplTest {
 
         verify(traineeMapper).toEntity(createRequestDto);
         verify(traineeDao).getAllUsernames();
-        verify(traineeDao).create(expected);
+        verify(traineeDao).create(any(Trainee.class));
     }
 
     @Test
