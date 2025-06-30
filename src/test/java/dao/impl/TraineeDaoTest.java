@@ -1,4 +1,4 @@
-package dao;
+package dao.impl;
 
 import com.gcs.app.dao.impl.TraineeDaoImpl;
 import com.gcs.app.exception.EntityNotFoundException;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,19 +51,6 @@ class TraineeDaoTest {
         expected = buildTrainee();
     }
 
-    private Trainee buildTrainee() {
-        return Trainee.builder()
-                .userId(USER_ID)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .dateOfBirth(DATE_OF_BIRTH)
-                .address(ADDRESS)
-                .build();
-    }
-
     @Test
     void create_assignsUserIdAndStoresTrainee_returnsTrainee() {
         when(storage.nextId()).thenReturn(USER_ID);
@@ -88,7 +75,6 @@ class TraineeDaoTest {
         when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.of(expected));
 
         Optional<Trainee> actual = dao.get(USER_ID);
-
         assertTrue(actual.isPresent());
         assertEquals(FIRST_NAME, actual.get().getFirstName());
         assertEquals(LAST_NAME, actual.get().getLastName());
@@ -102,7 +88,6 @@ class TraineeDaoTest {
         when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
 
         Optional<Trainee> actual = dao.get(USER_ID);
-
         assertFalse(actual.isPresent());
 
         verify(storage).getById(TRAINEE, USER_ID);
@@ -127,11 +112,10 @@ class TraineeDaoTest {
         when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(expected));
-
         assertEquals("Trainee with userId: 1 not found", ex.getMessage());
 
         verify(storage).getById(TRAINEE, USER_ID);
-        verify(storage, times(0)).put(TRAINEE, USER_ID, expected);
+        verify(storage, never()).put(TRAINEE, USER_ID, expected);
     }
 
     @Test
@@ -150,10 +134,22 @@ class TraineeDaoTest {
         when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.delete(USER_ID));
-
         assertEquals("Trainee with userId: 1 not found", ex.getMessage());
 
         verify(storage).getById(TRAINEE, USER_ID);
-        verify(storage, times(0)).getNamespace(TRAINEE);
+        verify(storage, never()).getNamespace(TRAINEE);
+    }
+
+    private Trainee buildTrainee() {
+        return Trainee.builder()
+                .userId(USER_ID)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .dateOfBirth(DATE_OF_BIRTH)
+                .address(ADDRESS)
+                .build();
     }
 }

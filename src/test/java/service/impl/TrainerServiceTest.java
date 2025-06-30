@@ -1,4 +1,4 @@
-package service;
+package service.impl;
 
 import com.gcs.app.dao.TrainerDao;
 import com.gcs.app.exception.ServiceException;
@@ -55,36 +55,6 @@ class TrainerServiceTest {
         updateRequestDto = buildUpdateRequestDto();
     }
 
-    private Trainer buildTrainer() {
-        return Trainer.builder()
-                .userId(USER_ID)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .specialization(new TrainingType(SPECIALIZATION))
-                .build();
-    }
-
-    private TrainerCreateRequestDto buildCreateRequestDto() {
-        TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setSpecialization(new TrainingType(SPECIALIZATION));
-        return dto;
-    }
-
-    private TrainerUpdateRequestDto buildUpdateRequestDto() {
-        TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
-        dto.setUserId(USER_ID);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setSpecialization(new TrainingType(SPECIALIZATION));
-        dto.setIsActive(true);
-        return dto;
-    }
-
     @Test
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
         when(trainerMapper.toEntity(createRequestDto)).thenReturn(expected);
@@ -92,7 +62,6 @@ class TrainerServiceTest {
         when(trainerDao.create(expected)).thenReturn(expected);
 
         Trainer actual = service.createTrainer(createRequestDto);
-
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());
@@ -111,7 +80,6 @@ class TrainerServiceTest {
         when(trainerDao.update(expected)).thenReturn(expected);
 
         Trainer actual = service.updateTrainer(updateRequestDto);
-
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());
@@ -142,7 +110,6 @@ class TrainerServiceTest {
         when(trainerDao.get(USER_ID)).thenReturn(Optional.of(expected));
 
         Trainer actual = service.getTrainer(USER_ID);
-
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());
@@ -161,5 +128,37 @@ class TrainerServiceTest {
         assertEquals("Trainer with userId 1 not found", ex.getMessage());
 
         verify(trainerDao).get(USER_ID);
+    }
+
+    private Trainer buildTrainer() {
+        return Trainer.builder()
+                .userId(USER_ID)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .specialization(new TrainingType(SPECIALIZATION))
+                .build();
+    }
+
+    private TrainerCreateRequestDto buildCreateRequestDto() {
+        TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+
+        return dto;
+    }
+
+    private TrainerUpdateRequestDto buildUpdateRequestDto() {
+        TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
+        dto.setUserId(USER_ID);
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setIsActive(true);
+
+        return dto;
     }
 }

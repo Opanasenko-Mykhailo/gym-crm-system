@@ -1,4 +1,4 @@
-package dao;
+package dao.impl;
 
 import com.gcs.app.dao.impl.TrainerDaoImpl;
 import com.gcs.app.exception.EntityNotFoundException;
@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,18 +50,6 @@ class TrainerDaoTest {
         expected = buildTrainer();
     }
 
-    private Trainer buildTrainer() {
-        return Trainer.builder()
-                .userId(USER_ID)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .specialization(new TrainingType(SPECIALIZATION))
-                .build();
-    }
-
     @Test
     void create_assignsUserIdAndStoresTrainer_returnsTrainer() {
         when(storage.nextId()).thenReturn(USER_ID);
@@ -85,7 +73,6 @@ class TrainerDaoTest {
         when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.of(expected));
 
         Optional<Trainer> actual = dao.get(USER_ID);
-
         assertTrue(actual.isPresent());
         assertEquals(FIRST_NAME, actual.get().getFirstName());
         assertEquals(LAST_NAME, actual.get().getLastName());
@@ -100,7 +87,6 @@ class TrainerDaoTest {
         when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.empty());
 
         Optional<Trainer> actual = dao.get(USER_ID);
-
         assertFalse(actual.isPresent());
 
         verify(storage).getById(TRAINER, USER_ID);
@@ -129,6 +115,18 @@ class TrainerDaoTest {
         assertEquals("Trainer with userId: 1 not found", ex.getMessage());
 
         verify(storage).getById(TRAINER, USER_ID);
-        verify(storage, times(0)).put(TRAINER, USER_ID, expected);
+        verify(storage, never()).put(TRAINER, USER_ID, expected);
+    }
+
+    private Trainer buildTrainer() {
+        return Trainer.builder()
+                .userId(USER_ID)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .specialization(new TrainingType(SPECIALIZATION))
+                .build();
     }
 }

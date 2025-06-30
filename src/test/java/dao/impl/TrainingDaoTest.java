@@ -1,4 +1,4 @@
-package dao;
+package dao.impl;
 
 import com.gcs.app.dao.impl.TrainingDaoImpl;
 import com.gcs.app.model.Training;
@@ -50,18 +50,6 @@ class TrainingDaoTest {
         expected = buildTraining();
     }
 
-    private Training buildTraining() {
-        return Training.builder()
-                .id(ID)
-                .traineeId(TRAINEE_ID)
-                .trainerId(TRAINER_ID)
-                .name(NAME)
-                .type(new TrainingType(TYPE))
-                .date(DATE)
-                .duration(DURATION)
-                .build();
-    }
-
     @Test
     void create_assignsIdAndStoresTraining_returnsTraining() {
         when(storage.nextId()).thenReturn(ID);
@@ -85,7 +73,6 @@ class TrainingDaoTest {
         when(storage.getById(TRAINING, ID)).thenReturn(Optional.of(expected));
 
         Optional<Training> actual = dao.get(ID);
-
         assertTrue(actual.isPresent());
         assertEquals(TRAINEE_ID, actual.get().getTraineeId());
         assertEquals(TRAINER_ID, actual.get().getTrainerId());
@@ -102,9 +89,20 @@ class TrainingDaoTest {
         when(storage.getById(TRAINING, ID)).thenReturn(Optional.empty());
 
         Optional<Training> actual = dao.get(ID);
-
         assertFalse(actual.isPresent());
 
         verify(storage).getById(TRAINING, ID);
+    }
+
+    private Training buildTraining() {
+        return Training.builder()
+                .id(ID)
+                .traineeId(TRAINEE_ID)
+                .trainerId(TRAINER_ID)
+                .name(NAME)
+                .type(new TrainingType(TYPE))
+                .date(DATE)
+                .duration(DURATION)
+                .build();
     }
 }

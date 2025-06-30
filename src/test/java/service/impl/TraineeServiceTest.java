@@ -1,4 +1,4 @@
-package service;
+package service.impl;
 
 import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.exception.ServiceException;
@@ -56,39 +56,6 @@ class TraineeServiceTest {
         updateRequestDto = buildUpdateRequestDto();
     }
 
-    private Trainee buildTrainee() {
-        return Trainee.builder()
-                .userId(USER_ID)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .dateOfBirth(DATE_OF_BIRTH)
-                .address(ADDRESS)
-                .build();
-    }
-
-    private TraineeCreateRequestDto buildCreateRequestDto() {
-        TraineeCreateRequestDto dto = new TraineeCreateRequestDto();
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setDateOfBirth(DATE_OF_BIRTH);
-        dto.setAddress(ADDRESS);
-        return dto;
-    }
-
-    private TraineeUpdateRequestDto buildUpdateRequestDto() {
-        TraineeUpdateRequestDto dto = new TraineeUpdateRequestDto();
-        dto.setUserId(USER_ID);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setDateOfBirth(DATE_OF_BIRTH);
-        dto.setAddress(ADDRESS);
-        dto.setIsActive(true);
-        return dto;
-    }
-
     @Test
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {
         when(traineeMapper.toEntity(createRequestDto)).thenReturn(expected);
@@ -96,7 +63,6 @@ class TraineeServiceTest {
         when(traineeDao.create(expected)).thenReturn(expected);
 
         Trainee actual = service.createTrainee(createRequestDto);
-
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());
@@ -116,7 +82,6 @@ class TraineeServiceTest {
         when(traineeDao.update(expected)).thenReturn(expected);
 
         Trainee actual = service.updateTrainee(updateRequestDto);
-
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());
@@ -169,7 +134,6 @@ class TraineeServiceTest {
         when(traineeDao.get(USER_ID)).thenReturn(Optional.of(expected));
 
         Trainee actual = service.getTrainee(USER_ID);
-
         assertEquals(USER_ID, actual.getUserId());
         assertEquals(FIRST_NAME, actual.getFirstName());
         assertEquals(LAST_NAME, actual.getLastName());
@@ -189,5 +153,40 @@ class TraineeServiceTest {
         assertEquals("Trainee with userId 1 not found", ex.getMessage());
 
         verify(traineeDao).get(USER_ID);
+    }
+
+    private Trainee buildTrainee() {
+        return Trainee.builder()
+                .userId(USER_ID)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .dateOfBirth(DATE_OF_BIRTH)
+                .address(ADDRESS)
+                .build();
+    }
+
+    private TraineeCreateRequestDto buildCreateRequestDto() {
+        TraineeCreateRequestDto dto = new TraineeCreateRequestDto();
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setDateOfBirth(DATE_OF_BIRTH);
+        dto.setAddress(ADDRESS);
+
+        return dto;
+    }
+
+    private TraineeUpdateRequestDto buildUpdateRequestDto() {
+        TraineeUpdateRequestDto dto = new TraineeUpdateRequestDto();
+        dto.setUserId(USER_ID);
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setDateOfBirth(DATE_OF_BIRTH);
+        dto.setAddress(ADDRESS);
+        dto.setIsActive(true);
+
+        return dto;
     }
 }

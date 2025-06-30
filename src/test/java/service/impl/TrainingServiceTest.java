@@ -1,4 +1,4 @@
-package service;
+package service.impl;
 
 import com.gcs.app.dao.TrainingDao;
 import com.gcs.app.exception.ServiceException;
@@ -52,6 +52,50 @@ class TrainingServiceTest {
         createRequestDto = buildCreateRequestDto();
     }
 
+    @Test
+    void createTraining_mapsDtoAndCreatesTraining_returnsTraining() {
+        when(trainingMapper.toEntity(createRequestDto)).thenReturn(expected);
+        when(trainingDao.create(expected)).thenReturn(expected);
+
+        Training actual = service.createTraining(createRequestDto);
+        assertEquals(ID, actual.getId());
+        assertEquals(TRAINEE_ID, actual.getTraineeId());
+        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(NAME, actual.getName());
+        assertEquals(TYPE, actual.getType().getName());
+        assertEquals(DATE, actual.getDate());
+        assertEquals(DURATION, actual.getDuration());
+
+        verify(trainingMapper).toEntity(createRequestDto);
+        verify(trainingDao).create(expected);
+    }
+
+    @Test
+    void getTraining_whenTrainingExists_returnsTraining() {
+        when(trainingDao.get(ID)).thenReturn(Optional.of(expected));
+
+        Training actual = service.getTraining(ID);
+        assertEquals(ID, actual.getId());
+        assertEquals(TRAINEE_ID, actual.getTraineeId());
+        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(NAME, actual.getName());
+        assertEquals(TYPE, actual.getType().getName());
+        assertEquals(DATE, actual.getDate());
+        assertEquals(DURATION, actual.getDuration());
+
+        verify(trainingDao).get(ID);
+    }
+
+    @Test
+    void getTraining_whenTrainingDoesNotExist_throwsServiceException() {
+        when(trainingDao.get(ID)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.getTraining(ID));
+        assertEquals("Training with id 1 not found", ex.getMessage());
+
+        verify(trainingDao).get(ID);
+    }
+
     private Training buildTraining() {
         return Training.builder()
                 .id(ID)
@@ -72,52 +116,7 @@ class TrainingServiceTest {
         dto.setType(new TrainingType(TYPE));
         dto.setDate(DATE);
         dto.setDuration(DURATION);
+
         return dto;
-    }
-
-    @Test
-    void createTraining_mapsDtoAndCreatesTraining_returnsTraining() {
-        when(trainingMapper.toEntity(createRequestDto)).thenReturn(expected);
-        when(trainingDao.create(expected)).thenReturn(expected);
-
-        Training actual = service.createTraining(createRequestDto);
-
-        assertEquals(ID, actual.getId());
-        assertEquals(TRAINEE_ID, actual.getTraineeId());
-        assertEquals(TRAINER_ID, actual.getTrainerId());
-        assertEquals(NAME, actual.getName());
-        assertEquals(TYPE, actual.getType().getName());
-        assertEquals(DATE, actual.getDate());
-        assertEquals(DURATION, actual.getDuration());
-
-        verify(trainingMapper).toEntity(createRequestDto);
-        verify(trainingDao).create(expected);
-    }
-
-    @Test
-    void getTraining_whenTrainingExists_returnsTraining() {
-        when(trainingDao.get(ID)).thenReturn(Optional.of(expected));
-
-        Training actual = service.getTraining(ID);
-
-        assertEquals(ID, actual.getId());
-        assertEquals(TRAINEE_ID, actual.getTraineeId());
-        assertEquals(TRAINER_ID, actual.getTrainerId());
-        assertEquals(NAME, actual.getName());
-        assertEquals(TYPE, actual.getType().getName());
-        assertEquals(DATE, actual.getDate());
-        assertEquals(DURATION, actual.getDuration());
-
-        verify(trainingDao).get(ID);
-    }
-
-    @Test
-    void getTraining_whenTrainingDoesNotExist_throwsServiceException() {
-        when(trainingDao.get(ID)).thenReturn(Optional.empty());
-
-        ServiceException ex = assertThrows(ServiceException.class, () -> service.getTraining(ID));
-        assertEquals("Training with id 1 not found", ex.getMessage());
-
-        verify(trainingDao).get(ID);
     }
 }
