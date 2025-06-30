@@ -85,7 +85,7 @@ public class TraineeServiceImpl implements TraineeService {
         Optional<Trainee> trainee = traineeDao.get(userId);
 
         if (trainee.isEmpty()) {
-            throw new ServiceException(String.format("Trainee with userId {} not found", userId));
+            throw new ServiceException(String.format("Trainee with userId %d not found", userId));
         }
 
         return trainee;

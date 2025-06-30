@@ -45,7 +45,7 @@ public class TrainingServiceImpl implements TrainingService {
         Optional<Training> training = trainingDao.get(id);
 
         if (training.isEmpty()) {
-            throw new ServiceException(String.format("Training with id {} not found", id));
+            throw new ServiceException(String.format("Training with id %d not found", id));
         }
 
         return training;

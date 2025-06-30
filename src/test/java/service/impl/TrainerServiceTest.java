@@ -1,0 +1,167 @@
+package service.impl;
+
+import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.exception.ServiceException;
+import com.gcs.app.facade.dto.TrainerCreateRequestDto;
+import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
+import com.gcs.app.mapper.TrainerMapper;
+import com.gcs.app.model.Trainer;
+import com.gcs.app.model.TrainingType;
+import com.gcs.app.service.impl.TrainerServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class TrainerServiceTest {
+
+    private static final Long USER_ID = 1L;
+    private static final String FIRST_NAME = "Jane";
+    private static final String LAST_NAME = "Smith";
+    private static final String USERNAME = "jane.smith";
+    private static final String PASSWORD = "password123";
+    private static final String SPECIALIZATION = "Yoga";
+
+    @Mock
+    private TrainerDao trainerDao;
+
+    @Mock
+    private TrainerMapper trainerMapper;
+
+    @InjectMocks
+    private TrainerServiceImpl service;
+
+    private Trainer expected;
+    private TrainerCreateRequestDto createRequestDto;
+    private TrainerUpdateRequestDto updateRequestDto;
+
+    @BeforeEach
+    void setUp() {
+        expected = buildTrainer();
+        createRequestDto = buildCreateRequestDto();
+        updateRequestDto = buildUpdateRequestDto();
+    }
+
+    @Test
+    void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
+        when(trainerMapper.toEntity(createRequestDto)).thenReturn(expected);
+        when(trainerDao.getAllUsernames()).thenReturn(Collections.emptySet());
+        when(trainerDao.create(expected)).thenReturn(expected);
+
+        Trainer actual = service.createTrainer(createRequestDto);
+
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(FIRST_NAME, actual.getFirstName());
+        assertEquals(LAST_NAME, actual.getLastName());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
+
+        verify(trainerMapper).toEntity(createRequestDto);
+        verify(trainerDao).getAllUsernames();
+        verify(trainerDao).create(expected);
+    }
+
+    @Test
+    void updateTrainer_whenTrainerExists_mapsDtoUpdatesAndReturnsTrainer() {
+        when(trainerMapper.toUpdateEntity(updateRequestDto)).thenReturn(expected);
+        when(trainerDao.get(USER_ID)).thenReturn(Optional.of(expected));
+        when(trainerDao.update(expected)).thenReturn(expected);
+
+        Trainer actual = service.updateTrainer(updateRequestDto);
+
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(FIRST_NAME, actual.getFirstName());
+        assertEquals(LAST_NAME, actual.getLastName());
+        assertEquals(USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
+
+        verify(trainerMapper).toUpdateEntity(updateRequestDto);
+        verify(trainerDao).get(USER_ID);
+        verify(trainerDao).update(expected);
+    }
+
+    @Test
+    void updateTrainer_whenTrainerDoesNotExist_throwsServiceException() {
+        when(trainerMapper.toUpdateEntity(updateRequestDto)).thenReturn(expected);
+        when(trainerDao.get(USER_ID)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainer(updateRequestDto));
+
+        assertEquals("Trainer with userId 1 not found", ex.getMessage());
+        verify(trainerMapper).toUpdateEntity(updateRequestDto);
+        verify(trainerDao).get(USER_ID);
+        verify(trainerDao, times(0)).update(expected);
+    }
+
+    @Test
+    void getTrainer_whenTrainerExists_returnsTrainer() {
+        when(trainerDao.get(USER_ID)).thenReturn(Optional.of(expected));
+
+        Trainer actual = service.getTrainer(USER_ID);
+
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(FIRST_NAME, actual.getFirstName());
+        assertEquals(LAST_NAME, actual.getLastName());
+        assertEquals(USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
+
+        verify(trainerDao).get(USER_ID);
+    }
+
+    @Test
+    void getTrainer_whenTrainerDoesNotExist_throwsServiceException() {
+        when(trainerDao.get(USER_ID)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.getTrainer(USER_ID));
+
+        assertEquals("Trainer with userId 1 not found", ex.getMessage());
+        verify(trainerDao).get(USER_ID);
+    }
+
+    private Trainer buildTrainer() {
+        return Trainer.builder()
+                .userId(USER_ID)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .specialization(new TrainingType(SPECIALIZATION))
+                .build();
+    }
+
+    private TrainerCreateRequestDto buildCreateRequestDto() {
+        TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+
+        return dto;
+    }
+
+    private TrainerUpdateRequestDto buildUpdateRequestDto() {
+        TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
+        dto.setUserId(USER_ID);
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setIsActive(true);
+
+        return dto;
+    }
+}

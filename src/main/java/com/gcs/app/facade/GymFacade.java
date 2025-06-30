@@ -1,6 +1,5 @@
 package com.gcs.app.facade;
 
-import com.gcs.app.dto.*;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;

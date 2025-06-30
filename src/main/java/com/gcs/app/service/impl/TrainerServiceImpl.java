@@ -73,7 +73,7 @@ public class TrainerServiceImpl implements TrainerService {
         Optional<Trainer> trainer = trainerDao.get(userId);
 
         if (trainer.isEmpty()) {
-            throw new ServiceException(String.format("Trainer with userId {} not found", userId));
+            throw new ServiceException(String.format("Trainer with userId %d not found", userId));
         }
 
         return trainer;
