@@ -1,17 +1,19 @@
 package com.gcs.app.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-@Data
-@NoArgsConstructor
+@ToString
+@Getter
 @AllArgsConstructor
+@NoArgsConstructor(force = true)
 @EqualsAndHashCode(callSuper = true)
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 public class Trainer extends User {
-    private Long userId;
-    private TrainingType specialization;
+    private final Long userId;
+    private final TrainingType specialization;
 }

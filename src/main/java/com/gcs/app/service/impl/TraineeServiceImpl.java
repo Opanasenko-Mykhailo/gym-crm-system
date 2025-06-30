@@ -1,9 +1,9 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
-import com.gcs.app.exception.ServiceException;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.service.TraineeService;
@@ -33,11 +33,13 @@ public class TraineeServiceImpl implements TraineeService {
         String username = generateUsername(trainee.getFirstName(), trainee.getLastName(), traineeDao.getAllUsernames());
         String password = generateRandomPassword();
 
-        trainee.setUsername(username);
-        trainee.setPassword(password);
-        trainee.setIsActive(true);
+        Trainee traineeWithCredentials = trainee.toBuilder()
+                .username(username)
+                .password(password)
+                .isActive(true)
+                .build();
 
-        Trainee createdTrainee = traineeDao.create(trainee);
+        Trainee createdTrainee = traineeDao.create(traineeWithCredentials);
         log.debug("Trainee created: {}", createdTrainee);
 
         return createdTrainee;
@@ -53,9 +55,8 @@ public class TraineeServiceImpl implements TraineeService {
 
         validateTraineeExists(userId);
 
-        updatedTrainee.setUserId(userId);
-
-        Trainee savedTrainee = traineeDao.update(updatedTrainee);
+        Trainee traineeWithId = updatedTrainee.toBuilder().userId(userId).build();
+        Trainee savedTrainee = traineeDao.update(traineeWithId);
         log.debug("Trainee updated: {}", savedTrainee);
 
         return savedTrainee;

@@ -1,12 +1,18 @@
 package com.gcs.app.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
-@Data
-@NoArgsConstructor
+@ToString
+@EqualsAndHashCode
+@Getter
 @AllArgsConstructor
+@NoArgsConstructor(force = true)
+@SuperBuilder(toBuilder = true)
 public class TrainingType {
-    private String name;
+    private final String name;
 }

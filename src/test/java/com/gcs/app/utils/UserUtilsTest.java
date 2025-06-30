@@ -1,4 +1,4 @@
-package utils;
+package com.gcs.app.utils;
 
 import com.gcs.app.util.UserUtils;
 import org.junit.jupiter.api.Test;

@@ -21,12 +21,12 @@ public class TrainingDaoImpl implements TrainingDao {
     @Override
     public Training create(Training training) {
         Long id = storage.nextId();
-        training.setId(id);
+        Training trainingWithId = training.toBuilder().id(id).build();
 
-        storage.put(TRAINING, id, training);
+        storage.put(TRAINING, id, trainingWithId);
         log.info("Created training with id: {}", id);
 
-        return training;
+        return trainingWithId;
     }
 
     @Override

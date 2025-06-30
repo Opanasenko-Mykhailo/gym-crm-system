@@ -8,7 +8,6 @@ import com.gcs.app.storage.InMemoryStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import static com.gcs.app.model.enums.EntityType.TRAINER;
@@ -24,11 +23,12 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
     @Override
     public Trainer create(Trainer trainer) {
         Long userId = storage.nextId();
-        trainer.setUserId(userId);
-        storage.put(TRAINER, userId, trainer);
+        Trainer trainerWithId = trainer.toBuilder().userId(userId).build();
+
+        storage.put(TRAINER, userId, trainerWithId);
         log.info("Created trainer with userId: {}", userId);
 
-        return trainer;
+        return trainerWithId;
     }
 
     @Override

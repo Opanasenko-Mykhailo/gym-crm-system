@@ -1,4 +1,4 @@
-package service.impl;
+package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainerDao;
 import com.gcs.app.exception.ServiceException;
@@ -7,7 +7,6 @@ import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
-import com.gcs.app.service.impl.TrainerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,12 +20,13 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TrainerServiceTest {
+class TrainerServiceImplTest {
 
     private static final Long USER_ID = 1L;
     private static final String FIRST_NAME = "Jane";
@@ -59,7 +59,7 @@ class TrainerServiceTest {
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
         when(trainerMapper.toEntity(createRequestDto)).thenReturn(expected);
         when(trainerDao.getAllUsernames()).thenReturn(Collections.emptySet());
-        when(trainerDao.create(expected)).thenReturn(expected);
+        when(trainerDao.create(any(Trainer.class))).thenReturn(expected);
 
         Trainer actual = service.createTrainer(createRequestDto);
 
@@ -71,7 +71,7 @@ class TrainerServiceTest {
 
         verify(trainerMapper).toEntity(createRequestDto);
         verify(trainerDao).getAllUsernames();
-        verify(trainerDao).create(expected);
+        verify(trainerDao).create(any(Trainer.class));
     }
 
     @Test
