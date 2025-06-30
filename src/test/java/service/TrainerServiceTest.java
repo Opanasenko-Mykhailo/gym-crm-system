@@ -8,12 +8,10 @@ import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.service.impl.TrainerServiceImpl;
-import com.gcs.app.util.UserUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
@@ -28,6 +26,13 @@ import static org.mockito.Mockito.when;
 
 class TrainerServiceTest {
 
+    private static final Long USER_ID = 1L;
+    private static final String FIRST_NAME = "Jane";
+    private static final String LAST_NAME = "Smith";
+    private static final String USERNAME = "jane.smith";
+    private static final String PASSWORD = "password123";
+    private static final String SPECIALIZATION = "Yoga";
+
     @Mock
     private TrainerDao trainerDao;
 
@@ -35,108 +40,125 @@ class TrainerServiceTest {
     private TrainerMapper trainerMapper;
 
     @InjectMocks
-    private TrainerServiceImpl sut;
+    private TrainerServiceImpl service;
 
-    private Trainer trainer;
+    private Trainer expected;
     private TrainerCreateRequestDto createRequestDto;
     private TrainerUpdateRequestDto updateRequestDto;
 
     @BeforeEach
     void setUp() {
-        TrainingType trainingType = new TrainingType("Yoga");
         MockitoAnnotations.openMocks(this);
-        trainer = Trainer.builder()
-                .userId(1L)
-                .firstName("Jane")
-                .lastName("Smith")
-                .username("jane.smith")
-                .password("password123")
-                .isActive(true)
-                .specialization(trainingType)
-                .build();
-        createRequestDto = new TrainerCreateRequestDto();
-        createRequestDto.setFirstName("Jane");
-        createRequestDto.setLastName("Smith");
-        createRequestDto.setSpecialization(trainingType);
+        expected = buildTrainer();
+        createRequestDto = buildCreateRequestDto();
+        updateRequestDto = buildUpdateRequestDto();
+    }
 
-        updateRequestDto = new TrainerUpdateRequestDto();
-        updateRequestDto.setUserId(1L);
-        updateRequestDto.setFirstName("Jane");
-        updateRequestDto.setLastName("Smith");
-        updateRequestDto.setSpecialization(trainingType);
-        updateRequestDto.setIsActive(true);
+    private Trainer buildTrainer() {
+        return Trainer.builder()
+                .userId(USER_ID)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .specialization(new TrainingType(SPECIALIZATION))
+                .build();
+    }
+
+    private TrainerCreateRequestDto buildCreateRequestDto() {
+        TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        return dto;
+    }
+
+    private TrainerUpdateRequestDto buildUpdateRequestDto() {
+        TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
+        dto.setUserId(USER_ID);
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setIsActive(true);
+        return dto;
     }
 
     @Test
-    void createTrainer_mapsDtoSetsUsernamePasswordAndCreatesTrainer_returnsTrainer() {
-        when(trainerMapper.toEntity(createRequestDto)).thenReturn(trainer);
+    void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
+        when(trainerMapper.toEntity(createRequestDto)).thenReturn(expected);
+        when(trainerDao.getAllUsernames()).thenReturn(Collections.emptySet());
+        when(trainerDao.create(expected)).thenReturn(expected);
 
-        try (MockedStatic<UserUtils> utilities = org.mockito.Mockito.mockStatic(UserUtils.class)) {
-            utilities.when(() -> UserUtils.generateUsername("Jane", "Smith", Collections.emptySet()))
-                    .thenReturn("jane.smith");
-            utilities.when(UserUtils::generateRandomPassword).thenReturn("password123");
-            when(trainerDao.getAllUsernames()).thenReturn(Collections.emptySet());
-            when(trainerDao.create(trainer)).thenReturn(trainer);
+        Trainer actual = service.createTrainer(createRequestDto);
 
-            Trainer result = sut.createTrainer(createRequestDto);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(FIRST_NAME, actual.getFirstName());
+        assertEquals(LAST_NAME, actual.getLastName());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-            assertEquals(trainer, result);
-            assertEquals("jane.smith", result.getUsername());
-            assertEquals("password123", result.getPassword());
-            assertTrue(result.getIsActive());
-
-            verify(trainerMapper, times(1)).toEntity(createRequestDto);
-            verify(trainerDao, times(1)).getAllUsernames();
-            verify(trainerDao, times(1)).create(trainer);
-        }
+        verify(trainerMapper).toEntity(createRequestDto);
+        verify(trainerDao).getAllUsernames();
+        verify(trainerDao).create(expected);
     }
 
     @Test
     void updateTrainer_whenTrainerExists_mapsDtoUpdatesAndReturnsTrainer() {
-        when(trainerMapper.toUpdateEntity(updateRequestDto)).thenReturn(trainer);
-        when(trainerDao.get(1L)).thenReturn(Optional.of(trainer));
-        when(trainerDao.update(trainer)).thenReturn(trainer);
+        when(trainerMapper.toUpdateEntity(updateRequestDto)).thenReturn(expected);
+        when(trainerDao.get(USER_ID)).thenReturn(Optional.of(expected));
+        when(trainerDao.update(expected)).thenReturn(expected);
 
-        Trainer result = sut.updateTrainer(updateRequestDto);
+        Trainer actual = service.updateTrainer(updateRequestDto);
 
-        assertEquals(trainer, result);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(FIRST_NAME, actual.getFirstName());
+        assertEquals(LAST_NAME, actual.getLastName());
+        assertEquals(USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        verify(trainerMapper, times(1)).toUpdateEntity(updateRequestDto);
-        verify(trainerDao, times(1)).get(1L);
-        verify(trainerDao, times(1)).update(trainer);
+        verify(trainerMapper).toUpdateEntity(updateRequestDto);
+        verify(trainerDao).get(USER_ID);
+        verify(trainerDao).update(expected);
     }
 
     @Test
     void updateTrainer_whenTrainerDoesNotExist_throwsServiceException() {
-        when(trainerMapper.toUpdateEntity(updateRequestDto)).thenReturn(trainer);
-        when(trainerDao.get(1L)).thenReturn(Optional.empty());
+        when(trainerMapper.toUpdateEntity(updateRequestDto)).thenReturn(expected);
+        when(trainerDao.get(USER_ID)).thenReturn(Optional.empty());
 
-        ServiceException exception = assertThrows(ServiceException.class, () -> sut.updateTrainer(updateRequestDto));
-        assertEquals("Trainer with userId 1 not found", exception.getMessage());
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainer(updateRequestDto));
+        assertEquals("Trainer with userId 1 not found", ex.getMessage());
 
-        verify(trainerMapper, times(1)).toUpdateEntity(updateRequestDto);
-        verify(trainerDao, times(1)).get(1L);
-        verify(trainerDao, times(0)).update(trainer);
+        verify(trainerMapper).toUpdateEntity(updateRequestDto);
+        verify(trainerDao).get(USER_ID);
+        verify(trainerDao, times(0)).update(expected);
     }
 
     @Test
     void getTrainer_whenTrainerExists_returnsTrainer() {
-        when(trainerDao.get(1L)).thenReturn(Optional.of(trainer));
+        when(trainerDao.get(USER_ID)).thenReturn(Optional.of(expected));
 
-        Trainer result = sut.getTrainer(1L);
+        Trainer actual = service.getTrainer(USER_ID);
 
-        assertEquals(trainer, result);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(FIRST_NAME, actual.getFirstName());
+        assertEquals(LAST_NAME, actual.getLastName());
+        assertEquals(USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        verify(trainerDao, times(1)).get(1L);
+        verify(trainerDao).get(USER_ID);
     }
 
     @Test
     void getTrainer_whenTrainerDoesNotExist_throwsServiceException() {
-        when(trainerDao.get(1L)).thenReturn(Optional.empty());
+        when(trainerDao.get(USER_ID)).thenReturn(Optional.empty());
 
-        ServiceException exception = assertThrows(ServiceException.class, () -> sut.getTrainer(1L));
-        assertEquals("Trainer with userId 1 not found", exception.getMessage());
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.getTrainer(USER_ID));
+        assertEquals("Trainer with userId 1 not found", ex.getMessage());
 
-        verify(trainerDao, times(1)).get(1L);
+        verify(trainerDao).get(USER_ID);
     }
 }

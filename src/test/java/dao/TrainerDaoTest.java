@@ -25,89 +25,111 @@ import static org.mockito.Mockito.when;
 
 class TrainerDaoTest {
 
+    private static final Long USER_ID = 1L;
+    private static final String FIRST_NAME = "Jane";
+    private static final String LAST_NAME = "Smith";
+    private static final String USERNAME = "jane.smith";
+    private static final String PASSWORD = "password";
+    private static final String SPECIALIZATION = "Yoga";
+
     @Mock
     private InMemoryStorage storage;
 
     @Mock
-    private Map<Long, Object> trainerStorage;
+    private Map<Long, Object> trainerNamespace;
 
     @InjectMocks
-    private TrainerDaoImpl sut;
+    private TrainerDaoImpl dao;
 
-    private Trainer trainer;
+    private Trainer expected;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        trainer = Trainer.builder()
-                .userId(1L)
-                .firstName("Jane")
-                .lastName("Smith")
-                .username("jane.smith")
-                .password("password")
+        expected = buildTrainer();
+    }
+
+    private Trainer buildTrainer() {
+        return Trainer.builder()
+                .userId(USER_ID)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .username(USERNAME)
+                .password(PASSWORD)
                 .isActive(true)
-                .specialization(new TrainingType("Yoga"))
+                .specialization(new TrainingType(SPECIALIZATION))
                 .build();
     }
 
     @Test
     void create_assignsUserIdAndStoresTrainer_returnsTrainer() {
-        when(storage.nextId()).thenReturn(1L);
-        when(storage.getNamespace(TRAINER)).thenReturn(trainerStorage);
+        when(storage.nextId()).thenReturn(USER_ID);
+        when(storage.getNamespace(TRAINER)).thenReturn(trainerNamespace);
 
-        Trainer result = sut.create(trainer);
+        Trainer actual = dao.create(expected);
 
-        assertEquals(1L, result.getUserId());
-        assertEquals(trainer, result);
+        assertEquals(USER_ID, actual.getUserId());
+        assertEquals(FIRST_NAME, actual.getFirstName());
+        assertEquals(LAST_NAME, actual.getLastName());
+        assertEquals(USERNAME, actual.getUsername());
+        assertEquals(PASSWORD, actual.getPassword());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        verify(storage, times(1)).nextId();
-        verify(storage, times(1)).put(TRAINER, 1L, trainer);
+        verify(storage).nextId();
+        verify(storage).put(TRAINER, USER_ID, expected);
     }
 
     @Test
     void get_whenTrainerExists_returnsTrainer() {
-        when(storage.getById(TRAINER, 1L)).thenReturn(Optional.of(trainer));
+        when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.of(expected));
 
-        Optional<Trainer> result = sut.get(1L);
+        Optional<Trainer> actual = dao.get(USER_ID);
 
-        assertTrue(result.isPresent());
-        assertEquals(trainer, result.get());
+        assertTrue(actual.isPresent());
+        assertEquals(FIRST_NAME, actual.get().getFirstName());
+        assertEquals(LAST_NAME, actual.get().getLastName());
+        assertEquals(USERNAME, actual.get().getUsername());
+        assertEquals(SPECIALIZATION, actual.get().getSpecialization().getName());
 
-        verify(storage, times(1)).getById(TRAINER, 1L);
+        verify(storage).getById(TRAINER, USER_ID);
     }
 
     @Test
     void get_whenTrainerDoesNotExist_returnsEmptyOptional() {
-        when(storage.getById(TRAINER, 1L)).thenReturn(Optional.empty());
+        when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.empty());
 
-        Optional<Trainer> result = sut.get(1L);
+        Optional<Trainer> actual = dao.get(USER_ID);
 
-        assertFalse(result.isPresent());
+        assertFalse(actual.isPresent());
 
-        verify(storage, times(1)).getById(TRAINER, 1L);
+        verify(storage).getById(TRAINER, USER_ID);
     }
 
     @Test
     void update_whenTrainerExists_updatesAndReturnsTrainer() {
-        when(storage.getById(TRAINER, 1L)).thenReturn(Optional.of(trainer));
-        when(storage.getNamespace(TRAINER)).thenReturn(trainerStorage);
+        when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.of(expected));
+        when(storage.getNamespace(TRAINER)).thenReturn(trainerNamespace);
 
-        Trainer result = sut.update(trainer);
+        Trainer actual = dao.update(expected);
 
-        assertEquals(trainer, result);
+        assertEquals(FIRST_NAME, actual.getFirstName());
+        assertEquals(LAST_NAME, actual.getLastName());
+        assertEquals(USERNAME, actual.getUsername());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        verify(storage, times(1)).getById(TRAINER, 1L);
-        verify(storage, times(1)).put(TRAINER, 1L, trainer);
+        verify(storage).getById(TRAINER, USER_ID);
+        verify(storage).put(TRAINER, USER_ID, expected);
     }
 
     @Test
     void update_whenTrainerDoesNotExist_throwsEntityNotFoundException() {
-        when(storage.getById(TRAINER, 1L)).thenReturn(Optional.empty());
+        when(storage.getById(TRAINER, USER_ID)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> sut.update(trainer));
-        assertEquals("Trainer with userId: 1 not found", exception.getMessage());
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(expected));
+        assertEquals("Trainer with userId: 1 not found", ex.getMessage());
 
-        verify(storage, times(1)).getById(TRAINER, 1L);
-        verify(storage, times(0)).put(TRAINER, 1L, trainer);
+        verify(storage).getById(TRAINER, USER_ID);
+        verify(storage, times(0)).put(TRAINER, USER_ID, expected);
     }
 }

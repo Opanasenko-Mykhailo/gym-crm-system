@@ -29,11 +29,29 @@ import java.time.Duration;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.times;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class GymFacadeTest {
+
+    private static final Long TRAINEE_ID = 1L;
+    private static final String TRAINEE_FIRST_NAME = "John";
+    private static final String TRAINEE_LAST_NAME = "Doe";
+    private static final String TRAINEE_USERNAME = "john.doe";
+    private static final LocalDate TRAINEE_DATE_OF_BIRTH = LocalDate.of(1990, 1, 1);
+    private static final String TRAINEE_ADDRESS = "123 Main St";
+
+    private static final Long TRAINER_ID = 2L;
+    private static final String TRAINER_FIRST_NAME = "Jane";
+    private static final String TRAINER_LAST_NAME = "Smith";
+    private static final String TRAINER_USERNAME = "jane.smith";
+    private static final String SPECIALIZATION = "Yoga";
+
+    private static final Long TRAINING_ID = 1L;
+    private static final String TRAINING_NAME = "Yoga Session";
+    private static final LocalDate TRAINING_DATE = LocalDate.of(2025, 6, 30);
+    private static final Duration TRAINING_DURATION = Duration.ofHours(1);
 
     @Mock
     private TraineeService traineeService;
@@ -54,223 +72,308 @@ class GymFacadeTest {
     private TrainingMapper trainingMapper;
 
     @InjectMocks
-    private GymFacade sut;
+    private GymFacade facade;
 
     private Trainee trainee;
     private Trainer trainer;
     private Training training;
     private TraineeCreateRequestDto traineeCreateRequestDto;
     private TraineeUpdateRequestDto traineeUpdateRequestDto;
-    private TraineeResponseDto traineeResponseDto;
+    private TraineeResponseDto expectedTraineeResponse;
     private TrainerCreateRequestDto trainerCreateRequestDto;
     private TrainerUpdateRequestDto trainerUpdateRequestDto;
-    private TrainerResponseDto trainerResponseDto;
+    private TrainerResponseDto expectedTrainerResponse;
     private TrainingCreateRequestDto trainingCreateRequestDto;
-    private TrainingResponseDto trainingResponseDto;
+    private TrainingResponseDto expectedTrainingResponse;
 
     @BeforeEach
     void setUp() {
-        TrainingType trainingType = new TrainingType("Yoga");
         MockitoAnnotations.openMocks(this);
+        trainee = buildTrainee();
+        trainer = buildTrainer();
+        training = buildTraining();
+        traineeCreateRequestDto = buildTraineeCreateRequestDto();
+        traineeUpdateRequestDto = buildTraineeUpdateRequestDto();
+        expectedTraineeResponse = buildTraineeResponseDto();
+        trainerCreateRequestDto = buildTrainerCreateRequestDto();
+        trainerUpdateRequestDto = buildTrainerUpdateRequestDto();
+        expectedTrainerResponse = buildTrainerResponseDto();
+        trainingCreateRequestDto = buildTrainingCreateRequestDto();
+        expectedTrainingResponse = buildTrainingResponseDto();
+    }
 
-        trainee = Trainee.builder()
-                .userId(1L)
-                .firstName("John")
-                .lastName("Doe")
-                .username("john.doe")
-                .password("password123")
+    private Trainee buildTrainee() {
+        return Trainee.builder()
+                .userId(TRAINEE_ID)
+                .firstName(TRAINEE_FIRST_NAME)
+                .lastName(TRAINEE_LAST_NAME)
+                .username(TRAINEE_USERNAME)
                 .isActive(true)
-                .dateOfBirth(LocalDate.of(1990, 1, 1))
-                .address("123 Main St")
+                .dateOfBirth(TRAINEE_DATE_OF_BIRTH)
+                .address(TRAINEE_ADDRESS)
                 .build();
+    }
 
-        trainer = Trainer.builder()
-                .userId(2L)
-                .firstName("Jane")
-                .lastName("Smith")
-                .username("jane.smith")
-                .password("password123")
+    private Trainer buildTrainer() {
+        return Trainer.builder()
+                .userId(TRAINER_ID)
+                .firstName(TRAINER_FIRST_NAME)
+                .lastName(TRAINER_LAST_NAME)
+                .username(TRAINER_USERNAME)
                 .isActive(true)
-                .specialization(trainingType)
+                .specialization(new TrainingType(SPECIALIZATION))
                 .build();
+    }
 
-        training = Training.builder()
-                .id(1L)
-                .traineeId(1L)
-                .trainerId(2L)
-                .name("Yoga Session")
-                .type(trainingType)
-                .date(LocalDate.of(2025, 6, 30))
-                .duration(Duration.ofHours(1))
+    private Training buildTraining() {
+        return Training.builder()
+                .id(TRAINING_ID)
+                .traineeId(TRAINEE_ID)
+                .trainerId(TRAINER_ID)
+                .name(TRAINING_NAME)
+                .type(new TrainingType(SPECIALIZATION))
+                .date(TRAINING_DATE)
+                .duration(TRAINING_DURATION)
                 .build();
+    }
 
-        traineeCreateRequestDto = new TraineeCreateRequestDto();
-        traineeCreateRequestDto.setFirstName("John");
-        traineeCreateRequestDto.setLastName("Doe");
-        traineeCreateRequestDto.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        traineeCreateRequestDto.setAddress("123 Main St");
+    private TraineeCreateRequestDto buildTraineeCreateRequestDto() {
+        TraineeCreateRequestDto dto = new TraineeCreateRequestDto();
+        dto.setFirstName(TRAINEE_FIRST_NAME);
+        dto.setLastName(TRAINEE_LAST_NAME);
+        dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
+        dto.setAddress(TRAINEE_ADDRESS);
+        return dto;
+    }
 
-        traineeUpdateRequestDto = new TraineeUpdateRequestDto();
-        traineeUpdateRequestDto.setUserId(1L);
-        traineeUpdateRequestDto.setFirstName("John");
-        traineeUpdateRequestDto.setLastName("Doe");
-        traineeUpdateRequestDto.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        traineeUpdateRequestDto.setAddress("123 Main St");
-        traineeUpdateRequestDto.setIsActive(true);
+    private TraineeUpdateRequestDto buildTraineeUpdateRequestDto() {
+        TraineeUpdateRequestDto dto = new TraineeUpdateRequestDto();
+        dto.setUserId(TRAINEE_ID);
+        dto.setFirstName(TRAINEE_FIRST_NAME);
+        dto.setLastName(TRAINEE_LAST_NAME);
+        dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
+        dto.setAddress(TRAINEE_ADDRESS);
+        dto.setIsActive(true);
+        return dto;
+    }
 
-        traineeResponseDto = new TraineeResponseDto();
-        traineeResponseDto.setUserId(1L);
-        traineeResponseDto.setFirstName("John");
-        traineeResponseDto.setLastName("Doe");
-        traineeResponseDto.setUsername("john.doe");
-        traineeResponseDto.setIsActive(true);
-        traineeResponseDto.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        traineeResponseDto.setAddress("123 Main St");
+    private TraineeResponseDto buildTraineeResponseDto() {
+        TraineeResponseDto dto = new TraineeResponseDto();
+        dto.setUserId(TRAINEE_ID);
+        dto.setFirstName(TRAINEE_FIRST_NAME);
+        dto.setLastName(TRAINEE_LAST_NAME);
+        dto.setUsername(TRAINEE_USERNAME);
+        dto.setIsActive(true);
+        dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
+        dto.setAddress(TRAINEE_ADDRESS);
+        return dto;
+    }
 
-        trainerCreateRequestDto = new TrainerCreateRequestDto();
-        trainerCreateRequestDto.setFirstName("Jane");
-        trainerCreateRequestDto.setLastName("Smith");
-        trainerCreateRequestDto.setSpecialization(trainingType);
+    private TrainerCreateRequestDto buildTrainerCreateRequestDto() {
+        TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
+        dto.setFirstName(TRAINER_FIRST_NAME);
+        dto.setLastName(TRAINER_LAST_NAME);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        return dto;
+    }
 
-        trainerUpdateRequestDto = new TrainerUpdateRequestDto();
-        trainerUpdateRequestDto.setUserId(2L);
-        trainerUpdateRequestDto.setFirstName("Jane");
-        trainerUpdateRequestDto.setLastName("Smith");
-        trainerUpdateRequestDto.setSpecialization(trainingType);
-        trainerUpdateRequestDto.setIsActive(true);
+    private TrainerUpdateRequestDto buildTrainerUpdateRequestDto() {
+        TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
+        dto.setUserId(TRAINER_ID);
+        dto.setFirstName(TRAINER_FIRST_NAME);
+        dto.setLastName(TRAINER_LAST_NAME);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setIsActive(true);
+        return dto;
+    }
 
-        trainerResponseDto = new TrainerResponseDto();
-        trainerResponseDto.setUserId(2L);
-        trainerResponseDto.setFirstName("Jane");
-        trainerResponseDto.setLastName("Smith");
-        trainerResponseDto.setUsername("jane.smith");
-        trainerResponseDto.setIsActive(true);
-        trainerResponseDto.setSpecialization(trainingType);
+    private TrainerResponseDto buildTrainerResponseDto() {
+        TrainerResponseDto dto = new TrainerResponseDto();
+        dto.setUserId(TRAINER_ID);
+        dto.setFirstName(TRAINER_FIRST_NAME);
+        dto.setLastName(TRAINER_LAST_NAME);
+        dto.setUsername(TRAINER_USERNAME);
+        dto.setIsActive(true);
+        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        return dto;
+    }
 
-        trainingCreateRequestDto = new TrainingCreateRequestDto();
-        trainingCreateRequestDto.setTraineeId(1L);
-        trainingCreateRequestDto.setTrainerId(2L);
-        trainingCreateRequestDto.setName("Yoga Session");
-        trainingCreateRequestDto.setType(trainingType);
-        trainingCreateRequestDto.setDate(LocalDate.of(2025, 6, 30));
-        trainingCreateRequestDto.setDuration(Duration.ofHours(1));
+    private TrainingCreateRequestDto buildTrainingCreateRequestDto() {
+        TrainingCreateRequestDto dto = new TrainingCreateRequestDto();
+        dto.setTraineeId(TRAINEE_ID);
+        dto.setTrainerId(TRAINER_ID);
+        dto.setName(TRAINING_NAME);
+        dto.setType(new TrainingType(SPECIALIZATION));
+        dto.setDate(TRAINING_DATE);
+        dto.setDuration(TRAINING_DURATION);
+        return dto;
+    }
 
-        trainingResponseDto = new TrainingResponseDto();
-        trainingResponseDto.setId(1L);
-        trainingResponseDto.setTraineeId(1L);
-        trainingResponseDto.setTrainerId(2L);
-        trainingResponseDto.setName("Yoga Session");
-        trainingResponseDto.setType(trainingType);
-        trainingResponseDto.setDate(LocalDate.of(2025, 6, 30));
-        trainingResponseDto.setDuration(Duration.ofHours(1));
+    private TrainingResponseDto buildTrainingResponseDto() {
+        TrainingResponseDto dto = new TrainingResponseDto();
+        dto.setId(TRAINING_ID);
+        dto.setTraineeId(TRAINEE_ID);
+        dto.setTrainerId(TRAINER_ID);
+        dto.setName(TRAINING_NAME);
+        dto.setType(new TrainingType(SPECIALIZATION));
+        dto.setDate(TRAINING_DATE);
+        dto.setDuration(TRAINING_DURATION);
+        return dto;
     }
 
     @Test
     void createTrainee_callsServiceAndMapper_returnsTraineeResponseDto() {
         when(traineeService.createTrainee(traineeCreateRequestDto)).thenReturn(trainee);
-        when(traineeMapper.toDto(trainee)).thenReturn(traineeResponseDto);
+        when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
 
-        TraineeResponseDto result = sut.createTrainee(traineeCreateRequestDto);
+        TraineeResponseDto actual = facade.createTrainee(traineeCreateRequestDto);
 
-        assertEquals(traineeResponseDto, result);
+        assertEquals(TRAINEE_ID, actual.getUserId());
+        assertEquals(TRAINEE_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINEE_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINEE_USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(TRAINEE_DATE_OF_BIRTH, actual.getDateOfBirth());
+        assertEquals(TRAINEE_ADDRESS, actual.getAddress());
 
-        verify(traineeService, times(1)).createTrainee(traineeCreateRequestDto);
-        verify(traineeMapper, times(1)).toDto(trainee);
+        verify(traineeService).createTrainee(traineeCreateRequestDto);
+        verify(traineeMapper).toDto(trainee);
     }
 
     @Test
     void updateTrainee_callsServiceAndMapper_returnsTraineeResponseDto() {
         when(traineeService.updateTrainee(traineeUpdateRequestDto)).thenReturn(trainee);
-        when(traineeMapper.toDto(trainee)).thenReturn(traineeResponseDto);
+        when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
 
-        TraineeResponseDto result = sut.updateTrainee(traineeUpdateRequestDto);
+        TraineeResponseDto actual = facade.updateTrainee(traineeUpdateRequestDto);
 
-        assertEquals(traineeResponseDto, result);
+        assertEquals(TRAINEE_ID, actual.getUserId());
+        assertEquals(TRAINEE_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINEE_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINEE_USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(TRAINEE_DATE_OF_BIRTH, actual.getDateOfBirth());
+        assertEquals(TRAINEE_ADDRESS, actual.getAddress());
 
-        verify(traineeService, times(1)).updateTrainee(traineeUpdateRequestDto);
-        verify(traineeMapper, times(1)).toDto(trainee);
+        verify(traineeService).updateTrainee(traineeUpdateRequestDto);
+        verify(traineeMapper).toDto(trainee);
     }
 
     @Test
     void deleteTrainee_callsService() {
-        sut.deleteTrainee(1L);
+        facade.deleteTrainee(TRAINEE_ID);
 
-        verify(traineeService, times(1)).deleteTrainee(1L);
+        verify(traineeService).deleteTrainee(TRAINEE_ID);
     }
 
     @Test
     void getTrainee_callsServiceAndMapper_returnsTraineeResponseDto() {
-        when(traineeService.getTrainee(1L)).thenReturn(trainee);
-        when(traineeMapper.toDto(trainee)).thenReturn(traineeResponseDto);
+        when(traineeService.getTrainee(TRAINEE_ID)).thenReturn(trainee);
+        when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
 
-        TraineeResponseDto result = sut.getTrainee(1L);
+        TraineeResponseDto actual = facade.getTrainee(TRAINEE_ID);
 
-        assertEquals(traineeResponseDto, result);
+        assertEquals(TRAINEE_ID, actual.getUserId());
+        assertEquals(TRAINEE_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINEE_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINEE_USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(TRAINEE_DATE_OF_BIRTH, actual.getDateOfBirth());
+        assertEquals(TRAINEE_ADDRESS, actual.getAddress());
 
-        verify(traineeService, times(1)).getTrainee(1L);
-        verify(traineeMapper, times(1)).toDto(trainee);
+        verify(traineeService).getTrainee(TRAINEE_ID);
+        verify(traineeMapper).toDto(trainee);
     }
 
     @Test
     void createTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
         when(trainerService.createTrainer(trainerCreateRequestDto)).thenReturn(trainer);
-        when(trainerMapper.toDto(trainer)).thenReturn(trainerResponseDto);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
-        TrainerResponseDto result = sut.createTrainer(trainerCreateRequestDto);
+        TrainerResponseDto actual = facade.createTrainer(trainerCreateRequestDto);
 
-        assertEquals(trainerResponseDto, result);
+        assertEquals(TRAINER_ID, actual.getUserId());
+        assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINER_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINER_USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        verify(trainerService, times(1)).createTrainer(trainerCreateRequestDto);
-        verify(trainerMapper, times(1)).toDto(trainer);
+        verify(trainerService).createTrainer(trainerCreateRequestDto);
+        verify(trainerMapper).toDto(trainer);
     }
 
     @Test
     void updateTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
         when(trainerService.updateTrainer(trainerUpdateRequestDto)).thenReturn(trainer);
-        when(trainerMapper.toDto(trainer)).thenReturn(trainerResponseDto);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
-        TrainerResponseDto result = sut.updateTrainer(trainerUpdateRequestDto);
+        TrainerResponseDto actual = facade.updateTrainer(trainerUpdateRequestDto);
 
-        assertEquals(trainerResponseDto, result);
+        assertEquals(TRAINER_ID, actual.getUserId());
+        assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINER_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINER_USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        verify(trainerService, times(1)).updateTrainer(trainerUpdateRequestDto);
-        verify(trainerMapper, times(1)).toDto(trainer);
+        verify(trainerService).updateTrainer(trainerUpdateRequestDto);
+        verify(trainerMapper).toDto(trainer);
     }
 
     @Test
     void getTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
-        when(trainerService.getTrainer(2L)).thenReturn(trainer);
-        when(trainerMapper.toDto(trainer)).thenReturn(trainerResponseDto);
+        when(trainerService.getTrainer(TRAINER_ID)).thenReturn(trainer);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
-        TrainerResponseDto result = sut.getTrainer(2L);
+        TrainerResponseDto actual = facade.getTrainer(TRAINER_ID);
 
-        assertEquals(trainerResponseDto, result);
+        assertEquals(TRAINER_ID, actual.getUserId());
+        assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINER_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINER_USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        verify(trainerService, times(1)).getTrainer(2L);
-        verify(trainerMapper, times(1)).toDto(trainer);
+        verify(trainerService).getTrainer(TRAINER_ID);
+        verify(trainerMapper).toDto(trainer);
     }
 
     @Test
     void createTraining_callsServiceAndMapper_returnsTrainingResponseDto() {
         when(trainingService.createTraining(trainingCreateRequestDto)).thenReturn(training);
-        when(trainingMapper.toDto(training)).thenReturn(trainingResponseDto);
+        when(trainingMapper.toDto(training)).thenReturn(expectedTrainingResponse);
 
-        TrainingResponseDto result = sut.createTraining(trainingCreateRequestDto);
+        TrainingResponseDto actual = facade.createTraining(trainingCreateRequestDto);
 
-        assertEquals(trainingResponseDto, result);
-        verify(trainingService, times(1)).createTraining(trainingCreateRequestDto);
-        verify(trainingMapper, times(1)).toDto(training);
+        assertEquals(TRAINING_ID, actual.getId());
+        assertEquals(TRAINEE_ID, actual.getTraineeId());
+        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(TRAINING_NAME, actual.getName());
+        assertEquals(SPECIALIZATION, actual.getType().getName());
+        assertEquals(TRAINING_DATE, actual.getDate());
+        assertEquals(TRAINING_DURATION, actual.getDuration());
+
+        verify(trainingService).createTraining(trainingCreateRequestDto);
+        verify(trainingMapper).toDto(training);
     }
 
     @Test
     void getTraining_callsServiceAndMapper_returnsTrainingResponseDto() {
-        when(trainingService.getTraining(1L)).thenReturn(training);
-        when(trainingMapper.toDto(training)).thenReturn(trainingResponseDto);
+        when(trainingService.getTraining(TRAINING_ID)).thenReturn(training);
+        when(trainingMapper.toDto(training)).thenReturn(expectedTrainingResponse);
 
-        TrainingResponseDto result = sut.getTraining(1L);
+        TrainingResponseDto actual = facade.getTraining(TRAINING_ID);
 
-        assertEquals(trainingResponseDto, result);
-        verify(trainingService, times(1)).getTraining(1L);
-        verify(trainingMapper, times(1)).toDto(training);
+        assertEquals(TRAINING_ID, actual.getId());
+        assertEquals(TRAINEE_ID, actual.getTraineeId());
+        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(TRAINING_NAME, actual.getName());
+        assertEquals(SPECIALIZATION, actual.getType().getName());
+        assertEquals(TRAINING_DATE, actual.getDate());
+        assertEquals(TRAINING_DURATION, actual.getDuration());
+
+        verify(trainingService).getTraining(TRAINING_ID);
+        verify(trainingMapper).toDto(training);
     }
 }
