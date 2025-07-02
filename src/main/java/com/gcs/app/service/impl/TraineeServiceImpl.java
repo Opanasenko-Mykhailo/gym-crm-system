@@ -6,6 +6,7 @@ import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.model.User;
 import com.gcs.app.service.TraineeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,15 +31,8 @@ public class TraineeServiceImpl implements TraineeService {
 
         log.info("Creating trainee: {} {}", trainee.getUser().getFirstName(), trainee.getUser().getLastName());
 
-        String username = generateUsername(trainee.getUser().getFirstName(), trainee.getUser().getLastName(), traineeDao.getAllUsernames());
-        String password = generateRandomPassword();
-
         Trainee traineeWithCredentials = trainee.toBuilder()
-                .user(trainee.getUser().toBuilder()
-                        .username(username)
-                        .password(password)
-                        .isActive(true)
-                        .build())
+                .user(userWithCredentials(trainee.getUser()))
                 .build();
 
         Trainee createdTrainee = traineeDao.create(traineeWithCredentials);
@@ -92,5 +86,16 @@ public class TraineeServiceImpl implements TraineeService {
         }
 
         return trainee;
+    }
+
+    private User userWithCredentials(User user) {
+        String username = generateUsername(user.getFirstName(), user.getLastName(), traineeDao.getAllUsernames());
+        String password = generateRandomPassword();
+
+        return user.builder()
+                .username(username)
+                .password(password)
+                .isActive(true)
+                .build();
     }
 }

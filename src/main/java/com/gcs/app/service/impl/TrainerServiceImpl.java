@@ -6,6 +6,7 @@ import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
+import com.gcs.app.model.User;
 import com.gcs.app.service.TrainerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,15 +30,8 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
         log.info("Creating trainer: {} {}", trainer.getUser().getFirstName(), trainer.getUser().getLastName());
 
-        String username = generateUsername(trainer.getUser().getFirstName(), trainer.getUser().getLastName(), trainerDao.getAllUsernames());
-        String password = generateRandomPassword();
-
         Trainer trainerWithCredentials = trainer.toBuilder()
-                .user(trainer.getUser().toBuilder()
-                        .username(username)
-                        .password(password)
-                        .isActive(true)
-                        .build())
+                .user(userWithCredentials(trainer.getUser()))
                 .build();
 
         Trainer createdTrainer = trainerDao.create(trainerWithCredentials);
@@ -79,5 +73,16 @@ public class TrainerServiceImpl implements TrainerService {
         }
 
         return trainer;
+    }
+
+    private User userWithCredentials(User user) {
+        String username = generateUsername(user.getFirstName(), user.getLastName(), trainerDao.getAllUsernames());
+        String password = generateRandomPassword();
+
+        return user.builder()
+                .username(username)
+                .password(password)
+                .isActive(true)
+                .build();
     }
 }

@@ -20,13 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InMemoryStorageTest {
-
-    private Map<Long, Trainee> traineeMap = new HashMap<>();
-    private Map<Long, Trainer> trainerMap = new HashMap<>();
-    private Map<Long, Training> trainingMap = new HashMap<>();
-
-    private InMemoryStorage storage = new InMemoryStorage(traineeMap, trainerMap, trainingMap);
-
     private static final String TRAINEE_FIRST_NAME = "Anna";
     private static final String TRAINEE_LAST_NAME = "Nowak";
     private static final String TRAINEE_USERNAME = "anowak";
@@ -52,6 +45,12 @@ class InMemoryStorageTest {
     private static final LocalDate TEST_DATE_OF_BIRTH = LocalDate.of(2000, 2, 2);
     private static final String TEST_ADDRESS = "Test Address";
     private static final Long NOT_FOUND_ID = 999L;
+
+    private Map<Long, Trainee> traineeMap = new HashMap<>();
+    private Map<Long, Trainer> trainerMap = new HashMap<>();
+    private Map<Long, Training> trainingMap = new HashMap<>();
+
+    private InMemoryStorage storage = new InMemoryStorage(traineeMap, trainerMap, trainingMap);
 
     @Test
     void testPutAndGetTrainee() {

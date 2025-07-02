@@ -38,13 +38,13 @@ public class Trainer {
     @Column(name = "id", updatable = false, nullable = false)
     private Long id;
 
-    @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    private User user;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "specialization_id", nullable = false)
     private TrainingType specialization;
+
+    @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    private User user;
 
     @Builder.Default
     @ManyToMany(mappedBy = "trainers", fetch = FetchType.LAZY)
