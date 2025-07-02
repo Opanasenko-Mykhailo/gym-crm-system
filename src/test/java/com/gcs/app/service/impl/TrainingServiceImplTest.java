@@ -4,16 +4,16 @@ import com.gcs.app.dao.TrainingDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.mapper.TrainingMapper;
+import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -31,7 +31,7 @@ class TrainingServiceImplTest {
     private static final String NAME = "Yoga Session";
     private static final String TYPE = "Yoga";
     private static final LocalDate DATE = LocalDate.of(2025, 6, 30);
-    private static final Duration DURATION = Duration.ofHours(1);
+    private static final Long DURATION = 60L;
 
     @Mock
     private TrainingDao trainingDao;
@@ -42,14 +42,8 @@ class TrainingServiceImplTest {
     @InjectMocks
     private TrainingServiceImpl service;
 
-    private Training expected;
-    private TrainingCreateRequestDto createRequestDto;
-
-    @BeforeEach
-    void setUp() {
-        expected = buildTraining();
-        createRequestDto = buildCreateRequestDto();
-    }
+    private Training expected = createTraining();
+    private TrainingCreateRequestDto createRequestDto = createTrainingCreateRequestDto();
 
     @Test
     void createTraining_mapsDtoAndCreatesTraining_returnsTraining() {
@@ -58,8 +52,8 @@ class TrainingServiceImplTest {
 
         Training actual = service.createTraining(createRequestDto);
         assertEquals(ID, actual.getId());
-        assertEquals(TRAINEE_ID, actual.getTraineeId());
-        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(TRAINEE_ID, actual.getTrainee().getId());
+        assertEquals(TRAINER_ID, actual.getTrainer().getId());
         assertEquals(NAME, actual.getName());
         assertEquals(TYPE, actual.getType().getName());
         assertEquals(DATE, actual.getDate());
@@ -75,8 +69,8 @@ class TrainingServiceImplTest {
 
         Training actual = service.getTraining(ID);
         assertEquals(ID, actual.getId());
-        assertEquals(TRAINEE_ID, actual.getTraineeId());
-        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(TRAINEE_ID, actual.getTrainee().getId());
+        assertEquals(TRAINER_ID, actual.getTrainer().getId());
         assertEquals(NAME, actual.getName());
         assertEquals(TYPE, actual.getType().getName());
         assertEquals(DATE, actual.getDate());
@@ -95,24 +89,42 @@ class TrainingServiceImplTest {
         verify(trainingDao).get(ID);
     }
 
-    private Training buildTraining() {
+    private Training createTraining() {
         return Training.builder()
                 .id(ID)
-                .traineeId(TRAINEE_ID)
-                .trainerId(TRAINER_ID)
+                .trainee(createTrainee())
+                .trainer(createTrainer())
                 .name(NAME)
-                .type(new TrainingType(TYPE))
+                .type(createTrainingType())
                 .date(DATE)
                 .duration(DURATION)
                 .build();
     }
 
-    private TrainingCreateRequestDto buildCreateRequestDto() {
+    private Trainee createTrainee() {
+        return Trainee.builder()
+                .id(TRAINEE_ID)
+                .build();
+    }
+
+    private Trainer createTrainer() {
+        return Trainer.builder()
+                .id(TRAINER_ID)
+                .build();
+    }
+
+    private TrainingType createTrainingType() {
+        return TrainingType.builder()
+                .name(TYPE)
+                .build();
+    }
+
+    private TrainingCreateRequestDto createTrainingCreateRequestDto() {
         TrainingCreateRequestDto dto = new TrainingCreateRequestDto();
         dto.setTraineeId(TRAINEE_ID);
         dto.setTrainerId(TRAINER_ID);
         dto.setName(NAME);
-        dto.setType(new TrainingType(TYPE));
+        dto.setType(createTrainingType());
         dto.setDate(DATE);
         dto.setDuration(DURATION);
 

@@ -5,6 +5,7 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
+import com.gcs.app.model.User;
 import com.gcs.app.model.enums.EntityType;
 import com.gcs.app.util.UserUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,11 +104,7 @@ public class DataInitializer {
 
     private Trainee createTrainee(String[] parts) {
         return Trainee.builder()
-                .firstName(parts[1].trim())
-                .lastName(parts[2].trim())
-                .username(parts[3].trim())
-                .password(UserUtils.generateRandomPassword())
-                .isActive(true)
+                .user(createUser((parts[1].trim()), (parts[2].trim()), (parts[3].trim())))
                 .dateOfBirth(LocalDate.parse(parts[4].trim()))
                 .address(parts[5].trim())
                 .build();
@@ -116,23 +112,47 @@ public class DataInitializer {
 
     private Trainer createTrainer(String[] parts) {
         return Trainer.builder()
-                .firstName(parts[1].trim())
-                .lastName(parts[2].trim())
-                .username(parts[3].trim())
-                .password(UserUtils.generateRandomPassword())
-                .isActive(true)
-                .specialization(new TrainingType(parts[4].trim()))
+                .user(createUser((parts[1].trim()), (parts[2].trim()), (parts[3].trim())))
+                .specialization(createTrainingType(parts[4].trim()))
                 .build();
     }
 
     private Training createTraining(String[] parts) {
         return Training.builder()
-                .traineeId(Long.parseLong(parts[1].trim()))
-                .trainerId(Long.parseLong(parts[2].trim()))
+                .trainee(createTrainee(Long.parseLong(parts[1].trim())))
+                .trainer(createTrainer(Long.parseLong(parts[2].trim())))
                 .name(parts[4].trim())
-                .type(new TrainingType(parts[5].trim()))
+                .type(createTrainingType(parts[5].trim()))
                 .date(LocalDate.parse(parts[6].trim()))
-                .duration(Duration.parse(parts[7].trim()))
+                .duration(Long.parseLong(parts[7].trim()))
+                .build();
+    }
+
+    private User createUser(String firstName, String lastName, String username) {
+        return User.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .username(username)
+                .password(UserUtils.generateRandomPassword())
+                .isActive(true)
+                .build();
+    }
+
+    private TrainingType createTrainingType(String type) {
+        return TrainingType.builder()
+                .name(type)
+                .build();
+    }
+
+    private Trainee createTrainee(Long traineeId) {
+        return Trainee.builder()
+                .id(traineeId)
+                .build();
+    }
+
+    private Trainer createTrainer(Long trainerId) {
+        return Trainer.builder()
+                .id(trainerId)
                 .build();
     }
 }

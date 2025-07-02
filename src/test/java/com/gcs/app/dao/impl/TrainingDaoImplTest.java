@@ -1,16 +1,16 @@
 package com.gcs.app.dao.impl;
 
+import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.storage.InMemoryStorage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -30,7 +30,7 @@ class TrainingDaoImplTest {
     private static final String NAME = "Yoga Session";
     private static final String TYPE = "Yoga";
     private static final LocalDate DATE = LocalDate.of(2025, 6, 30);
-    private static final Duration DURATION = Duration.ofHours(1);
+    private static final Long DURATION = 60L;
 
     @Mock
     private InMemoryStorage storage;
@@ -38,12 +38,7 @@ class TrainingDaoImplTest {
     @InjectMocks
     private TrainingDaoImpl dao;
 
-    private Training expected;
-
-    @BeforeEach
-    void setUp() {
-        expected = buildTraining();
-    }
+    private Training expected = createTraining();
 
     @Test
     void create_assignsIdAndStoresTraining_returnsTraining() {
@@ -52,8 +47,8 @@ class TrainingDaoImplTest {
         Training actual = dao.create(expected);
 
         assertEquals(ID, actual.getId());
-        assertEquals(TRAINEE_ID, actual.getTraineeId());
-        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(TRAINEE_ID, actual.getTrainee().getId());
+        assertEquals(TRAINER_ID, actual.getTrainer().getId());
         assertEquals(NAME, actual.getName());
         assertEquals(TYPE, actual.getType().getName());
         assertEquals(DATE, actual.getDate());
@@ -70,8 +65,8 @@ class TrainingDaoImplTest {
         Optional<Training> actual = dao.get(ID);
 
         assertTrue(actual.isPresent());
-        assertEquals(TRAINEE_ID, actual.get().getTraineeId());
-        assertEquals(TRAINER_ID, actual.get().getTrainerId());
+        assertEquals(TRAINEE_ID, actual.get().getTrainee().getId());
+        assertEquals(TRAINER_ID, actual.get().getTrainer().getId());
         assertEquals(NAME, actual.get().getName());
         assertEquals(TYPE, actual.get().getType().getName());
         assertEquals(DATE, actual.get().getDate());
@@ -90,15 +85,33 @@ class TrainingDaoImplTest {
         verify(storage).getById(TRAINING, ID);
     }
 
-    private Training buildTraining() {
+    private Training createTraining() {
         return Training.builder()
                 .id(ID)
-                .traineeId(TRAINEE_ID)
-                .trainerId(TRAINER_ID)
+                .trainee(createTrainee())
+                .trainer(createTrainer())
                 .name(NAME)
-                .type(new TrainingType(TYPE))
+                .type(createTrainingType())
                 .date(DATE)
                 .duration(DURATION)
+                .build();
+    }
+
+    private Trainee createTrainee() {
+        return Trainee.builder()
+                .id(TRAINEE_ID)
+                .build();
+    }
+
+    private Trainer createTrainer() {
+        return Trainer.builder()
+                .id(TRAINER_ID)
+                .build();
+    }
+
+    private TrainingType createTrainingType() {
+        return TrainingType.builder()
+                .name(TYPE)
                 .build();
     }
 }

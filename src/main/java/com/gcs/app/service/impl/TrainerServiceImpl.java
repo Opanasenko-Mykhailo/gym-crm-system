@@ -6,6 +6,7 @@ import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
+import com.gcs.app.model.User;
 import com.gcs.app.service.TrainerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,15 +28,10 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public Trainer createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
-        log.info("Creating trainer: {} {}", trainer.getFirstName(), trainer.getLastName());
-
-        String username = generateUsername(trainer.getFirstName(), trainer.getLastName(), trainerDao.getAllUsernames());
-        String password = generateRandomPassword();
+        log.info("Creating trainer: {} {}", trainer.getUser().getFirstName(), trainer.getUser().getLastName());
 
         Trainer trainerWithCredentials = trainer.toBuilder()
-                .username(username)
-                .password(password)
-                .isActive(true)
+                .user(userWithCredentials(trainer.getUser()))
                 .build();
 
         Trainer createdTrainer = trainerDao.create(trainerWithCredentials);
@@ -47,12 +43,12 @@ public class TrainerServiceImpl implements TrainerService {
     public Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
         Trainer updatedTrainer = trainerMapper.toUpdateEntity(trainerUpdateRequestDto);
 
-        Long userId = updatedTrainer.getUserId();
+        Long userId = updatedTrainer.getId();
         log.info("Updating trainer with userId: {}", userId);
 
         validateTrainerExists(userId);
 
-        Trainer trainerWithId = updatedTrainer.toBuilder().userId(userId).build();
+        Trainer trainerWithId = updatedTrainer.toBuilder().id(userId).build();
         Trainer savedTrainer = trainerDao.update(trainerWithId);
         log.debug("Trainer updated: {}", savedTrainer);
 
@@ -77,5 +73,16 @@ public class TrainerServiceImpl implements TrainerService {
         }
 
         return trainer;
+    }
+
+    private User userWithCredentials(User user) {
+        String username = generateUsername(user.getFirstName(), user.getLastName(), trainerDao.getAllUsernames());
+        String password = generateRandomPassword();
+
+        return user.builder()
+                .username(username)
+                .password(password)
+                .isActive(true)
+                .build();
     }
 }

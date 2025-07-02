@@ -2,8 +2,8 @@ package com.gcs.app.dao.impl;
 
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.model.User;
 import com.gcs.app.storage.InMemoryStorage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,12 +43,7 @@ class TraineeDaoImplTest {
     @InjectMocks
     private TraineeDaoImpl dao;
 
-    private Trainee expected;
-
-    @BeforeEach
-    void setUp() {
-        expected = buildTrainee();
-    }
+    private Trainee expected = createTrainee();
 
     @Test
     void create_assignsUserIdAndStoresTrainee_returnsTrainee() {
@@ -56,12 +51,12 @@ class TraineeDaoImplTest {
 
         Trainee actual = dao.create(expected);
 
-        assertEquals(USER_ID, actual.getUserId());
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertEquals(USERNAME, actual.getUsername());
-        assertEquals(PASSWORD, actual.getPassword());
-        assertTrue(actual.getIsActive());
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertEquals(PASSWORD, actual.getUser().getPassword());
+        assertTrue(actual.getUser().getIsActive());
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
@@ -76,9 +71,9 @@ class TraineeDaoImplTest {
         Optional<Trainee> actual = dao.get(USER_ID);
 
         assertTrue(actual.isPresent());
-        assertEquals(FIRST_NAME, actual.get().getFirstName());
-        assertEquals(LAST_NAME, actual.get().getLastName());
-        assertEquals(USERNAME, actual.get().getUsername());
+        assertEquals(FIRST_NAME, actual.get().getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.get().getUser().getLastName());
+        assertEquals(USERNAME, actual.get().getUser().getUsername());
 
         verify(storage).getById(TRAINEE, USER_ID);
     }
@@ -99,9 +94,9 @@ class TraineeDaoImplTest {
 
         Trainee actual = dao.update(expected);
 
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertEquals(USERNAME, actual.getUsername());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
 
         verify(storage).getById(TRAINEE, USER_ID);
         verify(storage).put(TRAINEE, USER_ID, expected);
@@ -140,16 +135,22 @@ class TraineeDaoImplTest {
         verify(storage, never()).getNamespace(TRAINEE);
     }
 
-    private Trainee buildTrainee() {
+    private Trainee createTrainee() {
         return Trainee.builder()
-                .userId(USER_ID)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
+                .id(USER_ID)
+                .user(createUser())
+                .dateOfBirth(DATE_OF_BIRTH)
+                .address(ADDRESS)
+                .build();
+    }
+
+    private User createUser() {
+        return User.builder()
                 .username(USERNAME)
                 .password(PASSWORD)
                 .isActive(true)
-                .dateOfBirth(DATE_OF_BIRTH)
-                .address(ADDRESS)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
                 .build();
     }
 }

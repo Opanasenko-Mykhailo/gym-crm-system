@@ -6,6 +6,7 @@ import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.model.User;
 import com.gcs.app.service.TraineeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,15 +29,10 @@ public class TraineeServiceImpl implements TraineeService {
     public Trainee createTrainee(TraineeCreateRequestDto requestDto) {
         Trainee trainee = traineeMapper.toEntity(requestDto);
 
-        log.info("Creating trainee: {} {}", trainee.getFirstName(), trainee.getLastName());
-
-        String username = generateUsername(trainee.getFirstName(), trainee.getLastName(), traineeDao.getAllUsernames());
-        String password = generateRandomPassword();
+        log.info("Creating trainee: {} {}", trainee.getUser().getFirstName(), trainee.getUser().getLastName());
 
         Trainee traineeWithCredentials = trainee.toBuilder()
-                .username(username)
-                .password(password)
-                .isActive(true)
+                .user(userWithCredentials(trainee.getUser()))
                 .build();
 
         Trainee createdTrainee = traineeDao.create(traineeWithCredentials);
@@ -50,12 +46,12 @@ public class TraineeServiceImpl implements TraineeService {
     public Trainee updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
         Trainee updatedTrainee = traineeMapper.toUpdateEntity(traineeUpdateRequestDto);
 
-        Long userId = updatedTrainee.getUserId();
+        Long userId = updatedTrainee.getId();
         log.info("Updating trainee with userId: {}", userId);
 
         validateTraineeExists(userId);
 
-        Trainee traineeWithId = updatedTrainee.toBuilder().userId(userId).build();
+        Trainee traineeWithId = updatedTrainee.toBuilder().id(userId).build();
         Trainee savedTrainee = traineeDao.update(traineeWithId);
         log.debug("Trainee updated: {}", savedTrainee);
 
@@ -90,5 +86,16 @@ public class TraineeServiceImpl implements TraineeService {
         }
 
         return trainee;
+    }
+
+    private User userWithCredentials(User user) {
+        String username = generateUsername(user.getFirstName(), user.getLastName(), traineeDao.getAllUsernames());
+        String password = generateRandomPassword();
+
+        return user.builder()
+                .username(username)
+                .password(password)
+                .isActive(true)
+                .build();
     }
 }

@@ -4,13 +4,13 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
+import com.gcs.app.model.User;
 import com.gcs.app.model.enums.EntityType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -26,20 +26,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 class InMemoryStoragePostProcessorTest {
-    private InMemoryStoragePostProcessor postProcessor;
-    private ApplicationContext mockContext;
-    private DataInitializer mockInitializer;
-    private InMemoryStorage storage;
+    private InMemoryStoragePostProcessor postProcessor = new InMemoryStoragePostProcessor();
+    private ApplicationContext mockContext = Mockito.mock(ApplicationContext.class);
+    private DataInitializer mockInitializer = Mockito.mock(DataInitializer.class);
+    private InMemoryStorage storage = new InMemoryStorage(new HashMap<>(), new HashMap<>(), new HashMap<>());
 
     @BeforeEach
     void setUp() {
-        mockContext = Mockito.mock(ApplicationContext.class);
-        mockInitializer = Mockito.mock(DataInitializer.class);
-
-        postProcessor = new InMemoryStoragePostProcessor();
         postProcessor.setApplicationContext(mockContext);
-
-        storage = new InMemoryStorage(new HashMap<>(), new HashMap<>(), new HashMap<>());
     }
 
     @Test
@@ -58,11 +52,11 @@ class InMemoryStoragePostProcessorTest {
         assertSame(storage, result);
 
         Trainee trainee = (Trainee) storage.getAll(TRAINEE).get(0);
-        assertEquals("Anna", trainee.getFirstName());
-        assertNotNull(trainee.getUserId());
+        assertEquals("Anna", trainee.getUser().getFirstName());
+        assertNotNull(trainee.getId());
 
         Trainer trainer = (Trainer) storage.getAll(TRAINER).get(0);
-        assertEquals("Jan", trainer.getFirstName());
+        assertEquals("Jan", trainer.getUser().getFirstName());
         assertEquals("Yoga", trainer.getSpecialization().getName());
 
         Training training = (Training) storage.getAll(TRAINING).get(0);
@@ -79,12 +73,8 @@ class InMemoryStoragePostProcessorTest {
 
     private Trainee createTrainee(Long userId, String firstName, String lastName, String username) {
         return Trainee.builder()
-                .userId(userId)
-                .firstName(firstName)
-                .lastName(lastName)
-                .username(username)
-                .password("password")
-                .isActive(true)
+                .id(userId)
+                .user(createUser(firstName, lastName, username))
                 .dateOfBirth(LocalDate.of(2000, 1, 1))
                 .address("Test Address")
                 .build();
@@ -92,25 +82,49 @@ class InMemoryStoragePostProcessorTest {
 
     private Trainer createTrainer(Long userId, String firstName, String lastName, String username, String specialization) {
         return Trainer.builder()
-                .userId(userId)
-                .firstName(firstName)
-                .lastName(lastName)
-                .username(username)
-                .password("secure")
-                .isActive(true)
-                .specialization(new TrainingType(specialization))
+                .id(userId)
+                .user(createUser(firstName, lastName, username))
+                .specialization(createTrainingType(specialization))
                 .build();
     }
 
     private Training createTraining(Long id, Long traineeId, Long trainerId, String name, String type) {
         return Training.builder()
                 .id(id)
-                .traineeId(traineeId)
-                .trainerId(trainerId)
+                .trainee(createTrainee(traineeId))
+                .trainer(createTrainer(trainerId))
                 .name(name)
-                .type(new TrainingType(type))
+                .type(createTrainingType(type))
                 .date(LocalDate.of(2024, 6, 1))
-                .duration(Duration.ofMinutes(90))
+                .duration(60L)
+                .build();
+    }
+
+    private User createUser(String firstName, String lastName, String username) {
+        return User.builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .username(username)
+                .password("secure")
+                .isActive(true)
+                .build();
+    }
+
+    private TrainingType createTrainingType(String type) {
+        return TrainingType.builder()
+                .name(type)
+                .build();
+    }
+
+    private Trainee createTrainee(Long traineeId) {
+        return Trainee.builder()
+                .id(traineeId)
+                .build();
+    }
+
+    private Trainer createTrainer(Long trainerId) {
+        return Trainer.builder()
+                .id(trainerId)
                 .build();
     }
 }
