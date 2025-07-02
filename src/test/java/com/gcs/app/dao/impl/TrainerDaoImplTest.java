@@ -43,7 +43,7 @@ class TrainerDaoImplTest {
 
     @BeforeEach
     void setUp() {
-        expected = buildTrainer();
+        expected = createTrainer();
     }
 
     @Test
@@ -115,19 +115,27 @@ class TrainerDaoImplTest {
         verify(storage, never()).put(TRAINER, USER_ID, expected);
     }
 
-    private Trainer buildTrainer() {
+    private Trainer createTrainer() {
         return Trainer.builder()
                 .id(USER_ID)
-                .user(User.builder()
-                        .username(USERNAME)
-                        .password(PASSWORD)
-                        .isActive(true)
-                        .firstName(FIRST_NAME)
-                        .lastName(LAST_NAME)
-                        .build())
-                .specialization(TrainingType.builder()
-                        .name(SPECIALIZATION)
-                        .build())
+                .user(createUser())
+                .specialization(createTrainingType())
+                .build();
+    }
+
+    private User createUser() {
+        return User.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .build();
+    }
+
+    private TrainingType createTrainingType() {
+        return TrainingType.builder()
+                .name(SPECIALIZATION)
                 .build();
     }
 }

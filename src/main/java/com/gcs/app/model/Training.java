@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 @Entity
@@ -30,28 +29,27 @@ public class Training {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private final Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "trainee_id", nullable = false)
-    private final Trainee trainee;
+    @JoinColumn(name = "trainee_id", referencedColumnName = "id", nullable = false)
+    private Trainee trainee;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "trainer_id", nullable = false)
-    private final Trainer trainer;
+    @JoinColumn(name = "trainer_id", referencedColumnName = "id", nullable = false)
+    private Trainer trainer;
 
-    @Column(name = "training_name", nullable = false)
-    private final String name;
+    @Column(name = "training_name", nullable = false, length = 100)
+    private String name;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "training_type_id", nullable = false)
-    private final TrainingType type;
+    @JoinColumn(name = "type_id", referencedColumnName = "id", nullable = false)
+    private TrainingType type;
 
     @Column(name = "training_date", nullable = false)
-    private final LocalDate date;
+    private LocalDate date;
 
     @Column(name = "training_duration", nullable = false)
-    private final Duration duration;
+    private Double duration;
 }
-
-

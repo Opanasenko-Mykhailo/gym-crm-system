@@ -25,22 +25,22 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private final Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    private Long id;
 
-    @Column(nullable = false)
-    private final String firstName;
+    @Column(name = "first_name", nullable = false, length = 50)
+    private String firstName;
 
-    @Column(nullable = false)
-    private final String lastName;
+    @Column(name = "last_name", nullable = false, length = 50)
+    private String lastName;
 
-    @Column(nullable = false, unique = true)
-    private final String username;
+    @Column(name = "username", nullable = false, unique = true, length = 50)
+    private String username;
 
     @ToString.Exclude
-    @Column(nullable = false)
-    private final String password;
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
 
-    @Column(nullable = false)
-    private final Boolean isActive;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
 }
-

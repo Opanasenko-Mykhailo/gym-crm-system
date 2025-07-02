@@ -51,9 +51,9 @@ class TrainerServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        expected = buildTrainer();
-        createRequestDto = buildCreateRequestDto();
-        updateRequestDto = buildUpdateRequestDto();
+        expected = createTrainer();
+        createRequestDto = createTrainerCreateRequestDto();
+        updateRequestDto = createTrainerUpdateRequestDto();
     }
 
     @Test
@@ -134,41 +134,45 @@ class TrainerServiceImplTest {
         verify(trainerDao).get(USER_ID);
     }
 
-    private Trainer buildTrainer() {
+    private Trainer createTrainer() {
         return Trainer.builder()
                 .id(USER_ID)
-                .user(User.builder()
-                        .username(USERNAME)
-                        .password(PASSWORD)
-                        .isActive(true)
-                        .firstName(FIRST_NAME)
-                        .lastName(LAST_NAME)
-                        .build())
-                .specialization(TrainingType.builder()
-                        .name(SPECIALIZATION)
-                        .build())
+                .user(createUser())
+                .specialization(createTrainingType())
                 .build();
     }
 
-    private TrainerCreateRequestDto buildCreateRequestDto() {
+    private User createUser() {
+        return User.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
+                .build();
+    }
+
+    private TrainingType createTrainingType() {
+        return TrainingType.builder()
+                .name(SPECIALIZATION)
+                .build();
+    }
+
+    private TrainerCreateRequestDto createTrainerCreateRequestDto() {
         TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
-        dto.setSpecialization(TrainingType.builder()
-                .name(SPECIALIZATION)
-                .build());
+        dto.setSpecialization(createTrainingType());
 
         return dto;
     }
 
-    private TrainerUpdateRequestDto buildUpdateRequestDto() {
+    private TrainerUpdateRequestDto createTrainerUpdateRequestDto() {
         TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
         dto.setUserId(USER_ID);
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
-        dto.setSpecialization(TrainingType.builder()
-                .name(SPECIALIZATION)
-                .build());
+        dto.setSpecialization(createTrainingType());
         dto.setIsActive(true);
 
         return dto;

@@ -12,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -32,7 +31,7 @@ class TrainingDaoImplTest {
     private static final String NAME = "Yoga Session";
     private static final String TYPE = "Yoga";
     private static final LocalDate DATE = LocalDate.of(2025, 6, 30);
-    private static final Duration DURATION = Duration.ofHours(1);
+    private static final Double DURATION = 60.00;
 
     @Mock
     private InMemoryStorage storage;
@@ -44,7 +43,7 @@ class TrainingDaoImplTest {
 
     @BeforeEach
     void setUp() {
-        expected = buildTraining();
+        expected = createTraining();
     }
 
     @Test
@@ -92,20 +91,33 @@ class TrainingDaoImplTest {
         verify(storage).getById(TRAINING, ID);
     }
 
-    private Training buildTraining() {
+    private Training createTraining() {
         return Training.builder()
                 .id(ID)
-                .trainee(Trainee.builder()
-                        .id(TRAINEE_ID)
-                        .build())
-                .trainer(Trainer.builder()
-                        .id(TRAINER_ID).build())
+                .trainee(createTrainee())
+                .trainer(createTrainer())
                 .name(NAME)
-                .type(TrainingType.builder()
-                        .name(TYPE)
-                        .build())
+                .type(createTrainingType())
                 .date(DATE)
                 .duration(DURATION)
+                .build();
+    }
+
+    private Trainee createTrainee() {
+        return Trainee.builder()
+                .id(TRAINEE_ID)
+                .build();
+    }
+
+    private Trainer createTrainer() {
+        return Trainer.builder()
+                .id(TRAINER_ID)
+                .build();
+    }
+
+    private TrainingType createTrainingType() {
+        return TrainingType.builder()
+                .name(TYPE)
                 .build();
     }
 }

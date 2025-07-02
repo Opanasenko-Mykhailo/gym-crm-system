@@ -25,9 +25,9 @@ public class TrainingType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private final Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    private Long id;
 
-    @Column(name = "training_type_name", nullable = false, unique = true)
-    private final String name;
+    @Column(name = "training_type_name", nullable = false, unique = true, length = 100)
+    private String name;
 }
-

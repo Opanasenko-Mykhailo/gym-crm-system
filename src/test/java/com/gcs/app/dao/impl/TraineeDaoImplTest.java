@@ -48,7 +48,7 @@ class TraineeDaoImplTest {
 
     @BeforeEach
     void setUp() {
-        expected = buildTrainee();
+        expected = createTrainee();
     }
 
     @Test
@@ -141,18 +141,22 @@ class TraineeDaoImplTest {
         verify(storage, never()).getNamespace(TRAINEE);
     }
 
-    private Trainee buildTrainee() {
+    private Trainee createTrainee() {
         return Trainee.builder()
                 .id(USER_ID)
-                .user(User.builder()
-                        .username(USERNAME)
-                        .password(PASSWORD)
-                        .isActive(true)
-                        .firstName(FIRST_NAME)
-                        .lastName(LAST_NAME)
-                        .build())
+                .user(createUser())
                 .dateOfBirth(DATE_OF_BIRTH)
                 .address(ADDRESS)
+                .build();
+    }
+
+    private User createUser() {
+        return User.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .firstName(FIRST_NAME)
+                .lastName(LAST_NAME)
                 .build();
     }
 }
