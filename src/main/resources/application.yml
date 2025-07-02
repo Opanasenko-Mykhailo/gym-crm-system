@@ -3,6 +3,11 @@ server:
 storage:
   path: classpath:initial-data.csv
 
+spring:
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+    enabled: true
+
 database:
   url: jdbc:postgresql://localhost:5432/gym_db
   username: gcs
