@@ -1,1 +1,5 @@
 Gym CRM System
+
+CREATE DATABASE "gym_db";
+CREATE USER gcs WITH PASSWORD 'gcs';
+GRANT ALL PRIVILEGES ON DATABASE "gym_db" TO gcs;

@@ -4,9 +4,9 @@ storage:
   path: classpath:initial-data.csv
 
 database:
-  url: jdbc:postgresql://localhost:5432/gym_database
-  username: root
-  password: root
+  url: jdbc:postgresql://localhost:5432/gym_db
+  username: gcs
+  password: gcs
   driver-class-name: org.postgresql.Driver
 
 hibernate:
