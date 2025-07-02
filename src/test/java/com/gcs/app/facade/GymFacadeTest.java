@@ -19,7 +19,6 @@ import com.gcs.app.model.User;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -52,7 +51,7 @@ class GymFacadeTest {
     private static final Long TRAINING_ID = 1L;
     private static final String TRAINING_NAME = "Yoga Session";
     private static final LocalDate TRAINING_DATE = LocalDate.of(2025, 6, 30);
-    private static final Double TRAINING_DURATION = 60.00;
+    private static final Long TRAINING_DURATION = 60L;
 
     @Mock
     private TraineeService traineeService;
@@ -75,32 +74,17 @@ class GymFacadeTest {
     @InjectMocks
     private GymFacade facade;
 
-    private Trainee trainee;
-    private Trainer trainer;
-    private Training training;
-    private TraineeCreateRequestDto traineeCreateRequestDto;
-    private TraineeUpdateRequestDto traineeUpdateRequestDto;
-    private TraineeResponseDto expectedTraineeResponse;
-    private TrainerCreateRequestDto trainerCreateRequestDto;
-    private TrainerUpdateRequestDto trainerUpdateRequestDto;
-    private TrainerResponseDto expectedTrainerResponse;
-    private TrainingCreateRequestDto trainingCreateRequestDto;
-    private TrainingResponseDto expectedTrainingResponse;
-
-    @BeforeEach
-    void setUp() {
-        trainee = createTrainee();
-        trainer = createTrainer();
-        training = createTraining();
-        traineeCreateRequestDto = createTraineeCreateRequestDto();
-        traineeUpdateRequestDto = createTraineeUpdateRequestDto();
-        expectedTraineeResponse = createTraineeResponseDto();
-        trainerCreateRequestDto = createTrainerCreateRequestDto();
-        trainerUpdateRequestDto = createTrainerUpdateRequestDto();
-        expectedTrainerResponse = createTrainerResponseDto();
-        trainingCreateRequestDto = createTrainingCreateRequestDto();
-        expectedTrainingResponse = createTrainingResponseDto();
-    }
+    private Trainee trainee = createTrainee();
+    private Trainer trainer = createTrainer();
+    private Training training = createTraining();
+    private TraineeCreateRequestDto traineeCreateRequestDto = createTraineeCreateRequestDto();
+    private TraineeUpdateRequestDto traineeUpdateRequestDto = createTraineeUpdateRequestDto();
+    private TraineeResponseDto expectedTraineeResponse = createTraineeResponseDto();
+    private TrainerCreateRequestDto trainerCreateRequestDto = createTrainerCreateRequestDto();
+    private TrainerUpdateRequestDto trainerUpdateRequestDto = createTrainerUpdateRequestDto();
+    private TrainerResponseDto expectedTrainerResponse = createTrainerResponseDto();
+    private TrainingCreateRequestDto trainingCreateRequestDto = createTrainingCreateRequestDto();
+    private TrainingResponseDto expectedTrainingResponse = createTrainingResponseDto();
 
     @Test
     void createTrainee_callsServiceAndMapper_returnsTraineeResponseDto() {

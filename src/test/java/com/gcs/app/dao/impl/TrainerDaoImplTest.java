@@ -5,7 +5,6 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import com.gcs.app.storage.InMemoryStorage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,12 +38,7 @@ class TrainerDaoImplTest {
     @InjectMocks
     private TrainerDaoImpl dao;
 
-    private Trainer expected;
-
-    @BeforeEach
-    void setUp() {
-        expected = createTrainer();
-    }
+    private Trainer expected = createTrainer();
 
     @Test
     void create_assignsUserIdAndStoresTrainer_returnsTrainer() {

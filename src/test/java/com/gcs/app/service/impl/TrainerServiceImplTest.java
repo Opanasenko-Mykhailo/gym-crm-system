@@ -8,7 +8,6 @@ import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,16 +44,9 @@ class TrainerServiceImplTest {
     @InjectMocks
     private TrainerServiceImpl service;
 
-    private Trainer expected;
-    private TrainerCreateRequestDto createRequestDto;
-    private TrainerUpdateRequestDto updateRequestDto;
-
-    @BeforeEach
-    void setUp() {
-        expected = createTrainer();
-        createRequestDto = createTrainerCreateRequestDto();
-        updateRequestDto = createTrainerUpdateRequestDto();
-    }
+    private Trainer expected = createTrainer();
+    private TrainerCreateRequestDto createRequestDto = createTrainerCreateRequestDto();
+    private TrainerUpdateRequestDto updateRequestDto = createTrainerUpdateRequestDto();
 
     @Test
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {

@@ -124,7 +124,7 @@ public class DataInitializer {
                 .name(parts[4].trim())
                 .type(createTrainingType(parts[5].trim()))
                 .date(LocalDate.parse(parts[6].trim()))
-                .duration(Double.parseDouble(parts[7].trim()))
+                .duration(Long.parseLong(parts[7].trim()))
                 .build();
     }
 

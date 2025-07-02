@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -22,7 +23,7 @@ import java.time.LocalDate;
 @Getter
 @ToString
 @EqualsAndHashCode
-@NoArgsConstructor(force = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Training {
@@ -32,6 +33,15 @@ public class Training {
     @Column(name = "id", updatable = false, nullable = false)
     private Long id;
 
+    @Column(name = "training_name", nullable = false, length = 100)
+    private String name;
+
+    @Column(name = "training_date", nullable = false)
+    private LocalDate date;
+
+    @Column(name = "training_duration", nullable = false)
+    private Long duration;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "trainee_id", referencedColumnName = "id", nullable = false)
     private Trainee trainee;
@@ -40,16 +50,7 @@ public class Training {
     @JoinColumn(name = "trainer_id", referencedColumnName = "id", nullable = false)
     private Trainer trainer;
 
-    @Column(name = "training_name", nullable = false, length = 100)
-    private String name;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "type_id", referencedColumnName = "id", nullable = false)
     private TrainingType type;
-
-    @Column(name = "training_date", nullable = false)
-    private LocalDate date;
-
-    @Column(name = "training_duration", nullable = false)
-    private Double duration;
 }

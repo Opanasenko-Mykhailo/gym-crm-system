@@ -5,7 +5,6 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -22,11 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InMemoryStorageTest {
 
-    private Map<Long, Trainee> traineeMap;
-    private Map<Long, Trainer> trainerMap;
-    private Map<Long, Training> trainingMap;
+    private Map<Long, Trainee> traineeMap = new HashMap<>();
+    private Map<Long, Trainer> trainerMap = new HashMap<>();
+    private Map<Long, Training> trainingMap = new HashMap<>();
 
-    private InMemoryStorage storage;
+    private InMemoryStorage storage = new InMemoryStorage(traineeMap, trainerMap, trainingMap);
 
     private static final String TRAINEE_FIRST_NAME = "Anna";
     private static final String TRAINEE_LAST_NAME = "Nowak";
@@ -44,7 +43,7 @@ class InMemoryStorageTest {
     private static final String TRAINING_NAME = "Strength";
     private static final String TRAINING_TYPE_NAME = "Cardio";
     private static final LocalDate TRAINING_DATE = LocalDate.of(2024, 6, 1);
-    private static final Double TRAINING_DURATION = 60.00;
+    private static final Long TRAINING_DURATION = 60L;
     private static final Long TRAINING_TRAINEE_ID = 1L;
     private static final Long TRAINING_TRAINER_ID = 2L;
 
@@ -53,14 +52,6 @@ class InMemoryStorageTest {
     private static final LocalDate TEST_DATE_OF_BIRTH = LocalDate.of(2000, 2, 2);
     private static final String TEST_ADDRESS = "Test Address";
     private static final Long NOT_FOUND_ID = 999L;
-
-    @BeforeEach
-    void setUp() {
-        traineeMap = new HashMap<>();
-        trainerMap = new HashMap<>();
-        trainingMap = new HashMap<>();
-        storage = new InMemoryStorage(traineeMap, trainerMap, trainingMap);
-    }
 
     @Test
     void testPutAndGetTrainee() {
@@ -93,8 +84,7 @@ class InMemoryStorageTest {
         Training training = createTrainingWithDetails(id);
         storage.put(TRAINING, id, training);
 
-        Optional<Training> result = storage.getById(TRAINING, id)
-                ;
+        Optional<Training> result = storage.getById(TRAINING, id);
         assertTrue(result.isPresent());
         assertEquals(TRAINING_NAME, result.get().getName());
         assertEquals(TRAINING_TYPE_NAME, result.get().getType().getName());

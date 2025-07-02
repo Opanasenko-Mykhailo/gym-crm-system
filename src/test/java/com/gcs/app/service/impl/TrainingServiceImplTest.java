@@ -8,7 +8,6 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,7 +31,7 @@ class TrainingServiceImplTest {
     private static final String NAME = "Yoga Session";
     private static final String TYPE = "Yoga";
     private static final LocalDate DATE = LocalDate.of(2025, 6, 30);
-    private static final Double DURATION = 60.00;
+    private static final Long DURATION = 60L;
 
     @Mock
     private TrainingDao trainingDao;
@@ -43,14 +42,8 @@ class TrainingServiceImplTest {
     @InjectMocks
     private TrainingServiceImpl service;
 
-    private Training expected;
-    private TrainingCreateRequestDto createRequestDto;
-
-    @BeforeEach
-    void setUp() {
-        expected = createTraining();
-        createRequestDto = createTrainingCreateRequestDto();
-    }
+    private Training expected = createTraining();
+    private TrainingCreateRequestDto createRequestDto = createTrainingCreateRequestDto();
 
     @Test
     void createTraining_mapsDtoAndCreatesTraining_returnsTraining() {

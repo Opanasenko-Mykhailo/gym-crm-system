@@ -26,20 +26,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 class InMemoryStoragePostProcessorTest {
-    private InMemoryStoragePostProcessor postProcessor;
-    private ApplicationContext mockContext;
-    private DataInitializer mockInitializer;
-    private InMemoryStorage storage;
+    private InMemoryStoragePostProcessor postProcessor = new InMemoryStoragePostProcessor();
+    private ApplicationContext mockContext = Mockito.mock(ApplicationContext.class);
+    private DataInitializer mockInitializer = Mockito.mock(DataInitializer.class);
+    private InMemoryStorage storage = new InMemoryStorage(new HashMap<>(), new HashMap<>(), new HashMap<>());
 
     @BeforeEach
     void setUp() {
-        mockContext = Mockito.mock(ApplicationContext.class);
-        mockInitializer = Mockito.mock(DataInitializer.class);
-
-        postProcessor = new InMemoryStoragePostProcessor();
         postProcessor.setApplicationContext(mockContext);
-
-        storage = new InMemoryStorage(new HashMap<>(), new HashMap<>(), new HashMap<>());
     }
 
     @Test
@@ -102,7 +96,7 @@ class InMemoryStoragePostProcessorTest {
                 .name(name)
                 .type(createTrainingType(type))
                 .date(LocalDate.of(2024, 6, 1))
-                .duration(60.00)
+                .duration(60L)
                 .build();
     }
 

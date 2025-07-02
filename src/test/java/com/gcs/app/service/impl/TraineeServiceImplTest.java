@@ -7,7 +7,6 @@ import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -48,16 +47,9 @@ class TraineeServiceImplTest {
     @InjectMocks
     private TraineeServiceImpl service;
 
-    private Trainee expectedTrainee;
-    private TraineeCreateRequestDto createRequestDto;
-    private TraineeUpdateRequestDto updateRequestDto;
-
-    @BeforeEach
-    void setUp() {
-        expectedTrainee = createTrainee();
-        createRequestDto = createTraineeCreateRequestDto();
-        updateRequestDto = createTraineeUpdateRequestDto();
-    }
+    private Trainee expectedTrainee = createTrainee();
+    private TraineeCreateRequestDto createRequestDto = createTraineeCreateRequestDto();
+    private TraineeUpdateRequestDto updateRequestDto = createTraineeUpdateRequestDto();
 
     @Test
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {

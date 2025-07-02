@@ -2,7 +2,6 @@ package com.gcs.app.storage;
 
 import com.gcs.app.exception.StorageInitializationException;
 import com.gcs.app.model.enums.EntityType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.core.io.Resource;
@@ -21,14 +20,8 @@ import static org.mockito.Mockito.when;
 
 class DataInitializerTest {
 
-    private ResourceLoader resourceLoader;
-    private DataInitializer dataInitializer;
-
-    @BeforeEach
-    void setUp() {
-        resourceLoader = Mockito.mock(ResourceLoader.class);
-        dataInitializer = new DataInitializer(resourceLoader);
-    }
+    private ResourceLoader resourceLoader = Mockito.mock(ResourceLoader.class);
+    private DataInitializer dataInitializer = new DataInitializer(resourceLoader);
 
     @Test
     void testInitializeData_success() throws Exception {
@@ -83,8 +76,8 @@ class DataInitializerTest {
                 trainee,Anna,Johnson,Anna.Johnson,1995-02-15,456 Oak Ave,,NULL
                 trainer,Jane,Doe,Jane.Doe,YOGA,,NULL,NULL
                 trainer,Mike,Wilson,Mike.Wilson,CARDIO,,NULL,NULL
-                training,2,1,,Cardio Session,CARDIO,2025-10-23,30.00
-                training,3,2,,Strength Training,STRENGTH,2025-10-24,20.00
+                training,2,1,,Cardio Session,CARDIO,2025-10-23,30
+                training,3,2,,Strength Training,STRENGTH,2025-10-24,20
                 """;
     }
 }

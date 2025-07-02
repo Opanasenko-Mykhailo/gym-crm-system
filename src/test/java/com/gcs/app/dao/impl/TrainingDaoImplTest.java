@@ -5,7 +5,6 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.storage.InMemoryStorage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +30,7 @@ class TrainingDaoImplTest {
     private static final String NAME = "Yoga Session";
     private static final String TYPE = "Yoga";
     private static final LocalDate DATE = LocalDate.of(2025, 6, 30);
-    private static final Double DURATION = 60.00;
+    private static final Long DURATION = 60L;
 
     @Mock
     private InMemoryStorage storage;
@@ -39,12 +38,7 @@ class TrainingDaoImplTest {
     @InjectMocks
     private TrainingDaoImpl dao;
 
-    private Training expected;
-
-    @BeforeEach
-    void setUp() {
-        expected = createTraining();
-    }
+    private Training expected = createTraining();
 
     @Test
     void create_assignsIdAndStoresTraining_returnsTraining() {

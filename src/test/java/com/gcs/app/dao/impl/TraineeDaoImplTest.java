@@ -4,7 +4,6 @@ import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
 import com.gcs.app.storage.InMemoryStorage;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,12 +43,7 @@ class TraineeDaoImplTest {
     @InjectMocks
     private TraineeDaoImpl dao;
 
-    private Trainee expected;
-
-    @BeforeEach
-    void setUp() {
-        expected = createTrainee();
-    }
+    private Trainee expected = createTrainee();
 
     @Test
     void create_assignsUserIdAndStoresTrainee_returnsTrainee() {

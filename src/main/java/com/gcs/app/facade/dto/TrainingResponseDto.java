@@ -13,5 +13,5 @@ public class TrainingResponseDto {
     private String name;
     private TrainingType type;
     private LocalDate date;
-    private Double duration;
+    private Long duration;
 }

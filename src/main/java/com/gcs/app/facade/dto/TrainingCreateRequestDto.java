@@ -12,5 +12,5 @@ public class TrainingCreateRequestDto {
     private String name;
     private TrainingType type;
     private LocalDate date;
-    private Double duration;
+    private Long duration;
 }
