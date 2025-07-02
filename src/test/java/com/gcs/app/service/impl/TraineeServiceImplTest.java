@@ -6,6 +6,7 @@ import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,10 +65,10 @@ class TraineeServiceImplTest {
 
         Trainee actual = service.createTrainee(createRequestDto);
 
-        assertEquals(USER_ID, actual.getUserId());
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertTrue(actual.getIsActive());
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertTrue(actual.getUser().getIsActive());
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
@@ -84,11 +85,11 @@ class TraineeServiceImplTest {
 
         Trainee actual = service.updateTrainee(updateRequestDto);
 
-        assertEquals(USER_ID, actual.getUserId());
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertEquals(USERNAME, actual.getUsername());
-        assertTrue(actual.getIsActive());
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertTrue(actual.getUser().getIsActive());
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
@@ -137,11 +138,11 @@ class TraineeServiceImplTest {
 
         Trainee actual = service.getTrainee(USER_ID);
 
-        assertEquals(USER_ID, actual.getUserId());
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertEquals(USERNAME, actual.getUsername());
-        assertTrue(actual.getIsActive());
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertTrue(actual.getUser().getIsActive());
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
@@ -160,12 +161,14 @@ class TraineeServiceImplTest {
 
     private Trainee buildTrainee() {
         return Trainee.builder()
-                .userId(USER_ID)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
+                .id(USER_ID)
+                .user(User.builder()
+                        .username(USERNAME)
+                        .password(PASSWORD)
+                        .isActive(true)
+                        .firstName(FIRST_NAME)
+                        .lastName(LAST_NAME)
+                        .build())
                 .dateOfBirth(DATE_OF_BIRTH)
                 .address(ADDRESS)
                 .build();

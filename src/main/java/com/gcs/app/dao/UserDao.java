@@ -23,8 +23,8 @@ public class UserDao {
 
     public Set<String> getAllUsernames() {
         return Stream.concat(
-                        getUsernamesFromNamespace(TRAINEE, trainee -> ((Trainee) trainee).getUsername()),
-                        getUsernamesFromNamespace(TRAINER, trainer -> ((Trainer) trainer).getUsername()))
+                        getUsernamesFromNamespace(TRAINEE, trainee -> ((Trainee) trainee).getUser().getUsername()),
+                        getUsernamesFromNamespace(TRAINER, trainer -> ((Trainer) trainer).getUser().getUsername()))
                 .collect(Collectors.toSet());
     }
 

@@ -4,6 +4,7 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
+import com.gcs.app.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,12 +42,14 @@ class InMemoryStorageTest {
         Long id = storage.nextId();
 
         Trainee trainee = Trainee.builder()
-                .userId(id)
-                .firstName("Anna")
-                .lastName("Nowak")
-                .username("anowak")
-                .password("pass123")
-                .isActive(true)
+                .id(id)
+                .user(User.builder()
+                        .firstName("Anna")
+                        .lastName("Nowak")
+                        .username("anowak")
+                        .password("pass123")
+                        .isActive(true)
+                        .build())
                 .dateOfBirth(LocalDate.of(2000, 1, 1))
                 .address("Warsaw")
                 .build();
@@ -55,7 +58,7 @@ class InMemoryStorageTest {
 
         Optional<Trainee> result = storage.getById(TRAINEE, id);
         assertTrue(result.isPresent());
-        assertEquals("Anna", result.get().getFirstName());
+        assertEquals("Anna", result.get().getUser().getFirstName());
         assertEquals("Warsaw", result.get().getAddress());
     }
 
@@ -64,13 +67,17 @@ class InMemoryStorageTest {
         Long id = storage.nextId();
 
         Trainer trainer = Trainer.builder()
-                .userId(id)
-                .firstName("John")
-                .lastName("Doe")
-                .username("jdoe")
-                .password("secure")
-                .isActive(true)
-                .specialization(new TrainingType("Yoga"))
+                .id(id)
+                .user(User.builder()
+                        .firstName("John")
+                        .lastName("Doe")
+                        .username("jdoe")
+                        .password("secure")
+                        .isActive(true)
+                        .build())
+                .specialization(TrainingType.builder()
+                        .name("Yoga")
+                        .build())
                 .build();
 
         storage.put(TRAINER, id, trainer);
@@ -86,10 +93,12 @@ class InMemoryStorageTest {
 
         Training training = Training.builder()
                 .id(id)
-                .traineeId(1L)
-                .trainerId(2L)
+                .trainee(Trainee.builder().id(1L).build())
+                .trainer(Trainer.builder().id(2L).build())
                 .name("Strength")
-                .type(new TrainingType("Cardio"))
+                .type(TrainingType.builder()
+                        .name("Cardio")
+                        .build())
                 .date(LocalDate.of(2024, 6, 1))
                 .duration(Duration.ofMinutes(60))
                 .build();
@@ -113,8 +122,8 @@ class InMemoryStorageTest {
         List<Trainee> trainees = storage.getAll(TRAINEE);
 
         assertEquals(2, trainees.size());
-        assertEquals("Ala", trainees.get(0).getFirstName());
-        assertEquals("Ola", trainees.get(1).getFirstName());
+        assertEquals("Ala", trainees.get(0).getUser().getFirstName());
+        assertEquals("Ola", trainees.get(1).getUser().getFirstName());
     }
 
     @Test
@@ -132,12 +141,14 @@ class InMemoryStorageTest {
 
     private Trainee createTrainee(Long id, String name) {
         return Trainee.builder()
-                .userId(id)
-                .firstName(name)
-                .lastName("Test")
-                .username(name.toLowerCase())
-                .password("test")
-                .isActive(true)
+                .id(id)
+                .user(User.builder()
+                        .firstName(name)
+                        .lastName("Test")
+                        .username(name.toLowerCase())
+                        .password("test")
+                        .isActive(true)
+                        .build())
                 .dateOfBirth(LocalDate.of(2000, 2, 2))
                 .address("Test Address")
                 .build();

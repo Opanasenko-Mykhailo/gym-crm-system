@@ -7,6 +7,7 @@ import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
+import com.gcs.app.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,10 +64,10 @@ class TrainerServiceImplTest {
 
         Trainer actual = service.createTrainer(createRequestDto);
 
-        assertEquals(USER_ID, actual.getUserId());
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertTrue(actual.getIsActive());
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertTrue(actual.getUser().getIsActive());
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(trainerMapper).toEntity(createRequestDto);
@@ -82,11 +83,11 @@ class TrainerServiceImplTest {
 
         Trainer actual = service.updateTrainer(updateRequestDto);
 
-        assertEquals(USER_ID, actual.getUserId());
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertEquals(USERNAME, actual.getUsername());
-        assertTrue(actual.getIsActive());
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertTrue(actual.getUser().getIsActive());
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(trainerMapper).toUpdateEntity(updateRequestDto);
@@ -113,11 +114,11 @@ class TrainerServiceImplTest {
 
         Trainer actual = service.getTrainer(USER_ID);
 
-        assertEquals(USER_ID, actual.getUserId());
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertEquals(USERNAME, actual.getUsername());
-        assertTrue(actual.getIsActive());
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertTrue(actual.getUser().getIsActive());
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(trainerDao).get(USER_ID);
@@ -135,13 +136,17 @@ class TrainerServiceImplTest {
 
     private Trainer buildTrainer() {
         return Trainer.builder()
-                .userId(USER_ID)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .specialization(new TrainingType(SPECIALIZATION))
+                .id(USER_ID)
+                .user(User.builder()
+                        .username(USERNAME)
+                        .password(PASSWORD)
+                        .isActive(true)
+                        .firstName(FIRST_NAME)
+                        .lastName(LAST_NAME)
+                        .build())
+                .specialization(TrainingType.builder()
+                        .name(SPECIALIZATION)
+                        .build())
                 .build();
     }
 
@@ -149,7 +154,9 @@ class TrainerServiceImplTest {
         TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
-        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setSpecialization(TrainingType.builder()
+                .name(SPECIALIZATION)
+                .build());
 
         return dto;
     }
@@ -159,7 +166,9 @@ class TrainerServiceImplTest {
         dto.setUserId(USER_ID);
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
-        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setSpecialization(TrainingType.builder()
+                .name(SPECIALIZATION)
+                .build());
         dto.setIsActive(true);
 
         return dto;

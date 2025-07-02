@@ -28,15 +28,17 @@ public class TraineeServiceImpl implements TraineeService {
     public Trainee createTrainee(TraineeCreateRequestDto requestDto) {
         Trainee trainee = traineeMapper.toEntity(requestDto);
 
-        log.info("Creating trainee: {} {}", trainee.getFirstName(), trainee.getLastName());
+        log.info("Creating trainee: {} {}", trainee.getUser().getFirstName(), trainee.getUser().getLastName());
 
-        String username = generateUsername(trainee.getFirstName(), trainee.getLastName(), traineeDao.getAllUsernames());
+        String username = generateUsername(trainee.getUser().getFirstName(), trainee.getUser().getLastName(), traineeDao.getAllUsernames());
         String password = generateRandomPassword();
 
         Trainee traineeWithCredentials = trainee.toBuilder()
-                .username(username)
-                .password(password)
-                .isActive(true)
+                .user(trainee.getUser().toBuilder()
+                        .username(username)
+                        .password(password)
+                        .isActive(true)
+                        .build())
                 .build();
 
         Trainee createdTrainee = traineeDao.create(traineeWithCredentials);
@@ -50,12 +52,12 @@ public class TraineeServiceImpl implements TraineeService {
     public Trainee updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
         Trainee updatedTrainee = traineeMapper.toUpdateEntity(traineeUpdateRequestDto);
 
-        Long userId = updatedTrainee.getUserId();
+        Long userId = updatedTrainee.getId();
         log.info("Updating trainee with userId: {}", userId);
 
         validateTraineeExists(userId);
 
-        Trainee traineeWithId = updatedTrainee.toBuilder().userId(userId).build();
+        Trainee traineeWithId = updatedTrainee.toBuilder().id(userId).build();
         Trainee savedTrainee = traineeDao.update(traineeWithId);
         log.debug("Trainee updated: {}", savedTrainee);
 

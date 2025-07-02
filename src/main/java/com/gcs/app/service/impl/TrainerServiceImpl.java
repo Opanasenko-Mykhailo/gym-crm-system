@@ -27,15 +27,17 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public Trainer createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
-        log.info("Creating trainer: {} {}", trainer.getFirstName(), trainer.getLastName());
+        log.info("Creating trainer: {} {}", trainer.getUser().getFirstName(), trainer.getUser().getLastName());
 
-        String username = generateUsername(trainer.getFirstName(), trainer.getLastName(), trainerDao.getAllUsernames());
+        String username = generateUsername(trainer.getUser().getFirstName(), trainer.getUser().getLastName(), trainerDao.getAllUsernames());
         String password = generateRandomPassword();
 
         Trainer trainerWithCredentials = trainer.toBuilder()
-                .username(username)
-                .password(password)
-                .isActive(true)
+                .user(trainer.getUser().toBuilder()
+                        .username(username)
+                        .password(password)
+                        .isActive(true)
+                        .build())
                 .build();
 
         Trainer createdTrainer = trainerDao.create(trainerWithCredentials);
@@ -47,12 +49,12 @@ public class TrainerServiceImpl implements TrainerService {
     public Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
         Trainer updatedTrainer = trainerMapper.toUpdateEntity(trainerUpdateRequestDto);
 
-        Long userId = updatedTrainer.getUserId();
+        Long userId = updatedTrainer.getId();
         log.info("Updating trainer with userId: {}", userId);
 
         validateTrainerExists(userId);
 
-        Trainer trainerWithId = updatedTrainer.toBuilder().userId(userId).build();
+        Trainer trainerWithId = updatedTrainer.toBuilder().id(userId).build();
         Trainer savedTrainer = trainerDao.update(trainerWithId);
         log.debug("Trainer updated: {}", savedTrainer);
 

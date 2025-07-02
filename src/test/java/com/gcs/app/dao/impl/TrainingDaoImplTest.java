@@ -1,5 +1,7 @@
 package com.gcs.app.dao.impl;
 
+import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.storage.InMemoryStorage;
@@ -52,8 +54,8 @@ class TrainingDaoImplTest {
         Training actual = dao.create(expected);
 
         assertEquals(ID, actual.getId());
-        assertEquals(TRAINEE_ID, actual.getTraineeId());
-        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(TRAINEE_ID, actual.getTrainee().getId());
+        assertEquals(TRAINER_ID, actual.getTrainer().getId());
         assertEquals(NAME, actual.getName());
         assertEquals(TYPE, actual.getType().getName());
         assertEquals(DATE, actual.getDate());
@@ -70,8 +72,8 @@ class TrainingDaoImplTest {
         Optional<Training> actual = dao.get(ID);
 
         assertTrue(actual.isPresent());
-        assertEquals(TRAINEE_ID, actual.get().getTraineeId());
-        assertEquals(TRAINER_ID, actual.get().getTrainerId());
+        assertEquals(TRAINEE_ID, actual.get().getTrainee().getId());
+        assertEquals(TRAINER_ID, actual.get().getTrainer().getId());
         assertEquals(NAME, actual.get().getName());
         assertEquals(TYPE, actual.get().getType().getName());
         assertEquals(DATE, actual.get().getDate());
@@ -93,10 +95,15 @@ class TrainingDaoImplTest {
     private Training buildTraining() {
         return Training.builder()
                 .id(ID)
-                .traineeId(TRAINEE_ID)
-                .trainerId(TRAINER_ID)
+                .trainee(Trainee.builder()
+                        .id(TRAINEE_ID)
+                        .build())
+                .trainer(Trainer.builder()
+                        .id(TRAINER_ID).build())
                 .name(NAME)
-                .type(new TrainingType(TYPE))
+                .type(TrainingType.builder()
+                        .name(TYPE)
+                        .build())
                 .date(DATE)
                 .duration(DURATION)
                 .build();

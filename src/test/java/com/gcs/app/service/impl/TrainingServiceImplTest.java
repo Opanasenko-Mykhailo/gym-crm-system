@@ -4,6 +4,8 @@ import com.gcs.app.dao.TrainingDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.mapper.TrainingMapper;
+import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,8 +60,8 @@ class TrainingServiceImplTest {
 
         Training actual = service.createTraining(createRequestDto);
         assertEquals(ID, actual.getId());
-        assertEquals(TRAINEE_ID, actual.getTraineeId());
-        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(TRAINEE_ID, actual.getTrainee().getId());
+        assertEquals(TRAINER_ID, actual.getTrainer().getId());
         assertEquals(NAME, actual.getName());
         assertEquals(TYPE, actual.getType().getName());
         assertEquals(DATE, actual.getDate());
@@ -75,8 +77,8 @@ class TrainingServiceImplTest {
 
         Training actual = service.getTraining(ID);
         assertEquals(ID, actual.getId());
-        assertEquals(TRAINEE_ID, actual.getTraineeId());
-        assertEquals(TRAINER_ID, actual.getTrainerId());
+        assertEquals(TRAINEE_ID, actual.getTrainee().getId());
+        assertEquals(TRAINER_ID, actual.getTrainer().getId());
         assertEquals(NAME, actual.getName());
         assertEquals(TYPE, actual.getType().getName());
         assertEquals(DATE, actual.getDate());
@@ -98,10 +100,15 @@ class TrainingServiceImplTest {
     private Training buildTraining() {
         return Training.builder()
                 .id(ID)
-                .traineeId(TRAINEE_ID)
-                .trainerId(TRAINER_ID)
+                .trainee(Trainee.builder()
+                        .id(TRAINEE_ID)
+                        .build())
+                .trainer(Trainer.builder()
+                        .id(TRAINER_ID).build())
                 .name(NAME)
-                .type(new TrainingType(TYPE))
+                .type(TrainingType.builder()
+                        .name(TYPE)
+                        .build())
                 .date(DATE)
                 .duration(DURATION)
                 .build();
@@ -112,7 +119,9 @@ class TrainingServiceImplTest {
         dto.setTraineeId(TRAINEE_ID);
         dto.setTrainerId(TRAINER_ID);
         dto.setName(NAME);
-        dto.setType(new TrainingType(TYPE));
+        dto.setType(TrainingType.builder()
+                .name(TYPE)
+                .build());
         dto.setDate(DATE);
         dto.setDuration(DURATION);
 

@@ -3,6 +3,7 @@ package com.gcs.app.dao.impl;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
+import com.gcs.app.model.User;
 import com.gcs.app.storage.InMemoryStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,12 +52,12 @@ class TrainerDaoImplTest {
 
         Trainer actual = dao.create(expected);
 
-        assertEquals(USER_ID, actual.getUserId());
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertEquals(USERNAME, actual.getUsername());
-        assertEquals(PASSWORD, actual.getPassword());
-        assertTrue(actual.getIsActive());
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertEquals(PASSWORD, actual.getUser().getPassword());
+        assertTrue(actual.getUser().getIsActive());
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(storage).nextId();
@@ -70,9 +71,9 @@ class TrainerDaoImplTest {
         Optional<Trainer> actual = dao.get(USER_ID);
 
         assertTrue(actual.isPresent());
-        assertEquals(FIRST_NAME, actual.get().getFirstName());
-        assertEquals(LAST_NAME, actual.get().getLastName());
-        assertEquals(USERNAME, actual.get().getUsername());
+        assertEquals(FIRST_NAME, actual.get().getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.get().getUser().getLastName());
+        assertEquals(USERNAME, actual.get().getUser().getUsername());
         assertEquals(SPECIALIZATION, actual.get().getSpecialization().getName());
 
         verify(storage).getById(TRAINER, USER_ID);
@@ -94,9 +95,9 @@ class TrainerDaoImplTest {
 
         Trainer actual = dao.update(expected);
 
-        assertEquals(FIRST_NAME, actual.getFirstName());
-        assertEquals(LAST_NAME, actual.getLastName());
-        assertEquals(USERNAME, actual.getUsername());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(storage).getById(TRAINER, USER_ID);
@@ -116,13 +117,17 @@ class TrainerDaoImplTest {
 
     private Trainer buildTrainer() {
         return Trainer.builder()
-                .userId(USER_ID)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .specialization(new TrainingType(SPECIALIZATION))
+                .id(USER_ID)
+                .user(User.builder()
+                        .username(USERNAME)
+                        .password(PASSWORD)
+                        .isActive(true)
+                        .firstName(FIRST_NAME)
+                        .lastName(LAST_NAME)
+                        .build())
+                .specialization(TrainingType.builder()
+                        .name(SPECIALIZATION)
+                        .build())
                 .build();
     }
 }

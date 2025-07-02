@@ -23,7 +23,7 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
     @Override
     public Trainer create(Trainer trainer) {
         Long userId = storage.nextId();
-        Trainer trainerWithId = trainer.toBuilder().userId(userId).build();
+        Trainer trainerWithId = trainer.toBuilder().id(userId).build();
 
         storage.put(TRAINER, userId, trainerWithId);
         log.info("Created trainer with userId: {}", userId);
@@ -38,7 +38,7 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
 
     @Override
     public Trainer update(Trainer trainer) {
-        Long userId = trainer.getUserId();
+        Long userId = trainer.getId();
         if (storage.getById(TRAINER, userId).isEmpty()) {
             throw new EntityNotFoundException(String.format("Trainer with userId: %d not found", userId));
         }

@@ -15,6 +15,7 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
+import com.gcs.app.model.User;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
@@ -259,11 +260,13 @@ class GymFacadeTest {
 
     private Trainee buildTrainee() {
         return Trainee.builder()
-                .userId(TRAINEE_ID)
-                .firstName(TRAINEE_FIRST_NAME)
-                .lastName(TRAINEE_LAST_NAME)
-                .username(TRAINEE_USERNAME)
-                .isActive(true)
+                .id(TRAINEE_ID)
+                .user(User.builder()
+                        .firstName(TRAINEE_FIRST_NAME)
+                        .lastName(TRAINEE_LAST_NAME)
+                        .username(TRAINEE_USERNAME)
+                        .isActive(true)
+                        .build())
                 .dateOfBirth(TRAINEE_DATE_OF_BIRTH)
                 .address(TRAINEE_ADDRESS)
                 .build();
@@ -271,22 +274,31 @@ class GymFacadeTest {
 
     private Trainer buildTrainer() {
         return Trainer.builder()
-                .userId(TRAINER_ID)
-                .firstName(TRAINER_FIRST_NAME)
-                .lastName(TRAINER_LAST_NAME)
-                .username(TRAINER_USERNAME)
-                .isActive(true)
-                .specialization(new TrainingType(SPECIALIZATION))
+                .id(TRAINER_ID)
+                .user(User.builder()
+                        .firstName(TRAINER_FIRST_NAME)
+                        .lastName(TRAINER_LAST_NAME)
+                        .username(TRAINER_USERNAME)
+                        .isActive(true)
+                        .build())
+                .specialization(TrainingType.builder()
+                        .name(SPECIALIZATION)
+                        .build())
                 .build();
     }
 
     private Training buildTraining() {
         return Training.builder()
                 .id(TRAINING_ID)
-                .traineeId(TRAINEE_ID)
-                .trainerId(TRAINER_ID)
+                .trainee(Trainee.builder()
+                        .id(TRAINEE_ID)
+                        .build())
+                .trainer(Trainer.builder()
+                        .id(TRAINER_ID).build())
                 .name(TRAINING_NAME)
-                .type(new TrainingType(SPECIALIZATION))
+                .type(TrainingType.builder()
+                        .name(SPECIALIZATION)
+                        .build())
                 .date(TRAINING_DATE)
                 .duration(TRAINING_DURATION)
                 .build();
@@ -331,7 +343,9 @@ class GymFacadeTest {
         TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
         dto.setFirstName(TRAINER_FIRST_NAME);
         dto.setLastName(TRAINER_LAST_NAME);
-        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setSpecialization(TrainingType.builder()
+                .name(SPECIALIZATION)
+                .build());
 
         return dto;
     }
@@ -341,7 +355,9 @@ class GymFacadeTest {
         dto.setUserId(TRAINER_ID);
         dto.setFirstName(TRAINER_FIRST_NAME);
         dto.setLastName(TRAINER_LAST_NAME);
-        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setSpecialization(TrainingType.builder()
+                .name(SPECIALIZATION)
+                .build());
         dto.setIsActive(true);
 
         return dto;
@@ -354,7 +370,9 @@ class GymFacadeTest {
         dto.setLastName(TRAINER_LAST_NAME);
         dto.setUsername(TRAINER_USERNAME);
         dto.setIsActive(true);
-        dto.setSpecialization(new TrainingType(SPECIALIZATION));
+        dto.setSpecialization(TrainingType.builder()
+                .name(SPECIALIZATION)
+                .build());
 
         return dto;
     }
@@ -364,7 +382,9 @@ class GymFacadeTest {
         dto.setTraineeId(TRAINEE_ID);
         dto.setTrainerId(TRAINER_ID);
         dto.setName(TRAINING_NAME);
-        dto.setType(new TrainingType(SPECIALIZATION));
+        dto.setType(TrainingType.builder()
+                .name(SPECIALIZATION)
+                .build());
         dto.setDate(TRAINING_DATE);
         dto.setDuration(TRAINING_DURATION);
 
@@ -377,7 +397,9 @@ class GymFacadeTest {
         dto.setTraineeId(TRAINEE_ID);
         dto.setTrainerId(TRAINER_ID);
         dto.setName(TRAINING_NAME);
-        dto.setType(new TrainingType(SPECIALIZATION));
+        dto.setType(TrainingType.builder()
+                .name(SPECIALIZATION)
+                .build());
         dto.setDate(TRAINING_DATE);
         dto.setDuration(TRAINING_DURATION);
 
