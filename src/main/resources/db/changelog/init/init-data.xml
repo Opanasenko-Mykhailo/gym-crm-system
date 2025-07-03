@@ -105,6 +105,5 @@
             <column name="trainer_id" valueNumeric="2"/>
             <column name="type_id" valueNumeric="3"/>
         </insert>
-
     </changeSet>
 </databaseChangeLog>
