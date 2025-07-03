@@ -1,7 +1,0 @@
-trainee,John,Smith,John.Smith,1990-01-01,123 Main St,,NULL
-trainee,John,Smith,John.Smith1,1995-01-01,12 Main St,,NULL
-trainee,Anna,Johnson,Anna.Johnson,1995-02-15,456 Oak Ave,,NULL
-trainer,Jane,Doe,Jane.Doe,YOGA,,NULL,NULL
-trainer,Mike,Wilson,Mike.Wilson,CARDIO,,NULL,NULL
-training,2,1,,Cardio Session,CARDIO,2025-10-23,PT2H
-training,3,2,,Strength Training,STRENGTH,2025-10-24,PT1H30M
