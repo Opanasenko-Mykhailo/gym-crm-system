@@ -79,6 +79,7 @@
             <column name="address" value="456 Oak Ave"/>
             <column name="user_id" valueNumeric="3"/>
         </insert>
+
         <insert tableName="trainers">
             <column name="id" valueNumeric="1"/>
             <column name="specialization_id" valueNumeric="1"/>
