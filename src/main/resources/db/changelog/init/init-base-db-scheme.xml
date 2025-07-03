@@ -48,7 +48,8 @@
             <column name="date_of_birth" type="DATE"/>
             <column name="address" type="VARCHAR(255)"/>
             <column name="user_id" type="BIGINT">
-                <constraints nullable="false" foreignKeyName="fk_trainee_user" referencedTableName="users" referencedColumnNames="id"/>
+                <constraints nullable="false" foreignKeyName="fk_trainee_user" referencedTableName="users"
+                             referencedColumnNames="id"/>
             </column>
         </createTable>
     </changeSet>
@@ -59,10 +60,12 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="specialization_id" type="BIGINT">
-                <constraints nullable="false" foreignKeyName="fk_trainer_specialization" referencedTableName="training_types" referencedColumnNames="id"/>
+                <constraints nullable="false" foreignKeyName="fk_trainer_specialization"
+                             referencedTableName="training_types" referencedColumnNames="id"/>
             </column>
             <column name="user_id" type="BIGINT">
-                <constraints nullable="false" foreignKeyName="fk_trainer_user" referencedTableName="users" referencedColumnNames="id"/>
+                <constraints nullable="false" foreignKeyName="fk_trainer_user" referencedTableName="users"
+                             referencedColumnNames="id"/>
             </column>
         </createTable>
     </changeSet>
@@ -82,13 +85,16 @@
                 <constraints nullable="false"/>
             </column>
             <column name="trainee_id" type="BIGINT">
-                <constraints nullable="false" foreignKeyName="fk_training_trainee" referencedTableName="trainees" referencedColumnNames="id"/>
+                <constraints nullable="false" foreignKeyName="fk_training_trainee" referencedTableName="trainees"
+                             referencedColumnNames="id"/>
             </column>
             <column name="trainer_id" type="BIGINT">
-                <constraints nullable="false" foreignKeyName="fk_training_trainer" referencedTableName="trainers" referencedColumnNames="id"/>
+                <constraints nullable="false" foreignKeyName="fk_training_trainer" referencedTableName="trainers"
+                             referencedColumnNames="id"/>
             </column>
             <column name="type_id" type="BIGINT">
-                <constraints nullable="false" foreignKeyName="fk_training_type" referencedTableName="training_types" referencedColumnNames="id"/>
+                <constraints nullable="false" foreignKeyName="fk_training_type" referencedTableName="training_types"
+                             referencedColumnNames="id"/>
             </column>
         </createTable>
     </changeSet>
@@ -108,13 +114,13 @@
                 columnNames="trainee_id, trainer_id"
                 constraintName="pk_trainee_trainer"/>
         <addForeignKeyConstraint
-                constraintName="fk_tt_trainee"
+                constraintName="fk_trainee_trainer__trainee_id"
                 baseTableName="trainee_trainer"
                 baseColumnNames="trainee_id"
                 referencedTableName="trainees"
                 referencedColumnNames="id"/>
         <addForeignKeyConstraint
-                constraintName="fk_tt_trainer"
+                constraintName="fk_trainee_trainer__trainer_id"
                 baseTableName="trainee_trainer"
                 baseColumnNames="trainer_id"
                 referencedTableName="trainers"

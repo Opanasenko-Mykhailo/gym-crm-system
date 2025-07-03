@@ -47,6 +47,7 @@
             <column name="password" value="password123"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
+
         <insert tableName="training_types">
             <column name="id" valueNumeric="1"/>
             <column name="training_type_name" value="YOGA"/>
@@ -59,6 +60,7 @@
             <column name="id" valueNumeric="3"/>
             <column name="training_type_name" value="STRENGTH"/>
         </insert>
+
         <insert tableName="trainees">
             <column name="id" valueNumeric="1"/>
             <column name="date_of_birth" valueDate="1990-01-01"/>
@@ -87,6 +89,7 @@
             <column name="specialization_id" valueNumeric="2"/>
             <column name="user_id" valueNumeric="5"/>
         </insert>
+
         <insert tableName="trainings">
             <column name="id" valueNumeric="1"/>
             <column name="training_name" value="Cardio Session"/>
