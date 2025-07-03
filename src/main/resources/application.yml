@@ -1,7 +1,5 @@
 server:
   port: 8080
-storage:
-  path: classpath:initial-data.csv
 
 spring:
   liquibase:
