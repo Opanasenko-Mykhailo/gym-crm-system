@@ -4,48 +4,58 @@ import com.gcs.app.dao.TrainerDao;
 import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
-import com.gcs.app.storage.InMemoryStorage;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-
-import static com.gcs.app.model.enums.EntityType.TRAINER;
 
 @Repository
 @Slf4j
 public class TrainerDaoImpl extends UserDao implements TrainerDao {
 
-    public TrainerDaoImpl(InMemoryStorage storage) {
-        super(storage);
+    private final SessionFactory sessionFactory;
+
+    public TrainerDaoImpl(SessionFactory sessionFactory) {
+        super(sessionFactory);
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
+    @Transactional
     public Trainer create(Trainer trainer) {
-        Long userId = storage.nextId();
-        Trainer trainerWithId = trainer.toBuilder().id(userId).build();
-
-        storage.put(TRAINER, userId, trainerWithId);
-        log.info("Created trainer with userId: {}", userId);
-
-        return trainerWithId;
-    }
-
-    @Override
-    public Optional<Trainer> get(Long userId) {
-        return storage.getById(TRAINER, userId);
-    }
-
-    @Override
-    public Trainer update(Trainer trainer) {
-        Long userId = trainer.getId();
-        if (storage.getById(TRAINER, userId).isEmpty()) {
-            throw new EntityNotFoundException(String.format("Trainer with userId: %d not found", userId));
-        }
-
-        storage.put(TRAINER, userId, trainer);
-        log.info("Updated trainer with userId: {}", userId);
+        getSession().persist(trainer);
+        log.info("Created trainer with id: {}", trainer.getId());
 
         return trainer;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Trainer> get(Long userId) {
+        Trainer trainer = getSession().byId(Trainer.class).load(userId);
+
+        return Optional.ofNullable(trainer);
+    }
+
+    @Override
+    @Transactional
+    public Trainer update(Trainer trainer) {
+        Trainer existing = getSession().byId(Trainer.class).load(trainer.getId());
+
+        if (existing == null) {
+            throw new EntityNotFoundException(String.format("Trainer with id %d not found", trainer.getId()));
+        }
+
+        Trainer merged = getSession().merge(trainer);
+        log.info("Updated trainer with id: {}", merged.getId());
+
+        return merged;
+    }
+
+    private Session getSession() {
+        return sessionFactory.getCurrentSession();
     }
 }

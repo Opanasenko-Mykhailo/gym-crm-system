@@ -1,36 +1,27 @@
 package com.gcs.app.dao;
 
-import com.gcs.app.model.Trainee;
-import com.gcs.app.model.Trainer;
-import com.gcs.app.model.enums.EntityType;
-import com.gcs.app.storage.InMemoryStorage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.gcs.app.model.enums.EntityType.TRAINEE;
-import static com.gcs.app.model.enums.EntityType.TRAINER;
-
-@Component
+@Repository
 @RequiredArgsConstructor
 public class UserDao {
 
-    protected final InMemoryStorage storage;
+    protected final SessionFactory sessionFactory;
 
+    @Transactional(readOnly = true)
     public Set<String> getAllUsernames() {
-        return Stream.concat(
-                        getUsernamesFromNamespace(TRAINEE, trainee -> ((Trainee) trainee).getUser().getUsername()),
-                        getUsernamesFromNamespace(TRAINER, trainer -> ((Trainer) trainer).getUser().getUsername()))
-                .collect(Collectors.toSet());
-    }
+        Session session = sessionFactory.getCurrentSession();
 
-    private Stream<String> getUsernamesFromNamespace(EntityType type, Function<Object, String> usernameMapper) {
-        return storage.getNamespace(type).values().stream()
-                .map(usernameMapper);
-    }
+        List<String> usernames = session.createQuery("SELECT u.username FROM User u", String.class).getResultList();
 
+        return new HashSet<>(usernames);
+    }
 }

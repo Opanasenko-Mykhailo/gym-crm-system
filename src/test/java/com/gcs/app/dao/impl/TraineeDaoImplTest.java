@@ -3,7 +3,9 @@ package com.gcs.app.dao.impl;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
-import com.gcs.app.storage.InMemoryStorage;
+import org.hibernate.IdentifierLoadAccess;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,15 +13,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Optional;
 
-import static com.gcs.app.model.enums.EntityType.TRAINEE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,104 +34,104 @@ class TraineeDaoImplTest {
     private static final String ADDRESS = "123 Main St";
 
     @Mock
-    private InMemoryStorage storage;
+    private SessionFactory sessionFactory;
 
     @Mock
-    private Map<Long, Object> traineeNamespace;
+    private Session session;
+
+    @Mock
+    private IdentifierLoadAccess<Trainee> identifierLoadAccess;
 
     @InjectMocks
     private TraineeDaoImpl dao;
 
-    private Trainee expected = createTrainee();
-
     @Test
-    void create_assignsUserIdAndStoresTrainee_returnsTrainee() {
-        when(storage.nextId()).thenReturn(USER_ID);
+    void create_persistsTrainee_returnsTrainee() {
+        Trainee trainee = createTrainee();
 
-        Trainee actual = dao.create(expected);
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
 
-        assertEquals(USER_ID, actual.getId());
-        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
-        assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertEquals(USERNAME, actual.getUser().getUsername());
-        assertEquals(PASSWORD, actual.getUser().getPassword());
-        assertTrue(actual.getUser().getIsActive());
-        assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
-        assertEquals(ADDRESS, actual.getAddress());
+        dao.create(trainee);
 
-        verify(storage).nextId();
-        verify(storage).put(TRAINEE, USER_ID, expected);
+        verify(session).persist(trainee);
+        assertEquals(USER_ID, trainee.getId());
     }
 
     @Test
-    void get_whenTraineeExists_returnsTrainee() {
-        when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.of(expected));
+    void get_whenTraineeExists_returnsOptionalOfTrainee() {
+        Trainee trainee = createTrainee();
 
-        Optional<Trainee> actual = dao.get(USER_ID);
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
+        when(identifierLoadAccess.load(USER_ID)).thenReturn(trainee);
 
-        assertTrue(actual.isPresent());
-        assertEquals(FIRST_NAME, actual.get().getUser().getFirstName());
-        assertEquals(LAST_NAME, actual.get().getUser().getLastName());
-        assertEquals(USERNAME, actual.get().getUser().getUsername());
+        Optional<Trainee> result = dao.get(USER_ID);
 
-        verify(storage).getById(TRAINEE, USER_ID);
+        assertTrue(result.isPresent());
+        assertEquals(trainee, result.get());
     }
 
     @Test
     void get_whenTraineeDoesNotExist_returnsEmptyOptional() {
-        when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
+        when(identifierLoadAccess.load(USER_ID)).thenReturn(null);
 
-        Optional<Trainee> actual = dao.get(USER_ID);
+        Optional<Trainee> result = dao.get(USER_ID);
 
-        assertFalse(actual.isPresent());
-        verify(storage).getById(TRAINEE, USER_ID);
+        assertFalse(result.isPresent());
     }
 
     @Test
-    void update_whenTraineeExists_updatesAndReturnsTrainee() {
-        when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.of(expected));
+    void update_whenTraineeExists_mergesAndReturnsTrainee() {
+        Trainee trainee = createTrainee();
 
-        Trainee actual = dao.update(expected);
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
+        when(identifierLoadAccess.load(USER_ID)).thenReturn(trainee);
+        when(session.merge(trainee)).thenReturn(trainee);
 
-        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
-        assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertEquals(USERNAME, actual.getUser().getUsername());
+        Trainee updated = dao.update(trainee);
 
-        verify(storage).getById(TRAINEE, USER_ID);
-        verify(storage).put(TRAINEE, USER_ID, expected);
+        assertEquals(trainee, updated);
+        verify(session).merge(trainee);
     }
 
     @Test
     void update_whenTraineeDoesNotExist_throwsEntityNotFoundException() {
-        when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
+        Trainee trainee = createTrainee();
 
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(expected));
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
+        when(identifierLoadAccess.load(USER_ID)).thenReturn(null);
 
-        assertEquals("Trainee with userId: 1 not found", ex.getMessage());
-        verify(storage).getById(TRAINEE, USER_ID);
-        verify(storage, never()).put(TRAINEE, USER_ID, expected);
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(trainee));
+
+        assertEquals("Trainee with id 1 not found", ex.getMessage());
     }
 
     @Test
     void delete_whenTraineeExists_removesTrainee() {
-        when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.of(expected));
-        when(storage.getNamespace(TRAINEE)).thenReturn(traineeNamespace);
+        Trainee trainee = createTrainee();
+
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
+        when(identifierLoadAccess.load(USER_ID)).thenReturn(trainee);
 
         dao.delete(USER_ID);
 
-        verify(storage).getById(TRAINEE, USER_ID);
-        verify(traineeNamespace).remove(USER_ID);
+        verify(session).remove(trainee);
     }
 
     @Test
     void delete_whenTraineeDoesNotExist_throwsEntityNotFoundException() {
-        when(storage.getById(TRAINEE, USER_ID)).thenReturn(Optional.empty());
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
+        when(identifierLoadAccess.load(USER_ID)).thenReturn(null);
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.delete(USER_ID));
 
-        assertEquals("Trainee with userId: 1 not found", ex.getMessage());
-        verify(storage).getById(TRAINEE, USER_ID);
-        verify(storage, never()).getNamespace(TRAINEE);
+        assertEquals("Trainee with id 1 not found", ex.getMessage());
     }
 
     private Trainee createTrainee() {
