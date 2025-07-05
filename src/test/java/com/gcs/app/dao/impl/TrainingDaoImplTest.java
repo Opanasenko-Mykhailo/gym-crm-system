@@ -4,7 +4,9 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
-import com.gcs.app.storage.InMemoryStorage;
+import org.hibernate.IdentifierLoadAccess;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static com.gcs.app.model.enums.EntityType.TRAINING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,19 +34,26 @@ class TrainingDaoImplTest {
     private static final Long DURATION = 60L;
 
     @Mock
-    private InMemoryStorage storage;
+    private SessionFactory sessionFactory;
+
+    @Mock
+    private Session session;
+
+    @Mock
+    private IdentifierLoadAccess<Training> identifierLoadAccess;
 
     @InjectMocks
     private TrainingDaoImpl dao;
 
-    private Training expected = createTraining();
-
     @Test
-    void create_assignsIdAndStoresTraining_returnsTraining() {
-        when(storage.nextId()).thenReturn(ID);
+    void create_persistsTraining_returnsTraining() {
+        Training training = createTraining();
 
-        Training actual = dao.create(expected);
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
 
+        Training actual = dao.create(training);
+
+        verify(session).persist(training);
         assertEquals(ID, actual.getId());
         assertEquals(TRAINEE_ID, actual.getTrainee().getId());
         assertEquals(TRAINER_ID, actual.getTrainer().getId());
@@ -53,36 +61,37 @@ class TrainingDaoImplTest {
         assertEquals(TYPE, actual.getType().getName());
         assertEquals(DATE, actual.getDate());
         assertEquals(DURATION, actual.getDuration());
-
-        verify(storage).nextId();
-        verify(storage).put(TRAINING, ID, expected);
     }
 
     @Test
     void get_whenTrainingExists_returnsTraining() {
-        when(storage.getById(TRAINING, ID)).thenReturn(Optional.of(expected));
+        Training training = createTraining();
+
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        when(session.byId(Training.class)).thenReturn(identifierLoadAccess);
+        when(identifierLoadAccess.load(ID)).thenReturn(training);
 
         Optional<Training> actual = dao.get(ID);
 
         assertTrue(actual.isPresent());
+        assertEquals(training, actual.get());
         assertEquals(TRAINEE_ID, actual.get().getTrainee().getId());
         assertEquals(TRAINER_ID, actual.get().getTrainer().getId());
         assertEquals(NAME, actual.get().getName());
         assertEquals(TYPE, actual.get().getType().getName());
         assertEquals(DATE, actual.get().getDate());
         assertEquals(DURATION, actual.get().getDuration());
-
-        verify(storage).getById(TRAINING, ID);
     }
 
     @Test
     void get_whenTrainingDoesNotExist_returnsEmptyOptional() {
-        when(storage.getById(TRAINING, ID)).thenReturn(Optional.empty());
+        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        when(session.byId(Training.class)).thenReturn(identifierLoadAccess);
+        when(identifierLoadAccess.load(ID)).thenReturn(null);
 
         Optional<Training> actual = dao.get(ID);
 
         assertFalse(actual.isPresent());
-        verify(storage).getById(TRAINING, ID);
     }
 
     private Training createTraining() {

@@ -20,7 +20,7 @@ public class HibernateConfig {
     @Value("${hibernate.dialect}")
     private String dialect;
 
-    @Value("${hibernate.hbm2ddl.auto}")
+    @Value("${hibernate.hbm2ddl-auto}")
     private String hbm2ddlAuto;
 
     @Value("${hibernate.show_sql}")

@@ -4,59 +4,66 @@ import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
-import com.gcs.app.storage.InMemoryStorage;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-
-import static com.gcs.app.model.enums.EntityType.TRAINEE;
 
 @Repository
 @Slf4j
 public class TraineeDaoImpl extends UserDao implements TraineeDao {
 
-    public TraineeDaoImpl(InMemoryStorage storage) {
-        super(storage);
+    private final SessionFactory sessionFactory;
+
+    public TraineeDaoImpl(SessionFactory sessionFactory) {
+        super(sessionFactory);
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
     public Trainee create(Trainee trainee) {
-        Long userId = storage.nextId();
-        Trainee traineeWithId = trainee.toBuilder().id(userId).build();
-
-        storage.put(TRAINEE, userId, traineeWithId);
-        log.info("Created trainee with userId: {}", userId);
-
-        return traineeWithId;
-    }
-
-    @Override
-    public Optional<Trainee> get(Long userId) {
-        return storage.getById(TRAINEE, userId);
-    }
-
-    @Override
-    public Trainee update(Trainee trainee) {
-        Long userId = trainee.getId();
-
-        if (storage.getById(TRAINEE, userId).isEmpty()) {
-            throw new EntityNotFoundException(String.format("Trainee with userId: %d not found", userId));
-        }
-
-        storage.put(TRAINEE, userId, trainee);
-        log.info("Updated trainee with userId: {}", userId);
+        getSession().persist(trainee);
+        log.info("Created trainee with id: {}", trainee.getId());
 
         return trainee;
     }
 
     @Override
-    public void delete(Long userId) {
-        if (storage.getById(TRAINEE, userId).isEmpty()) {
-            throw new EntityNotFoundException(String.format("Trainee with userId: %d not found", userId));
+    public Optional<Trainee> get(Long userId) {
+        Trainee trainee = getSession().byId(Trainee.class).load(userId);
+
+        return Optional.ofNullable(trainee);
+    }
+
+    @Override
+    public Trainee update(Trainee trainee) {
+        Trainee existing = getSession().byId(Trainee.class).load(trainee.getId());
+
+        if (existing == null) {
+            throw new EntityNotFoundException(String.format("Trainee with id %d not found", trainee.getId()));
         }
 
-        storage.getNamespace(TRAINEE).remove(userId);
-        log.info("Deleted trainee with userId: {}", userId);
+        Trainee merged = getSession().merge(trainee);
+        log.info("Updated trainee with id: {}", merged.getId());
+
+        return merged;
+    }
+
+    @Override
+    public void delete(Long userId) {
+        Trainee trainee = getSession().byId(Trainee.class).load(userId);
+
+        if (trainee == null) {
+            throw new EntityNotFoundException(String.format("Trainee with id %d not found", userId));
+        }
+
+        getSession().remove(trainee);
+        log.info("Deleted trainee with id: {}", userId);
+    }
+
+    private Session getSession() {
+        return sessionFactory.getCurrentSession();
     }
 }
