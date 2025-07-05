@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -24,7 +23,6 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
     }
 
     @Override
-    @Transactional
     public Trainer create(Trainer trainer) {
         getSession().persist(trainer);
         log.info("Created trainer with id: {}", trainer.getId());
@@ -33,7 +31,6 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Trainer> get(Long userId) {
         Trainer trainer = getSession().byId(Trainer.class).load(userId);
 
@@ -41,7 +38,6 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
     }
 
     @Override
-    @Transactional
     public Trainer update(Trainer trainer) {
         Trainer existing = getSession().byId(Trainer.class).load(trainer.getId());
 

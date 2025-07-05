@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -19,7 +18,6 @@ public class TrainingDaoImpl implements TrainingDao {
     private final SessionFactory sessionFactory;
 
     @Override
-    @Transactional
     public Training create(Training training) {
         getSession().persist(training);
         log.info("Created training with id: {}", training.getId());
@@ -28,7 +26,6 @@ public class TrainingDaoImpl implements TrainingDao {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public Optional<Training> get(Long id) {
         Training training = getSession().byId(Training.class).load(id);
         log.debug("Retrieved training with id: {}, found: {}", id, training != null);
