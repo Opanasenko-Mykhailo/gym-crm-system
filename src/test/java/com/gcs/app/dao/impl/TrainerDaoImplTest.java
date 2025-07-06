@@ -55,6 +55,7 @@ class TrainerDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while creating trainer: " + e.getMessage());
         }
 
@@ -83,6 +84,7 @@ class TrainerDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while retrieving trainer: " + e.getMessage());
         }
 

@@ -57,6 +57,7 @@ class TraineeDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while creating trainee: " + e.getMessage());
         }
 
@@ -85,6 +86,7 @@ class TraineeDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while retrieving trainee: " + e.getMessage());
         }
 
@@ -107,6 +109,7 @@ class TraineeDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while attempting to retrieve non-existent trainee: " + e.getMessage());
         }
 
@@ -141,6 +144,7 @@ class TraineeDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while updating trainee: " + e.getMessage());
         }
 
@@ -171,6 +175,7 @@ class TraineeDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while updating non-existent trainee: " + e.getMessage());
         }
     }
@@ -190,6 +195,7 @@ class TraineeDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while deleting trainee: " + e.getMessage());
         }
 
@@ -214,6 +220,7 @@ class TraineeDaoImplTest {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
+
             fail("Error while attempting to delete non-existent trainee: " + e.getMessage());
         }
     }
