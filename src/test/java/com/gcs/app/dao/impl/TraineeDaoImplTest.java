@@ -1,31 +1,33 @@
 package com.gcs.app.dao.impl;
 
+import com.gcs.app.config.TestConfig;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
-import org.hibernate.IdentifierLoadAccess;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {TestConfig.class})
 class TraineeDaoImplTest {
 
-    private static final Long USER_ID = 1L;
     private static final String FIRST_NAME = "John";
     private static final String LAST_NAME = "Doe";
     private static final String USERNAME = "john.doe";
@@ -33,123 +35,220 @@ class TraineeDaoImplTest {
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1990, 1, 1);
     private static final String ADDRESS = "123 Main St";
 
-    @Mock
+    @Autowired
     private SessionFactory sessionFactory;
 
-    @Mock
-    private Session session;
-
-    @Mock
-    private IdentifierLoadAccess<Trainee> identifierLoadAccess;
-
-    @InjectMocks
+    @Autowired
     private TraineeDaoImpl dao;
 
     @Test
     void create_persistsTrainee_returnsTrainee() {
-        Trainee trainee = createTrainee();
+        User user = createUser(FIRST_NAME);
+        Trainee trainee = createTrainee(user);
 
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
+        Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
 
-        dao.create(trainee);
+        try {
+            dao.create(trainee);
+            transaction.commit();
+        } catch (Exception e) {
 
-        verify(session).persist(trainee);
-        assertEquals(USER_ID, trainee.getId());
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            fail("Error while creating trainee: " + e.getMessage());
+        }
+
+        try (Session verifySession = sessionFactory.openSession()) {
+            Trainee savedTrainee = verifySession.find(Trainee.class, trainee.getId());
+
+            assertNotNull(savedTrainee);
+            assertEquals(USERNAME, savedTrainee.getUser().getUsername());
+        }
     }
 
     @Test
     void get_whenTraineeExists_returnsOptionalOfTrainee() {
-        Trainee trainee = createTrainee();
+        Trainee trainee = saveNewTrainee();
+        Long id = trainee.getId();
 
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(trainee);
+        Optional<Trainee> result = Optional.empty();
+        Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
 
-        Optional<Trainee> result = dao.get(USER_ID);
+        try {
+            result = dao.get(id);
+            transaction.commit();
+        } catch (Exception e) {
+
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            fail("Error while retrieving trainee: " + e.getMessage());
+        }
 
         assertTrue(result.isPresent());
-        assertEquals(trainee, result.get());
+        assertEquals(id, result.get().getId());
+        assertEquals(USERNAME, result.get().getUser().getUsername());
     }
 
     @Test
     void get_whenTraineeDoesNotExist_returnsEmptyOptional() {
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(null);
+        Optional<Trainee> result = Optional.empty();
+        Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
 
-        Optional<Trainee> result = dao.get(USER_ID);
+        try {
+            result = dao.get(999L);
+            transaction.commit();
+        } catch (Exception e) {
+
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            fail("Error while attempting to retrieve non-existent trainee: " + e.getMessage());
+        }
 
         assertFalse(result.isPresent());
     }
 
     @Test
     void update_whenTraineeExists_mergesAndReturnsTrainee() {
-        Trainee trainee = createTrainee();
+        Trainee original = saveNewTrainee();
+        Long id = original.getId();
 
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(trainee);
-        when(session.merge(trainee)).thenReturn(trainee);
+        User updatedUser = createUser("Jane").toBuilder()
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .lastName(LAST_NAME)
+                .build();
 
-        Trainee updated = dao.update(trainee);
+        Trainee updatedTrainee = createTrainee(updatedUser).toBuilder()
+                .id(id)
+                .build();
 
-        assertEquals(trainee, updated);
-        verify(session).merge(trainee);
+        Trainee result = null;
+        Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+
+        try {
+            result = dao.update(updatedTrainee);
+            transaction.commit();
+        } catch (Exception e) {
+
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            fail("Error while updating trainee: " + e.getMessage());
+        }
+
+        assertNotNull(result);
+        assertEquals("Jane", result.getUser().getFirstName());
+
+        try (Session verifySession = sessionFactory.openSession()) {
+            Trainee savedTrainee = verifySession.find(Trainee.class, id);
+            assertEquals("Jane", savedTrainee.getUser().getFirstName());
+        }
     }
 
     @Test
     void update_whenTraineeDoesNotExist_throwsEntityNotFoundException() {
-        Trainee trainee = createTrainee();
+        User user = createUser(FIRST_NAME);
+        Trainee trainee = createTrainee(user).toBuilder().id(999L).build();
 
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(null);
+        Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
 
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(trainee));
+        try {
+            EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(trainee));
 
-        assertEquals("Trainee with id 1 not found", ex.getMessage());
+            assertEquals("Trainee with id 999 not found", ex.getMessage());
+            transaction.rollback();
+        } catch (Exception e) {
+
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            fail("Error while updating non-existent trainee: " + e.getMessage());
+        }
     }
 
     @Test
     void delete_whenTraineeExists_removesTrainee() {
-        Trainee trainee = createTrainee();
+        Trainee trainee = saveNewTrainee();
+        Long id = trainee.getId();
 
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(trainee);
+        Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            dao.delete(id);
+            transaction.commit();
+        } catch (Exception e) {
 
-        dao.delete(USER_ID);
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            fail("Error while deleting trainee: " + e.getMessage());
+        }
 
-        verify(session).remove(trainee);
+        try (Session verifySession = sessionFactory.openSession()) {
+            Trainee deletedTrainee = verifySession.find(Trainee.class, id);
+
+            assertNull(deletedTrainee);
+        }
     }
 
     @Test
     void delete_whenTraineeDoesNotExist_throwsEntityNotFoundException() {
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainee.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(null);
+        Session session = sessionFactory.getCurrentSession();
+        Transaction transaction = session.beginTransaction();
+        try {
+            EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.delete(999L));
 
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.delete(USER_ID));
+            assertEquals("Trainee with id 999 not found", ex.getMessage());
+            transaction.rollback();
+        } catch (Exception e) {
 
-        assertEquals("Trainee with id 1 not found", ex.getMessage());
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            fail("Error while attempting to delete non-existent trainee: " + e.getMessage());
+        }
     }
 
-    private Trainee createTrainee() {
+    private User createUser(String firstName) {
+        return User.builder()
+                .username(USERNAME)
+                .password(PASSWORD)
+                .isActive(true)
+                .firstName(firstName)
+                .lastName(LAST_NAME)
+                .build();
+    }
+
+    private Trainee createTrainee(User user) {
         return Trainee.builder()
-                .id(USER_ID)
-                .user(createUser())
+                .user(user)
                 .dateOfBirth(DATE_OF_BIRTH)
                 .address(ADDRESS)
                 .build();
     }
 
-    private User createUser() {
-        return User.builder()
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .firstName(FIRST_NAME)
-                .lastName(LAST_NAME)
-                .build();
+    private Trainee saveNewTrainee() {
+        User user = createUser(FIRST_NAME);
+        Trainee trainee = createTrainee(user);
+
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.persist(user);
+            session.persist(trainee);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            fail("Error while saving new trainee: " + e.getMessage());
+        }
+
+        return trainee;
     }
 }
