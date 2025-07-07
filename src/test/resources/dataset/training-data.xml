@@ -22,25 +22,25 @@
     <trainee_trainer trainee_id="1" trainer_id="1"/>
     <trainee_trainer trainee_id="2" trainer_id="3"/>
 
-    <trainings
-            training_name="Morning Yoga"
-            training_date="2025-10-01"
-            training_duration="60"
-            trainee_id="1"
-            trainer_id="1"
-            type_id="1"/>
-    <trainings
-            training_name="Evening Cardio"
-            training_date="2025-10-02"
-            training_duration="45"
-            trainee_id="1"
-            trainer_id="2"
-            type_id="2"/>
-    <trainings
-            training_name="Strength Session"
-            training_date="2025-10-03"
-            training_duration="90"
-            trainee_id="2"
-            trainer_id="3"
-            type_id="3"/>
+    <trainings id="4"
+               training_name="Morning Yoga"
+               training_date="2025-10-01"
+               training_duration="60"
+               trainee_id="1"
+               trainer_id="1"
+               type_id="1"/>
+    <trainings id="5"
+               training_name="Evening Cardio"
+               training_date="2025-10-02"
+               training_duration="45"
+               trainee_id="1"
+               trainer_id="2"
+               type_id="2"/>
+    <trainings id="6"
+               training_name="Strength Session"
+               training_date="2025-10-03"
+               training_duration="90"
+               trainee_id="2"
+               trainer_id="3"
+               type_id="3"/>
 </dataset>

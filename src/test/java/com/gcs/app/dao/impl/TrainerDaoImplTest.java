@@ -1,25 +1,22 @@
 package com.gcs.app.dao.impl;
 
-import com.gcs.app.dao.TestRepository;
+import com.gcs.app.dao.AbstractRepositoryTest;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
+import com.github.database.rider.core.api.dataset.DataSet;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+@DataSet(value = "dataset/trainer-data.xml", cleanBefore = true, cleanAfter = true, transactional = true, disableConstraints = true)
+class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
 
-class TrainerDaoImplTest extends TestRepository<TrainerDaoImpl> {
-
+    private static final Long EXISTING_TRAINER_ID = 1L;
     private static final Long NON_EXISTENT_ID = 999L;
     private static final String FIRST_NAME = "Jane";
     private static final String LAST_NAME = "Smith";
@@ -32,42 +29,38 @@ class TrainerDaoImplTest extends TestRepository<TrainerDaoImpl> {
         return new TrainerDaoImpl(sessionFactory);
     }
 
-    @Override
-    protected String getXmlDataPath() {
-        return "/dbunit/trainer-data.xml";
-    }
-
     @Test
     void get_whenTrainerExists_returnsTrainer() {
-        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
-        Optional<Trainer> result = dao.get(1L);
-        transaction.commit();
+        Optional<Trainer> result = dao.get(EXISTING_TRAINER_ID);
 
         assertTrue(result.isPresent());
-        assertEquals(1L, result.get().getId());
+        assertEquals(EXISTING_TRAINER_ID, result.get().getId());
+        assertEquals("jane.smith", result.get().getUser().getUsername());
+        assertEquals("Jane", result.get().getUser().getFirstName());
     }
 
     @Test
     void get_whenTrainerDoesNotExist_returnsEmptyOptional() {
-        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
         Optional<Trainer> result = dao.get(NON_EXISTENT_ID);
-        transaction.commit();
 
         assertFalse(result.isPresent());
     }
 
     @Test
     void update_whenTrainerExists_mergesAndReturnsTrainer() {
-        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
-        Trainer existing = dao.get(1L).orElseThrow();
+        Trainer existing = dao.get(EXISTING_TRAINER_ID).orElseThrow();
+        User updatedUser = existing.getUser().toBuilder()
+                .firstName("Anna")
+                .build();
+
         Trainer updated = existing.toBuilder()
-                .user(existing.getUser().toBuilder().firstName("Anna").build())
+                .user(updatedUser)
                 .build();
 
         Trainer result = dao.update(updated);
-        transaction.commit();
 
         assertEquals("Anna", result.getUser().getFirstName());
+        assertEquals("jane.smith", result.getUser().getUsername());
     }
 
     @Test
@@ -78,21 +71,18 @@ class TrainerDaoImplTest extends TestRepository<TrainerDaoImpl> {
                 .specialization(createTrainingType())
                 .build();
 
-        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
-
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(ghost));
-
-        transaction.rollback();
 
         assertEquals("Trainer with id 999 not found", ex.getMessage());
     }
 
     @Test
     void create_persistsTrainer() {
-        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
-
         User existingUser = sessionFactory.getCurrentSession().find(User.class, 1L);
         TrainingType existingType = sessionFactory.getCurrentSession().find(TrainingType.class, 1L);
+
+        assertNotNull(existingUser);
+        assertNotNull(existingType);
 
         Trainer newTrainer = Trainer.builder()
                 .user(existingUser)
@@ -100,15 +90,15 @@ class TrainerDaoImplTest extends TestRepository<TrainerDaoImpl> {
                 .build();
 
         dao.create(newTrainer);
-        transaction.commit();
+        sessionFactory.getCurrentSession().flush();
 
-        try (Session verifySession = sessionFactory.openSession()) {
-            Trainer saved = verifySession.find(Trainer.class, newTrainer.getId());
+        Trainer saved = sessionFactory.getCurrentSession().find(Trainer.class, newTrainer.getId());
 
-            assertNotNull(saved);
-            assertEquals(existingUser.getUsername(), saved.getUser().getUsername());
-        }
+        assertNotNull(saved);
+        assertEquals(existingUser.getUsername(), saved.getUser().getUsername());
+        assertEquals(existingType.getName(), saved.getSpecialization().getName());
     }
+
 
     private User createUser() {
         return User.builder()
