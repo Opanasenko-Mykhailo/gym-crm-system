@@ -21,11 +21,6 @@ class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImpl> {
     private static final Long EXISTING_TRAINEE_ID = 1L;
     private static final Long NON_EXISTENT_TRAINEE_ID = 999L;
 
-    @Override
-    protected TraineeDaoImpl initDao() {
-        return new TraineeDaoImpl(sessionFactory);
-    }
-
     @Test
     void get_whenTraineeExists_returnsTrainee() {
         Optional<Trainee> result = dao.get(EXISTING_TRAINEE_ID);

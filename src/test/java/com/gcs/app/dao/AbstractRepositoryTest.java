@@ -25,19 +25,16 @@ public abstract class AbstractRepositoryTest<T> {
     @Autowired
     protected SessionFactory sessionFactory;
 
+    @Autowired
     protected T dao;
-
-    protected abstract T initDao();
 
     @BeforeEach
     void setUp() {
-        this.dao = initDao();
         sessionFactory.getCurrentSession().beginTransaction();
     }
 
     @AfterEach
     void tearDownTransaction() {
-
         if (sessionFactory.getCurrentSession().getTransaction().isActive()) {
             sessionFactory.getCurrentSession().getTransaction().rollback();
         }

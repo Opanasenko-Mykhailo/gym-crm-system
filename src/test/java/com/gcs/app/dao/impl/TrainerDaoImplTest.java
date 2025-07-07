@@ -27,11 +27,6 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
     private static final String PASSWORD = "password";
     private static final String SPECIALIZATION = "Yoga";
 
-    @Override
-    protected TrainerDaoImpl initDao() {
-        return new TrainerDaoImpl(sessionFactory);
-    }
-
     @Test
     void get_whenTrainerExists_returnsTrainer() {
         Optional<Trainer> result = dao.get(EXISTING_TRAINER_ID);

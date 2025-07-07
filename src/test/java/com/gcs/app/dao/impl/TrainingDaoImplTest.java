@@ -28,11 +28,6 @@ class TrainingDaoImplTest extends AbstractRepositoryTest<TrainingDaoImpl> {
     private static final Long EXISTING_TRAINER_ID = 1L;
     private static final String EXISTING_TRAINING_TYPE_NAME = "Yoga";
 
-    @Override
-    protected TrainingDaoImpl initDao() {
-        return new TrainingDaoImpl(sessionFactory);
-    }
-
     @Test
     void get_whenTrainingExists_returnsTraining() {
         Optional<Training> optionalTraining = dao.get(EXISTING_TRAINING_ID);
