@@ -6,12 +6,15 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import com.github.database.rider.core.api.dataset.DataSet;
-import org.hibernate.Session;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataSet(value = "dataset/trainer-data.xml", cleanBefore = true, cleanAfter = true, transactional = true, disableConstraints = true)
 class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
