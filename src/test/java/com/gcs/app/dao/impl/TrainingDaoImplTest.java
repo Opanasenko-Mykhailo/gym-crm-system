@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TrainingDaoImplTest extends TestRepository<TrainingDaoImpl> {
 
-    private static final Long EXISTING_TRAINING_ID = 1L;
+    private static final Long EXISTING_TRAINING_ID = 3L;
     private static final String EXISTING_TRAINING_NAME = "Morning Yoga";
     private static final LocalDate EXISTING_TRAINING_DATE = LocalDate.of(2025, 10, 1);
     private static final Long EXISTING_TRAINING_DURATION = 60L;
@@ -79,6 +79,7 @@ class TrainingDaoImplTest extends TestRepository<TrainingDaoImpl> {
     void get_whenTrainingExists_returnsTraining() {
         Session session = sessionFactory.getCurrentSession();
         Optional<Training> optionalTraining = dao.get(EXISTING_TRAINING_ID);
+
 
         assertTrue(optionalTraining.isPresent());
         Training result = optionalTraining.get();

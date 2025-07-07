@@ -18,7 +18,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.sql.DataSource;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.Statement;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {TestConfig.class})
@@ -54,15 +53,6 @@ public abstract class TestRepository<T> {
 
                 IDataSet dataSet = new FlatXmlDataSetBuilder().build(xmlStream);
                 DatabaseOperation.CLEAN_INSERT.execute(dbUnitConn, dataSet);
-
-                try (Statement statement = connection.createStatement()) {
-                    statement.execute("ALTER TABLE users ALTER COLUMN id RESTART WITH (SELECT COALESCE(MAX(id), 0) + 1 FROM users)");
-                    statement.execute("ALTER TABLE training_types ALTER COLUMN id RESTART WITH (SELECT COALESCE(MAX(id), 0) + 1 FROM training_types)");
-                    statement.execute("ALTER TABLE trainees ALTER COLUMN id RESTART WITH (SELECT COALESCE(MAX(id), 0) + 1 FROM trainees)");
-                    statement.execute("ALTER TABLE trainers ALTER COLUMN id RESTART WITH (SELECT COALESCE(MAX(id), 0) + 1 FROM trainers)");
-                    statement.execute("ALTER TABLE trainings ALTER COLUMN id RESTART WITH (SELECT COALESCE(MAX(id), 0) + 1 FROM trainings)");
-                }
-
             }
         }
         sessionFactory.getCurrentSession().beginTransaction();
