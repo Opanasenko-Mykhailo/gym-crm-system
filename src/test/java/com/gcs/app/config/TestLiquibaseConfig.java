@@ -13,7 +13,7 @@ public class TestLiquibaseConfig {
     public SpringLiquibase liquibase(DataSource dataSource) {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
-        liquibase.setChangeLog("classpath:db/changelog/db.changelog-test.xml");
+        liquibase.setChangeLog("classpath:/db/changelog/db.changelog-master.xml");
 
         return liquibase;
     }

@@ -1,18 +1,13 @@
 package com.gcs.app.dao.impl;
 
-import com.gcs.app.config.TestConfig;
+import com.gcs.app.dao.TestRepository;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
@@ -20,83 +15,42 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfig.class})
-class TrainerDaoImplTest {
 
+class TrainerDaoImplTest extends TestRepository<TrainerDaoImpl> {
+
+    private static final Long NON_EXISTENT_ID = 999L;
     private static final String FIRST_NAME = "Jane";
     private static final String LAST_NAME = "Smith";
     private static final String USERNAME = "jane.smith";
     private static final String PASSWORD = "password";
     private static final String SPECIALIZATION = "Yoga";
 
-    @Autowired
-    private SessionFactory sessionFactory;
+    @Override
+    protected TrainerDaoImpl initDao() {
+        return new TrainerDaoImpl(sessionFactory);
+    }
 
-    @Autowired
-    private TrainerDaoImpl dao;
-
-    @Test
-    void create_persistsTrainer_returnsTrainer() {
-        User user = createUser();
-        TrainingType specialization = saveTrainingType(createTrainingType());
-        Trainer trainer = createTrainer(user, specialization);
-
-        Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
-
-        try {
-            dao.create(trainer);
-            transaction.commit();
-        } catch (Exception e) {
-
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-
-            fail("Error while creating trainer: " + e.getMessage());
-        }
-
-        try (Session verifySession = sessionFactory.openSession()) {
-            Trainer saved = verifySession.find(Trainer.class, trainer.getId());
-
-            assertNotNull(saved);
-            assertEquals(USERNAME, saved.getUser().getUsername());
-            assertEquals(SPECIALIZATION, saved.getSpecialization().getName());
-        }
+    @Override
+    protected String getXmlDataPath() {
+        return "/dbunit/trainer-data.xml";
     }
 
     @Test
     void get_whenTrainerExists_returnsTrainer() {
-        Trainer trainer = saveTrainer();
+        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
+        Optional<Trainer> result = dao.get(1L);
+        transaction.commit();
 
-        Trainer result = null;
-        Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
-
-        try {
-            result = dao.get(trainer.getId()).orElse(null);
-            transaction.commit();
-        } catch (Exception e) {
-
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-
-            fail("Error while retrieving trainer: " + e.getMessage());
-        }
-
-        assertNotNull(result);
-        assertEquals(trainer.getId(), result.getId());
+        assertTrue(result.isPresent());
+        assertEquals(1L, result.get().getId());
     }
 
     @Test
     void get_whenTrainerDoesNotExist_returnsEmptyOptional() {
-        Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
-        Optional<Trainer> result = dao.get(999L);
+        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
+        Optional<Trainer> result = dao.get(NON_EXISTENT_ID);
         transaction.commit();
 
         assertFalse(result.isPresent());
@@ -104,67 +58,55 @@ class TrainerDaoImplTest {
 
     @Test
     void update_whenTrainerExists_mergesAndReturnsTrainer() {
-        Trainer existing = saveTrainer();
-        Long id = existing.getId();
-
-        User updatedUser = createUser("Anna");
-        updatedUser = updatedUser.toBuilder()
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .lastName(LAST_NAME)
+        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
+        Trainer existing = dao.get(1L).orElseThrow();
+        Trainer updated = existing.toBuilder()
+                .user(existing.getUser().toBuilder().firstName("Anna").build())
                 .build();
 
-        Trainer updatedTrainer = createTrainer(updatedUser, existing.getSpecialization())
-                .toBuilder()
-                .id(id)
-                .build();
-
-        Trainer result = null;
-        Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
-
-        try {
-            result = dao.update(updatedTrainer);
-            transaction.commit();
-        } catch (Exception e) {
-
-            if (transaction.isActive()) transaction.rollback();
-            fail("Error while updating trainer: " + e.getMessage());
-        }
+        Trainer result = dao.update(updated);
+        transaction.commit();
 
         assertEquals("Anna", result.getUser().getFirstName());
-
-        try (Session verifySession = sessionFactory.openSession()) {
-            Trainer saved = verifySession.find(Trainer.class, id);
-
-            assertEquals("Anna", saved.getUser().getFirstName());
-        }
     }
 
     @Test
     void update_whenTrainerDoesNotExist_throwsEntityNotFoundException() {
-        User user = createUser();
-        TrainingType specialization = saveTrainingType(createTrainingType());
-        Trainer trainer = createTrainer(user, specialization);
-        trainer = trainer.toBuilder().id(999L).build();
+        Trainer ghost = Trainer.builder()
+                .id(NON_EXISTENT_ID)
+                .user(createUser())
+                .specialization(createTrainingType())
+                .build();
 
-        Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
+        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
 
-        try {
-            Trainer finalTrainer = trainer;
-            EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(finalTrainer));
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(ghost));
 
-            assertEquals("Trainer with id 999 not found", ex.getMessage());
-            transaction.rollback();
-        } catch (Exception e) {
+        transaction.rollback();
 
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
+        assertEquals("Trainer with id 999 not found", ex.getMessage());
+    }
 
-            fail("Error while updating non-existent trainer: " + e.getMessage());
+    @Test
+    void create_persistsTrainer() {
+        Transaction transaction = sessionFactory.getCurrentSession().beginTransaction();
+
+        User existingUser = sessionFactory.getCurrentSession().find(User.class, 1L);
+        TrainingType existingType = sessionFactory.getCurrentSession().find(TrainingType.class, 1L);
+
+        Trainer newTrainer = Trainer.builder()
+                .user(existingUser)
+                .specialization(existingType)
+                .build();
+
+        dao.create(newTrainer);
+        transaction.commit();
+
+        try (Session verifySession = sessionFactory.openSession()) {
+            Trainer saved = verifySession.find(Trainer.class, newTrainer.getId());
+
+            assertNotNull(saved);
+            assertEquals(existingUser.getUsername(), saved.getUser().getUsername());
         }
     }
 
@@ -178,65 +120,9 @@ class TrainerDaoImplTest {
                 .build();
     }
 
-    private User createUser(String firstName) {
-        return User.builder()
-                .username(USERNAME)
-                .password(PASSWORD)
-                .isActive(true)
-                .firstName(firstName)
-                .lastName(LAST_NAME)
-                .build();
-    }
-
-    private Trainer createTrainer(User user, TrainingType specialization) {
-        return Trainer.builder()
-                .user(user)
-                .specialization(specialization)
-                .build();
-    }
-
     private TrainingType createTrainingType() {
         return TrainingType.builder()
                 .name(SPECIALIZATION)
                 .build();
-    }
-
-    private TrainingType saveTrainingType(TrainingType type) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-
-            TrainingType existing = session.createQuery("FROM TrainingType t WHERE t.name = :name", TrainingType.class)
-                    .setParameter("name", type.getName())
-                    .uniqueResult();
-
-            if (existing != null) {
-                session.getTransaction().commit();
-                return existing;
-            }
-
-            session.persist(type);
-            session.getTransaction().commit();
-            return type;
-        } catch (Exception e) {
-            fail("Failed to save specialization: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private Trainer saveTrainer() {
-        User user = createUser();
-        TrainingType specialization = saveTrainingType(createTrainingType());
-        Trainer trainer = createTrainer(user, specialization);
-
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            session.persist(user);
-            session.persist(trainer);
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            fail("Failed to save trainer: " + e.getMessage());
-        }
-
-        return trainer;
     }
 }

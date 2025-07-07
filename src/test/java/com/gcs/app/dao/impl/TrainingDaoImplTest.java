@@ -1,19 +1,12 @@
 package com.gcs.app.dao.impl;
 
-import com.gcs.app.config.TestConfig;
+import com.gcs.app.dao.TestRepository;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
-import com.gcs.app.model.User;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -21,200 +14,93 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfig.class})
-class TrainingDaoImplTest {
 
-    private static final String NAME = "Yoga Session";
-    private static final String TYPE = "Yoga";
-    private static final LocalDate DATE = LocalDate.of(2025, 6, 30);
-    private static final Long DURATION = 60L;
+class TrainingDaoImplTest extends TestRepository<TrainingDaoImpl> {
 
-    @Autowired
-    private SessionFactory sessionFactory;
+    private static final Long EXISTING_TRAINING_ID = 1L;
+    private static final String EXISTING_TRAINING_NAME = "Morning Yoga";
+    private static final LocalDate EXISTING_TRAINING_DATE = LocalDate.of(2025, 10, 1);
+    private static final Long EXISTING_TRAINING_DURATION = 60L;
 
-    @Autowired
-    private TrainingDaoImpl dao;
+    private static final Long EXISTING_TRAINEE_ID = 1L;
+    private static final Long EXISTING_TRAINER_ID = 1L;
+    private static final Long EXISTING_TRAINING_TYPE_ID = 1L;
+    private static final String EXISTING_TRAINING_TYPE_NAME = "Yoga";
 
-    @Test
-    void create_persistsTraining_returnsTraining() {
-        Trainee trainee = saveTrainee();
-        Trainer trainer = saveTrainer();
-        TrainingType type = saveTrainingType();
+    @Override
+    protected TrainingDaoImpl initDao() {
+        return new TrainingDaoImpl(sessionFactory);
+    }
 
-        Training training = createTraining(trainee, trainer, type);
-
-        Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
-
-        try {
-            dao.create(training);
-            transaction.commit();
-        } catch (Exception e) {
-
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
-
-            fail("Error while saving training: " + e.getMessage());
-        }
-
-        try (Session verifySession = sessionFactory.openSession()) {
-            Training saved = verifySession.find(Training.class, training.getId());
-
-            assertNotNull(saved);
-            assertEquals(NAME, saved.getName());
-            assertEquals(DATE, saved.getDate());
-            assertEquals(DURATION, saved.getDuration());
-            assertEquals(TYPE, saved.getType().getName());
-            assertEquals(trainee.getId(), saved.getTrainee().getId());
-            assertEquals(trainer.getId(), saved.getTrainer().getId());
-        }
+    @Override
+    protected String getXmlDataPath() {
+        return "/dbunit/training-data.xml";
     }
 
     @Test
-    void get_whenTrainingExists_returnsTraining() {
-        Training training = saveTraining();
-
-        Training result = null;
+    void create_persistsTraining_returnsTraining() {
         Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
 
-        try {
-            Optional<Training> optionalTraining = dao.get(training.getId());
-            result = optionalTraining.orElse(null);
-            transaction.commit();
-        } catch (Exception e) {
+        Trainee existingTrainee = session.find(Trainee.class, EXISTING_TRAINEE_ID);
+        Trainer existingTrainer = session.find(Trainer.class, EXISTING_TRAINER_ID);
+        TrainingType existingType = session.find(TrainingType.class, EXISTING_TRAINING_TYPE_ID);
 
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
 
-            fail("Failed to retrieve training: " + e.getMessage());
+        Training newTraining = Training.builder()
+                .trainee(existingTrainee)
+                .trainer(existingTrainer)
+                .type(existingType)
+                .name("New Test Training")
+                .date(LocalDate.of(2026, 7, 7))
+                .duration(75L)
+                .build();
+
+        dao.create(newTraining);
+        session.getTransaction().commit();
+
+
+        try (Session verifySession = sessionFactory.openSession()) {
+            Training saved = verifySession.find(Training.class, newTraining.getId());
+
+            assertNotNull(saved);
+            assertEquals("New Test Training", saved.getName());
+            assertEquals(LocalDate.of(2026, 7, 7), saved.getDate());
+            assertEquals(75L, saved.getDuration());
+            assertEquals(existingType.getName(), saved.getType().getName());
+            assertEquals(existingTrainee.getId(), saved.getTrainee().getId());
+            assertEquals(existingTrainer.getId(), saved.getTrainer().getId());
         }
+    }
 
-        assertNotNull(result);
-        assertEquals(NAME, result.getName());
-        assertEquals(TYPE, result.getType().getName());
-        assertEquals(training.getTrainee().getId(), result.getTrainee().getId());
-        assertEquals(training.getTrainer().getId(), result.getTrainer().getId());
+
+    @Test
+    void get_whenTrainingExists_returnsTraining() {
+        Session session = sessionFactory.getCurrentSession();
+        Optional<Training> optionalTraining = dao.get(EXISTING_TRAINING_ID);
+
+        assertTrue(optionalTraining.isPresent());
+        Training result = optionalTraining.get();
+
+        assertEquals(EXISTING_TRAINING_ID, result.getId());
+        assertEquals(EXISTING_TRAINING_NAME, result.getName());
+        assertEquals(EXISTING_TRAINING_DATE, result.getDate());
+        assertEquals(EXISTING_TRAINING_DURATION, result.getDuration());
+        assertEquals(EXISTING_TRAINING_TYPE_NAME, result.getType().getName());
+        assertEquals(EXISTING_TRAINEE_ID, result.getTrainee().getId());
+        assertEquals(EXISTING_TRAINER_ID, result.getTrainer().getId());
+
+        session.getTransaction().commit();
     }
 
     @Test
     void get_whenTrainingDoesNotExist_returnsEmptyOptional() {
         Session session = sessionFactory.getCurrentSession();
-        Transaction transaction = session.beginTransaction();
         Optional<Training> result = dao.get(999L);
-        transaction.commit();
 
         assertFalse(result.isPresent());
-    }
 
-    private Training createTraining(Trainee trainee, Trainer trainer, TrainingType type) {
-        return Training.builder()
-                .trainee(trainee)
-                .trainer(trainer)
-                .type(type)
-                .name(NAME)
-                .date(DATE)
-                .duration(DURATION)
-                .build();
-    }
-
-    private Training saveTraining() {
-        Trainee trainee = saveTrainee();
-        Trainer trainer = saveTrainer();
-        TrainingType type = saveTrainingType();
-
-        Training training = createTraining(trainee, trainer, type);
-
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.persist(training);
-            transaction.commit();
-        } catch (Exception e) {
-            fail("Failed to save training: " + e.getMessage());
-        }
-
-        return training;
-    }
-
-    private Trainee saveTrainee() {
-        User user = createUser("trainee.user", "John", "Doe");
-        Trainee trainee = Trainee.builder()
-                .user(user)
-                .build();
-
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-
-            session.persist(user);
-            session.persist(trainee);
-
-            transaction.commit();
-        } catch (Exception e) {
-            fail("Failed to save trainee: " + e.getMessage());
-        }
-
-        return trainee;
-    }
-
-    private Trainer saveTrainer() {
-        User user = createUser("trainer.user", "Jane", "Smith");
-        Trainer trainer = Trainer.builder()
-                .user(user)
-                .specialization(saveTrainingType())
-                .build();
-
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-
-            session.persist(user);
-            session.persist(trainer);
-
-            transaction.commit();
-        } catch (Exception e) {
-            fail("Failed to save trainer: " + e.getMessage());
-        }
-
-        return trainer;
-    }
-
-    private TrainingType saveTrainingType() {
-        TrainingType type = TrainingType.builder()
-                .name(TYPE)
-                .build();
-
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-
-            TrainingType existing = session.createQuery("FROM TrainingType t WHERE t.name = :name", TrainingType.class)
-                    .setParameter("name", TYPE)
-                    .uniqueResult();
-
-            if (existing != null) {
-                transaction.commit();
-                return existing;
-            }
-
-            session.persist(type);
-            transaction.commit();
-            return type;
-        } catch (Exception e) {
-            fail("Failed to save training type: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private User createUser(String username, String firstName, String lastName) {
-        return User.builder()
-                .username(username)
-                .password("password")
-                .isActive(true)
-                .firstName(firstName)
-                .lastName(lastName)
-                .build();
+        session.getTransaction().commit();
     }
 }
