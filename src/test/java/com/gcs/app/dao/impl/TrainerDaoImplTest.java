@@ -1,125 +1,102 @@
 package com.gcs.app.dao.impl;
 
+import com.gcs.app.dao.AbstractRepositoryTest;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
-import org.hibernate.IdentifierLoadAccess;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import com.github.database.rider.core.api.dataset.DataSet;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-class TrainerDaoImplTest {
+@DataSet(value = "dataset/trainer-data.xml", cleanBefore = true, cleanAfter = true, transactional = true, disableConstraints = true)
+class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
 
-    private static final Long USER_ID = 1L;
+    private static final Long EXISTING_TRAINER_ID = 1L;
+    private static final Long NON_EXISTENT_ID = 999L;
     private static final String FIRST_NAME = "Jane";
     private static final String LAST_NAME = "Smith";
     private static final String USERNAME = "jane.smith";
     private static final String PASSWORD = "password";
     private static final String SPECIALIZATION = "Yoga";
 
-    @Mock
-    private SessionFactory sessionFactory;
-
-    @Mock
-    private Session session;
-
-    @Mock
-    private IdentifierLoadAccess<Trainer> identifierLoadAccess;
-
-    @InjectMocks
-    private TrainerDaoImpl dao;
-
-    @Test
-    void create_persistsTrainer_returnsTrainer() {
-        Trainer trainer = createTrainer();
-
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-
-        Trainer actual = dao.create(trainer);
-
-        verify(session).persist(trainer);
-        assertEquals(USER_ID, actual.getId());
-        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
-        assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertEquals(USERNAME, actual.getUser().getUsername());
-        assertEquals(PASSWORD, actual.getUser().getPassword());
-        assertTrue(actual.getUser().getIsActive());
-        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
-    }
-
     @Test
     void get_whenTrainerExists_returnsTrainer() {
-        Trainer trainer = createTrainer();
-
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainer.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(trainer);
-
-        var result = dao.get(USER_ID);
+        Optional<Trainer> result = dao.get(EXISTING_TRAINER_ID);
 
         assertTrue(result.isPresent());
-        assertEquals(trainer, result.get());
+        assertEquals(EXISTING_TRAINER_ID, result.get().getId());
+        assertEquals("jane.smith", result.get().getUser().getUsername());
+        assertEquals("Jane", result.get().getUser().getFirstName());
     }
 
     @Test
     void get_whenTrainerDoesNotExist_returnsEmptyOptional() {
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainer.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(null);
-
-        var result = dao.get(USER_ID);
+        Optional<Trainer> result = dao.get(NON_EXISTENT_ID);
 
         assertFalse(result.isPresent());
     }
 
     @Test
     void update_whenTrainerExists_mergesAndReturnsTrainer() {
-        Trainer trainer = createTrainer();
+        Trainer existing = dao.get(EXISTING_TRAINER_ID).orElseThrow();
+        User updatedUser = existing.getUser().toBuilder()
+                .firstName("Anna")
+                .build();
 
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainer.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(trainer);
-        when(session.merge(trainer)).thenReturn(trainer);
+        Trainer updated = existing.toBuilder()
+                .user(updatedUser)
+                .build();
 
-        Trainer updated = dao.update(trainer);
+        Trainer result = dao.update(updated);
 
-        assertEquals(trainer, updated);
-        verify(session).merge(trainer);
+        assertEquals("Anna", result.getUser().getFirstName());
+        assertEquals("jane.smith", result.getUser().getUsername());
     }
 
     @Test
     void update_whenTrainerDoesNotExist_throwsEntityNotFoundException() {
-        Trainer trainer = createTrainer();
-
-        when(sessionFactory.getCurrentSession()).thenReturn(session);
-        when(session.byId(Trainer.class)).thenReturn(identifierLoadAccess);
-        when(identifierLoadAccess.load(USER_ID)).thenReturn(null);
-
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(trainer));
-
-        assertEquals("Trainer with id 1 not found", ex.getMessage());
-    }
-
-    private Trainer createTrainer() {
-        return Trainer.builder()
-                .id(USER_ID)
+        Trainer ghost = Trainer.builder()
+                .id(NON_EXISTENT_ID)
                 .user(createUser())
                 .specialization(createTrainingType())
                 .build();
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(ghost));
+
+        assertEquals("Trainer with id 999 not found", ex.getMessage());
     }
+
+    @Test
+    void create_persistsTrainer() {
+        User existingUser = sessionFactory.getCurrentSession().find(User.class, 1L);
+        TrainingType existingType = sessionFactory.getCurrentSession().find(TrainingType.class, 1L);
+
+        assertNotNull(existingUser);
+        assertNotNull(existingType);
+
+        Trainer newTrainer = Trainer.builder()
+                .user(existingUser)
+                .specialization(existingType)
+                .build();
+
+        dao.create(newTrainer);
+        sessionFactory.getCurrentSession().flush();
+
+        Trainer saved = sessionFactory.getCurrentSession().find(Trainer.class, newTrainer.getId());
+
+        assertNotNull(saved);
+        assertEquals(existingUser.getUsername(), saved.getUser().getUsername());
+        assertEquals(existingType.getName(), saved.getSpecialization().getName());
+    }
+
 
     private User createUser() {
         return User.builder()
