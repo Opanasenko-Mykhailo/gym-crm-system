@@ -8,6 +8,8 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
+import com.gcs.app.service.TraineeService;
+import com.gcs.app.service.TrainerService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,6 +35,9 @@ class TrainingServiceImplTest {
     private static final LocalDate DATE = LocalDate.of(2025, 6, 30);
     private static final Long DURATION = 60L;
 
+    private final Training expected = createTraining();
+    private final TrainingCreateRequestDto createRequestDto = createTrainingCreateRequestDto();
+
     @Mock
     private TrainingDao trainingDao;
 
@@ -42,13 +47,19 @@ class TrainingServiceImplTest {
     @InjectMocks
     private TrainingServiceImpl service;
 
-    private Training expected = createTraining();
-    private TrainingCreateRequestDto createRequestDto = createTrainingCreateRequestDto();
+    @Mock
+    private TraineeService traineeService;
+
+    @Mock
+    private TrainerService trainerService;
 
     @Test
     void createTraining_mapsDtoAndCreatesTraining_returnsTraining() {
         when(trainingMapper.toEntity(createRequestDto)).thenReturn(expected);
         when(trainingDao.create(expected)).thenReturn(expected);
+
+        when(traineeService.getTrainee(TRAINEE_ID)).thenReturn(createTrainee());
+        when(trainerService.getTrainer(TRAINER_ID)).thenReturn(createTrainer());
 
         Training actual = service.createTraining(createRequestDto);
         assertEquals(ID, actual.getId());

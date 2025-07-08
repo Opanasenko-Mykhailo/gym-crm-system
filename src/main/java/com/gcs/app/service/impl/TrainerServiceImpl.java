@@ -1,6 +1,7 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
@@ -26,6 +27,7 @@ import static com.gcs.app.util.UserUtils.generateUsername;
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerDao trainerDao;
+    private final UserDao userDao;
     private final TrainerMapper trainerMapper;
 
     @Override
@@ -68,6 +70,33 @@ public class TrainerServiceImpl implements TrainerService {
         return trainer;
     }
 
+    @Override
+    public Trainer getByUsername(String username) {
+        log.info("Getting trainer by username: {}", username);
+
+        return trainerDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
+    }
+
+    @Override
+    public boolean authenticateTrainer(String username, String password) {
+        log.info("Authenticating trainer with username: {}", username);
+
+        return trainerDao.findByUsername(username)
+                .map(t -> {
+                    boolean matches = t.getUser().getPassword().equals(password);
+                    log.info("Trainer {} authentication {}", username, matches ? "successful" : "failed: wrong password");
+
+                    return matches;
+                })
+                .orElseGet(() -> {
+                    log.warn("Trainer not found for username: {}", username);
+
+                    return false;
+                });
+    }
+
+
     private Optional<Trainer> validateTrainerExists(Long userId) {
         Optional<Trainer> trainer = trainerDao.get(userId);
 
@@ -79,7 +108,7 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     private User userWithCredentials(User user) {
-        String username = generateUsername(user.getFirstName(), user.getLastName(), trainerDao.getAllUsernames());
+        String username = generateUsername(user.getFirstName(), user.getLastName(), userDao.findAllUsernames());
         String password = generateRandomPassword();
 
         return user.builder()

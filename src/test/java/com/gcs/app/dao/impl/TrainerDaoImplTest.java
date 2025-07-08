@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataSet(value = "dataset/trainer-data.xml", cleanBefore = true, cleanAfter = true, transactional = true, disableConstraints = true)
-class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
+class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImplImpl> {
 
     private static final Long EXISTING_TRAINER_ID = 1L;
     private static final Long NON_EXISTENT_ID = 999L;
@@ -97,6 +97,21 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
         assertEquals(existingType.getName(), saved.getSpecialization().getName());
     }
 
+    @Test
+    void findByUsername_whenTrainerExists_returnsOptionalWithTrainer() {
+        Optional<Trainer> result = dao.findByUsername("jane.smith");
+
+        assertTrue(result.isPresent());
+        assertEquals("jane.smith", result.get().getUser().getUsername());
+        assertEquals("Jane", result.get().getUser().getFirstName());
+    }
+
+    @Test
+    void findByUsername_whenTrainerDoesNotExist_returnsEmptyOptional() {
+        Optional<Trainer> result = dao.findByUsername("non.existing.username");
+
+        assertFalse(result.isPresent());
+    }
 
     private User createUser() {
         return User.builder()

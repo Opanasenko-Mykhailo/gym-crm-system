@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataSet(value = "dataset/trainee-data.xml", cleanBefore = true, cleanAfter = true, transactional = true)
-class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImpl> {
+class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImplImpl> {
 
     private static final Long EXISTING_TRAINEE_ID = 1L;
     private static final Long NON_EXISTENT_TRAINEE_ID = 999L;
@@ -90,4 +90,21 @@ class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImpl> {
 
         assertEquals("Trainee with id 999 not found", exception.getMessage());
     }
+
+    @Test
+    void findByUsername_whenTraineeExists_returnsOptionalWithTrainee() {
+        Optional<Trainee> result = dao.findByUsername("john.doe");
+
+        assertTrue(result.isPresent());
+        assertEquals("john.doe", result.get().getUser().getUsername());
+        assertEquals("John", result.get().getUser().getFirstName());
+    }
+
+    @Test
+    void findByUsername_whenTraineeDoesNotExist_returnsEmptyOptional() {
+        Optional<Trainee> result = dao.findByUsername("non.existing.username");
+
+        assertFalse(result.isPresent());
+    }
+
 }

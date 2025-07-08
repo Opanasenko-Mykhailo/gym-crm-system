@@ -9,5 +9,5 @@ public interface TraineeDao {
     Optional<Trainee> get(Long userId);
     Trainee update(Trainee trainee);
     void delete(Long userId);
-    Set<String> getAllUsernames();
+    Optional<Trainee> findByUsername(String username);
 }

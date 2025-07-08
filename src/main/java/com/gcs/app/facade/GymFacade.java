@@ -61,6 +61,20 @@ public class GymFacade {
         return traineeMapper.toDto(traineeService.getTrainee(userId));
     }
 
+    public TraineeResponseDto getTraineeByUsername(String username) {
+        log.info("Retrieving trainee by username: {}", username);
+
+        Trainee trainee = traineeService.getByUsername(username);
+
+        return traineeMapper.toDto(trainee);
+    }
+
+    public boolean authenticateTrainee(String username, String password) {
+        log.info("Authenticating trainee with username: {}", username);
+
+        return traineeService.authenticateTrainee(username, password);
+    }
+
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         log.info("Creating trainer: {} {}", trainerCreateRequestDto.getFirstName(), trainerCreateRequestDto.getLastName());
 
@@ -82,6 +96,21 @@ public class GymFacade {
 
         return trainerMapper.toDto(trainerService.getTrainer(userId));
     }
+
+    public TrainerResponseDto getTrainerByUsername(String username) {
+        log.info("Retrieving trainer by username: {}", username);
+
+        Trainer trainer = trainerService.getByUsername(username);
+
+        return trainerMapper.toDto(trainer);
+    }
+
+    public boolean authenticateTrainer(String username, String password) {
+        log.info("Authenticating trainer with username: {}", username);
+
+        return trainerService.authenticateTrainer(username, password);
+    }
+
 
     public TrainingResponseDto createTraining(TrainingCreateRequestDto trainingCreateRequestDto) {
         log.info("Creating training: {}", trainingCreateRequestDto.getName());

@@ -1,6 +1,7 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,9 +39,15 @@ class TraineeServiceImplTest {
     private static final String ADDRESS = "123 Main St";
     private static final String TRAINEE_NOT_FOUND_MESSAGE = "Trainee with userId " + USER_ID + " not found";
 
+    private final Trainee expectedTrainee = createTrainee();
+    private final TraineeCreateRequestDto createRequestDto = createTraineeCreateRequestDto();
+    private final TraineeUpdateRequestDto updateRequestDto = createTraineeUpdateRequestDto();
 
     @Mock
     private TraineeDao traineeDao;
+
+    @Mock
+    private UserDao userDao;
 
     @Mock
     private TraineeMapper traineeMapper;
@@ -47,14 +55,10 @@ class TraineeServiceImplTest {
     @InjectMocks
     private TraineeServiceImpl service;
 
-    private Trainee expectedTrainee = createTrainee();
-    private TraineeCreateRequestDto createRequestDto = createTraineeCreateRequestDto();
-    private TraineeUpdateRequestDto updateRequestDto = createTraineeUpdateRequestDto();
-
     @Test
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {
         when(traineeMapper.toEntity(createRequestDto)).thenReturn(expectedTrainee);
-        when(traineeDao.getAllUsernames()).thenReturn(Collections.emptySet());
+        when(userDao.findAllUsernames()).thenReturn(Collections.emptySet());
         when(traineeDao.create(any(Trainee.class))).thenReturn(expectedTrainee);
 
         Trainee actual = service.createTrainee(createRequestDto);
@@ -67,7 +71,7 @@ class TraineeServiceImplTest {
         assertEquals(ADDRESS, actual.getAddress());
 
         verify(traineeMapper).toEntity(createRequestDto);
-        verify(traineeDao).getAllUsernames();
+        verify(userDao).findAllUsernames();
         verify(traineeDao).create(any(Trainee.class));
     }
 
@@ -151,6 +155,58 @@ class TraineeServiceImplTest {
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
 
         verify(traineeDao).get(USER_ID);
+    }
+
+    @Test
+    void getByUsername_whenTraineeExists_returnsTrainee() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+
+        Trainee actual = service.getByUsername(USERNAME);
+
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void getByUsername_whenTraineeDoesNotExist_throwsServiceException() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
+        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void authenticateTrainee_whenCredentialsAreCorrect_returnsTrue() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+
+        boolean result = service.authenticateTrainee(USERNAME, PASSWORD);
+
+        assertTrue(result);
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void authenticateTrainee_whenPasswordIsIncorrect_returnsFalse() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+
+        boolean result = service.authenticateTrainee(USERNAME, "wrongPassword");
+
+        assertFalse(result);
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void authenticateTrainee_whenUserDoesNotExist_returnsFalse() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        boolean result = service.authenticateTrainee(USERNAME, PASSWORD);
+
+        assertFalse(result);
+        verify(traineeDao).findByUsername(USERNAME);
     }
 
     private Trainee createTrainee() {

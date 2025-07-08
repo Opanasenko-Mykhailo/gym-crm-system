@@ -9,4 +9,6 @@ public interface TraineeService {
     Trainee updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto);
     void deleteTrainee(Long userId);
     Trainee getTrainee(Long userId);
+    Trainee getByUsername(String username);
+    boolean authenticateTrainee(String username, String password);
 }

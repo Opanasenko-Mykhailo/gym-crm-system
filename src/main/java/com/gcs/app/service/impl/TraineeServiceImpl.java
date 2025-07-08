@@ -1,6 +1,7 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
@@ -26,6 +27,7 @@ import static com.gcs.app.util.UserUtils.generateUsername;
 public class TraineeServiceImpl implements TraineeService {
 
     private final TraineeDao traineeDao;
+    private final UserDao userDao;
     private final TraineeMapper traineeMapper;
 
     @Override
@@ -81,6 +83,32 @@ public class TraineeServiceImpl implements TraineeService {
         return trainee;
     }
 
+    @Override
+    public Trainee getByUsername(String username) {
+        log.info("Getting trainee by username: {}", username);
+
+        return traineeDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
+    }
+
+    @Override
+    public boolean authenticateTrainee(String username, String password) {
+        log.info("Authenticating trainee with username: {}", username);
+
+        return traineeDao.findByUsername(username)
+                .map(t -> {
+                    boolean matches = t.getUser().getPassword().equals(password);
+                    log.info("Trainee {} authentication {}", username, matches ? "successful" : "failed: wrong password");
+
+                    return matches;
+                })
+                .orElseGet(() -> {
+                    log.warn("Trainee not found for username: {}", username);
+
+                    return false;
+                });
+    }
+
     private Optional<Trainee> validateTraineeExists(Long userId) {
         Optional<Trainee> trainee = traineeDao.get(userId);
 
@@ -92,7 +120,7 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     private User userWithCredentials(User user) {
-        String username = generateUsername(user.getFirstName(), user.getLastName(), traineeDao.getAllUsernames());
+        String username = generateUsername(user.getFirstName(), user.getLastName(), userDao.findAllUsernames());
         String password = generateRandomPassword();
 
         return user.builder()

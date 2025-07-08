@@ -8,5 +8,5 @@ public interface TrainerDao {
     Trainer create(Trainer trainer);
     Optional<Trainer> get(Long userId);
     Trainer update(Trainer trainer);
-    Set<String> getAllUsernames();
+    Optional<Trainer> findByUsername(String username);
 }

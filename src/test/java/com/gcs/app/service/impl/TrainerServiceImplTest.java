@@ -1,6 +1,7 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,8 +37,15 @@ class TrainerServiceImplTest {
     private static final String PASSWORD = "password123";
     private static final String SPECIALIZATION = "Yoga";
 
+    private final Trainer expected = createTrainer();
+    private final TrainerCreateRequestDto createRequestDto = createTrainerCreateRequestDto();
+    private final TrainerUpdateRequestDto updateRequestDto = createTrainerUpdateRequestDto();
+
     @Mock
     private TrainerDao trainerDao;
+
+    @Mock
+    private UserDao userDao;
 
     @Mock
     private TrainerMapper trainerMapper;
@@ -44,14 +53,10 @@ class TrainerServiceImplTest {
     @InjectMocks
     private TrainerServiceImpl service;
 
-    private Trainer expected = createTrainer();
-    private TrainerCreateRequestDto createRequestDto = createTrainerCreateRequestDto();
-    private TrainerUpdateRequestDto updateRequestDto = createTrainerUpdateRequestDto();
-
     @Test
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
         when(trainerMapper.toEntity(createRequestDto)).thenReturn(expected);
-        when(trainerDao.getAllUsernames()).thenReturn(Collections.emptySet());
+        when(userDao.findAllUsernames()).thenReturn(Collections.emptySet());
         when(trainerDao.create(any(Trainer.class))).thenReturn(expected);
 
         Trainer actual = service.createTrainer(createRequestDto);
@@ -63,7 +68,7 @@ class TrainerServiceImplTest {
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(trainerMapper).toEntity(createRequestDto);
-        verify(trainerDao).getAllUsernames();
+        verify(userDao).findAllUsernames();
         verify(trainerDao).create(any(Trainer.class));
     }
 
@@ -124,6 +129,58 @@ class TrainerServiceImplTest {
 
         assertEquals("Trainer with userId 1 not found", ex.getMessage());
         verify(trainerDao).get(USER_ID);
+    }
+
+    @Test
+    void getByUsername_whenTrainerExists_returnsTrainer() {
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
+
+        Trainer actual = service.getByUsername(USERNAME);
+
+        assertEquals(USER_ID, actual.getId());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+
+        verify(trainerDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void getByUsername_whenTrainerDoesNotExist_throwsServiceException() {
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
+        assertEquals("Trainer not found with username: " + USERNAME, ex.getMessage());
+
+        verify(trainerDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void authenticateTrainer_whenCredentialsAreCorrect_returnsTrue() {
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
+
+        boolean result = service.authenticateTrainer(USERNAME, PASSWORD);
+
+        assertTrue(result);
+        verify(trainerDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void authenticateTrainer_whenPasswordIsIncorrect_returnsFalse() {
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
+
+        boolean result = service.authenticateTrainer(USERNAME, "wrongPassword");
+
+        assertFalse(result);
+        verify(trainerDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void authenticateTrainer_whenUserDoesNotExist_returnsFalse() {
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        boolean result = service.authenticateTrainer(USERNAME, PASSWORD);
+
+        assertFalse(result);
+        verify(trainerDao).findByUsername(USERNAME);
     }
 
     private Trainer createTrainer() {

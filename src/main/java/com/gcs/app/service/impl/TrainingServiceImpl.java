@@ -5,6 +5,8 @@ import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Training;
+import com.gcs.app.service.TraineeService;
+import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +24,16 @@ public class TrainingServiceImpl implements TrainingService {
 
     private final TrainingDao trainingDao;
     private final TrainingMapper trainingMapper;
+    private final TraineeService traineeService;
+    private final TrainerService trainerService;
 
     @Override
     public Training createTraining(@Valid TrainingCreateRequestDto createRequestDto) {
         Training training = trainingMapper.toEntity(createRequestDto);
         log.info("Creating training: {}", training.getName());
+
+        validateTraineeExists(training.getTrainee().getId());
+        validateTrainerExists(training.getTrainer().getId());
 
         Training createdTraining = trainingDao.create(training);
         log.debug("Training created: {}", createdTraining);
@@ -52,5 +59,19 @@ public class TrainingServiceImpl implements TrainingService {
         }
 
         return training;
+    }
+
+    private void validateTraineeExists(Long traineeId) {
+
+        if (traineeService.getTrainee(traineeId) == null) {
+            throw new ServiceException(String.format("Trainee with id %d not found", traineeId));
+        }
+    }
+
+    private void validateTrainerExists(Long trainerId) {
+
+        if (trainerService.getTrainer(trainerId) == null) {
+            throw new ServiceException(String.format("Trainer with id %d not found", trainerId));
+        }
     }
 }

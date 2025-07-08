@@ -150,6 +150,32 @@ class GymFacadeTest {
     }
 
     @Test
+    void getTraineeByUsername_callsServiceAndMapper_returnsTraineeResponseDto() {
+        when(traineeService.getByUsername(TRAINEE_USERNAME)).thenReturn(trainee);
+        when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
+
+        TraineeResponseDto actual = facade.getTraineeByUsername(TRAINEE_USERNAME);
+
+        assertEquals(TRAINEE_ID, actual.getUserId());
+        assertEquals(TRAINEE_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINEE_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINEE_USERNAME, actual.getUsername());
+
+        verify(traineeService).getByUsername(TRAINEE_USERNAME);
+        verify(traineeMapper).toDto(trainee);
+    }
+
+    @Test
+    void authenticateTrainee_callsService_returnsTrue() {
+        when(traineeService.authenticateTrainee(TRAINEE_USERNAME, "correctPassword")).thenReturn(true);
+
+        boolean result = facade.authenticateTrainee(TRAINEE_USERNAME, "correctPassword");
+
+        assertTrue(result);
+        verify(traineeService).authenticateTrainee(TRAINEE_USERNAME, "correctPassword");
+    }
+
+    @Test
     void createTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
         when(trainerService.createTrainer(trainerCreateRequestDto)).thenReturn(trainer);
         when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
@@ -201,6 +227,32 @@ class GymFacadeTest {
 
         verify(trainerService).getTrainer(TRAINER_ID);
         verify(trainerMapper).toDto(trainer);
+    }
+
+    @Test
+    void getTrainerByUsername_callsServiceAndMapper_returnsTrainerResponseDto() {
+        when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(trainer);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
+
+        TrainerResponseDto actual = facade.getTrainerByUsername(TRAINER_USERNAME);
+
+        assertEquals(TRAINER_ID, actual.getUserId());
+        assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINER_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINER_USERNAME, actual.getUsername());
+
+        verify(trainerService).getByUsername(TRAINER_USERNAME);
+        verify(trainerMapper).toDto(trainer);
+    }
+
+    @Test
+    void authenticateTrainer_callsService_returnsTrue() {
+        when(trainerService.authenticateTrainer(TRAINER_USERNAME, "correctPassword")).thenReturn(true);
+
+        boolean result = facade.authenticateTrainer(TRAINER_USERNAME, "correctPassword");
+
+        assertTrue(result);
+        verify(trainerService).authenticateTrainer(TRAINER_USERNAME, "correctPassword");
     }
 
     @Test

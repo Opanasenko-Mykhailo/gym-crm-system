@@ -8,4 +8,6 @@ public interface TrainerService {
     Trainer createTrainer(TrainerCreateRequestDto trainerCreateRequestDto);
     Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto);
     Trainer getTrainer(Long userId);
+    Trainer getByUsername(String username);
+    boolean authenticateTrainer(String username, String password);
 }
