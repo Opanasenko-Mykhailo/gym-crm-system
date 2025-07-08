@@ -131,6 +131,26 @@ class TraineeServiceImplTest {
     }
 
     @Test
+    void deleteTraineeByUsername_whenTraineeExists_deletesTrainee() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+
+        service.deleteTraineeByUsername(USERNAME);
+
+        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeDao).delete(USER_ID);
+    }
+
+    @Test
+    void deleteTraineeByUsername_whenTraineeDoesNotExist_throwsServiceException() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.deleteTraineeByUsername(USERNAME));
+
+        assertEquals("Trainee with username " + USERNAME + " not found", ex.getMessage());
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
     void getTrainee_whenTraineeExists_returnsTrainee() {
         when(traineeDao.get(USER_ID)).thenReturn(Optional.of(expectedTrainee));
 

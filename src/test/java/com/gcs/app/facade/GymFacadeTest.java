@@ -131,6 +131,13 @@ class GymFacadeTest {
     }
 
     @Test
+    void deleteTraineeByUsername_callsService() {
+        facade.deleteTraineeByUsername(TRAINEE_USERNAME);
+
+        verify(traineeService).deleteTraineeByUsername(TRAINEE_USERNAME);
+    }
+
+    @Test
     void getTrainee_callsServiceAndMapper_returnsTraineeResponseDto() {
         when(traineeService.getTrainee(TRAINEE_ID)).thenReturn(trainee);
         when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);

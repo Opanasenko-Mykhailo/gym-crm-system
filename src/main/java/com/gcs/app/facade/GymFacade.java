@@ -55,6 +55,12 @@ public class GymFacade {
         traineeService.deleteTrainee(userId);
     }
 
+    public void deleteTraineeByUsername(String username) {
+        log.info("Deleting trainee with username: {}", username);
+
+        traineeService.deleteTraineeByUsername(username);
+    }
+
     public TraineeResponseDto getTrainee(Long userId) {
         log.info("Retrieving trainee with userId: {}", userId);
 
