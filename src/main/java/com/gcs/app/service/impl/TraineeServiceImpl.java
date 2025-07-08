@@ -8,9 +8,11 @@ import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
 import com.gcs.app.service.TraineeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 
@@ -20,13 +22,14 @@ import static com.gcs.app.util.UserUtils.generateUsername;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class TraineeServiceImpl implements TraineeService {
 
     private final TraineeDao traineeDao;
     private final TraineeMapper traineeMapper;
 
     @Override
-    public Trainee createTrainee(TraineeCreateRequestDto requestDto) {
+    public Trainee createTrainee(@Valid TraineeCreateRequestDto requestDto) {
         Trainee trainee = traineeMapper.toEntity(requestDto);
 
         log.info("Creating trainee: {} {}", trainee.getUser().getFirstName(), trainee.getUser().getLastName());
@@ -43,7 +46,7 @@ public class TraineeServiceImpl implements TraineeService {
 
 
     @Override
-    public Trainee updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
+    public Trainee updateTrainee(@Valid TraineeUpdateRequestDto traineeUpdateRequestDto) {
         Trainee updatedTrainee = traineeMapper.toUpdateEntity(traineeUpdateRequestDto);
 
         Long userId = updatedTrainee.getId();
