@@ -6,22 +6,25 @@ import com.gcs.app.exception.ServiceException;
 import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Training;
 import com.gcs.app.service.TrainingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class TrainingServiceImpl implements TrainingService {
 
     private final TrainingDao trainingDao;
     private final TrainingMapper trainingMapper;
 
     @Override
-    public Training createTraining(TrainingCreateRequestDto createRequestDto) {
+    public Training createTraining(@Valid TrainingCreateRequestDto createRequestDto) {
         Training training = trainingMapper.toEntity(createRequestDto);
         log.info("Creating training: {}", training.getName());
 

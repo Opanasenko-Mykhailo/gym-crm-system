@@ -8,9 +8,11 @@ import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.User;
 import com.gcs.app.service.TrainerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
 
@@ -20,13 +22,14 @@ import static com.gcs.app.util.UserUtils.generateUsername;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerDao trainerDao;
     private final TrainerMapper trainerMapper;
 
     @Override
-    public Trainer createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
+    public Trainer createTrainer(@Valid TrainerCreateRequestDto trainerCreateRequestDto) {
         Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
         log.info("Creating trainer: {} {}", trainer.getUser().getFirstName(), trainer.getUser().getLastName());
 
@@ -40,7 +43,7 @@ public class TrainerServiceImpl implements TrainerService {
         return createdTrainer;
     }
 
-    public Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
+    public Trainer updateTrainer(@Valid TrainerUpdateRequestDto trainerUpdateRequestDto) {
         Trainer updatedTrainer = trainerMapper.toUpdateEntity(trainerUpdateRequestDto);
 
         Long userId = updatedTrainer.getId();
