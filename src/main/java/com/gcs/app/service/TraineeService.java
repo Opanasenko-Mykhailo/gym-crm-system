@@ -2,6 +2,7 @@ package com.gcs.app.service;
 
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.model.Trainee;
 
 public interface TraineeService {
@@ -12,4 +13,5 @@ public interface TraineeService {
     Trainee getTrainee(Long userId);
     Trainee getByUsername(String username);
     boolean authenticateTrainee(String username, String password);
+    void changePassword(PasswordChangeRequestDto passwordChangeRequestDto);
 }

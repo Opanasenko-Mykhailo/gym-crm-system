@@ -3,6 +3,7 @@ package com.gcs.app.service.impl;
 import com.gcs.app.dao.TrainerDao;
 import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
@@ -96,6 +97,29 @@ public class TrainerServiceImpl implements TrainerService {
                 });
     }
 
+    @Override
+    public void changePassword(@Valid PasswordChangeRequestDto dto) {
+        log.info("Changing password for username: {}", dto.getUsername());
+
+        Trainer trainer = trainerDao.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new ServiceException("User not found: " + dto.getUsername()));
+
+        if (!trainer.getUser().getPassword().equals(dto.getOldPassword())) {
+            log.warn("Old password does not match for username: {}", dto.getUsername());
+            throw new ServiceException("Old password is incorrect");
+        }
+
+        User updatedUser = trainer.getUser().toBuilder()
+                .password(dto.getNewPassword())
+                .build();
+
+        Trainer updatedTrainer = trainer.toBuilder()
+                .user(updatedUser)
+                .build();
+
+        trainerDao.update(updatedTrainer);
+        log.info("Password changed successfully for username: {}", dto.getUsername());
+    }
 
     private Optional<Trainer> validateTrainerExists(Long userId) {
         Optional<Trainer> trainer = trainerDao.get(userId);

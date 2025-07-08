@@ -1,5 +1,6 @@
 package com.gcs.app.facade;
 
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
@@ -81,6 +82,12 @@ public class GymFacade {
         return traineeService.authenticateTrainee(username, password);
     }
 
+    public void changeTraineePassword(PasswordChangeRequestDto dto) {
+        log.info("Changing password for trainee with username: {}", dto.getUsername());
+
+        traineeService.changePassword(dto);
+    }
+
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         log.info("Creating trainer: {} {}", trainerCreateRequestDto.getFirstName(), trainerCreateRequestDto.getLastName());
 
@@ -117,6 +124,11 @@ public class GymFacade {
         return trainerService.authenticateTrainer(username, password);
     }
 
+    public void changeTrainerPassword(PasswordChangeRequestDto dto) {
+        log.info("Changing password for trainer with username: {}", dto.getUsername());
+
+        trainerService.changePassword(dto);
+    }
 
     public TrainingResponseDto createTraining(TrainingCreateRequestDto trainingCreateRequestDto) {
         log.info("Creating training: {}", trainingCreateRequestDto.getName());

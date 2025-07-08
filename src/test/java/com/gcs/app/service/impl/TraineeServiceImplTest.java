@@ -3,6 +3,7 @@ package com.gcs.app.service.impl;
 import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
@@ -10,6 +11,7 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -227,6 +229,58 @@ class TraineeServiceImplTest {
 
         assertFalse(result);
         verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void changePassword_whenOldPasswordMatches_updatesPassword() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername(USERNAME);
+        dto.setOldPassword(PASSWORD);
+        dto.setNewPassword("NewPassword123!");
+
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+
+        service.changePassword(dto);
+
+        ArgumentCaptor<Trainee> captor = ArgumentCaptor.forClass(Trainee.class);
+        verify(traineeDao).update(captor.capture());
+
+        Trainee updatedTrainee = captor.getValue();
+        assertEquals("NewPassword123!", updatedTrainee.getUser().getPassword());
+
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void changePassword_whenOldPasswordDoesNotMatch_throwsException() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername(USERNAME);
+        dto.setOldPassword("wrongOld");
+        dto.setNewPassword("NewPassword123!");
+
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+
+        ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
+        assertEquals("Old password is incorrect", exception.getMessage());
+
+        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeDao, times(0)).update(any());
+    }
+
+    @Test
+    void changePassword_whenTraineeNotFound_throwsException() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername(USERNAME);
+        dto.setOldPassword(PASSWORD);
+        dto.setNewPassword("NewPassword123!");
+
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
+        assertEquals("User not found: " + USERNAME, exception.getMessage());
+
+        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeDao, times(0)).update(any());
     }
 
     private Trainee createTrainee() {

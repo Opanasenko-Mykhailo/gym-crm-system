@@ -1,5 +1,6 @@
 package com.gcs.app.facade;
 
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
@@ -183,6 +184,18 @@ class GymFacadeTest {
     }
 
     @Test
+    void changeTraineePassword_callsTraineeService() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername(TRAINEE_USERNAME);
+        dto.setOldPassword("oldPass123");
+        dto.setNewPassword("newPass123!");
+
+        facade.changeTraineePassword(dto);
+
+        verify(traineeService).changePassword(dto);
+    }
+
+    @Test
     void createTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
         when(trainerService.createTrainer(trainerCreateRequestDto)).thenReturn(trainer);
         when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
@@ -260,6 +273,18 @@ class GymFacadeTest {
 
         assertTrue(result);
         verify(trainerService).authenticateTrainer(TRAINER_USERNAME, "correctPassword");
+    }
+
+    @Test
+    void changeTrainerPassword_callsTrainerService() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername(TRAINER_USERNAME);
+        dto.setOldPassword("oldPass123");
+        dto.setNewPassword("newPass123!");
+
+        facade.changeTrainerPassword(dto);
+
+        verify(trainerService).changePassword(dto);
     }
 
     @Test
