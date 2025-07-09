@@ -42,15 +42,8 @@ public class TraineeDaoImpl implements TraineeDao {
 
     @Override
     public void deleteByUsername(String username) {
-        String hql = "FROM Trainee t JOIN FETCH t.user u WHERE u.username = :username";
-        Trainee trainee = getSession()
-                .createQuery(hql, Trainee.class)
-                .setParameter("username", username)
-                .uniqueResult();
-
-        if (trainee == null) {
-            throw new EntityNotFoundException(String.format("Trainee with username '%s' not found", username));
-        }
+        Trainee trainee = findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Trainee with username '%s' not found", username)));
 
         getSession().remove(trainee);
         log.info("Deleted trainee with username: {}", username);
