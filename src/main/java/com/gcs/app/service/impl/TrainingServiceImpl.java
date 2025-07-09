@@ -5,6 +5,8 @@ import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Training;
+import com.gcs.app.service.TraineeService;
+import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +24,16 @@ public class TrainingServiceImpl implements TrainingService {
 
     private final TrainingDao trainingDao;
     private final TrainingMapper trainingMapper;
+    private final TraineeService traineeService;
+    private final TrainerService trainerService;
 
     @Override
     public Training createTraining(@Valid TrainingCreateRequestDto createRequestDto) {
         Training training = trainingMapper.toEntity(createRequestDto);
         log.info("Creating training: {}", training.getName());
+
+        validateTraineeExists(training.getTrainee().getUser().getUsername());
+        validateTrainerExists(training.getTrainer().getUser().getUsername());
 
         Training createdTraining = trainingDao.create(training);
         log.debug("Training created: {}", createdTraining);
@@ -38,7 +45,7 @@ public class TrainingServiceImpl implements TrainingService {
     public Training getTraining(Long id) {
         log.info("Retrieving training with id: {}", id);
 
-        Training training = validateTrainingExists(id).orElseThrow(() -> new ServiceException(String.format("Training with id {} not found", id)));
+        Training training = validateTrainingExists(id).orElseThrow(() -> new ServiceException(String.format("Training with id %d not found", id)));
         log.debug("Training retrieved: {}", training);
 
         return training;
@@ -52,5 +59,17 @@ public class TrainingServiceImpl implements TrainingService {
         }
 
         return training;
+    }
+
+    private void validateTraineeExists(String username) {
+        if (traineeService.getByUsername(username) == null) {
+            throw new ServiceException(String.format("Trainee with username %s not found", username));
+        }
+    }
+
+    private void validateTrainerExists(String username) {
+        if (trainerService.getByUsername(username) == null) {
+            throw new ServiceException(String.format("Trainer with id %s not found", username));
+        }
     }
 }

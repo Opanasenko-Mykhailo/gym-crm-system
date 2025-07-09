@@ -12,9 +12,6 @@ import java.time.LocalDate;
 
 @Data
 public class TraineeUpdateRequestDto {
-    @NotNull(message = "User ID is required")
-    private Long userId;
-
     @NotBlank(message = "First name is required")
     @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
     private String firstName;
@@ -22,6 +19,10 @@ public class TraineeUpdateRequestDto {
     @NotBlank(message = "Last name is required")
     @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
     private String lastName;
+
+    @NotBlank(message = "Username is required")
+    @Size(min = 4, max = 50, message = "Username must be between 4 and 50 characters")
+    private String username;
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")

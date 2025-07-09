@@ -1,7 +1,9 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
@@ -9,6 +11,7 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,25 +24,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TraineeServiceImplTest {
 
-    private static final Long USER_ID = 1L;
-    private static final String FIRST_NAME = "John";
-    private static final String LAST_NAME = "Doe";
     private static final String USERNAME = "john.doe";
     private static final String PASSWORD = "password123";
+    private static final String FIRST_NAME = "John";
+    private static final String LAST_NAME = "Doe";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1990, 1, 1);
     private static final String ADDRESS = "123 Main St";
-    private static final String TRAINEE_NOT_FOUND_MESSAGE = "Trainee with userId " + USER_ID + " not found";
+    private static final String TRAINEE_NOT_FOUND_MESSAGE = "Trainee with username " + USERNAME + " not found";
 
+    private final Trainee expectedTrainee = createTrainee();
+    private final TraineeCreateRequestDto createRequestDto = createTraineeCreateRequestDto();
+    private final TraineeUpdateRequestDto updateRequestDto = createTraineeUpdateRequestDto();
 
     @Mock
     private TraineeDao traineeDao;
+
+    @Mock
+    private UserDao userDao;
 
     @Mock
     private TraineeMapper traineeMapper;
@@ -47,19 +54,14 @@ class TraineeServiceImplTest {
     @InjectMocks
     private TraineeServiceImpl service;
 
-    private Trainee expectedTrainee = createTrainee();
-    private TraineeCreateRequestDto createRequestDto = createTraineeCreateRequestDto();
-    private TraineeUpdateRequestDto updateRequestDto = createTraineeUpdateRequestDto();
-
     @Test
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {
         when(traineeMapper.toEntity(createRequestDto)).thenReturn(expectedTrainee);
-        when(traineeDao.getAllUsernames()).thenReturn(Collections.emptySet());
+        when(userDao.findAllUsernames()).thenReturn(Collections.emptySet());
         when(traineeDao.create(any(Trainee.class))).thenReturn(expectedTrainee);
 
         Trainee actual = service.createTrainee(createRequestDto);
 
-        assertEquals(USER_ID, actual.getId());
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
         assertTrue(actual.getUser().getIsActive());
@@ -67,19 +69,18 @@ class TraineeServiceImplTest {
         assertEquals(ADDRESS, actual.getAddress());
 
         verify(traineeMapper).toEntity(createRequestDto);
-        verify(traineeDao).getAllUsernames();
+        verify(userDao).findAllUsernames();
         verify(traineeDao).create(any(Trainee.class));
     }
 
     @Test
     void updateTrainee_whenTraineeExists_mapsDtoUpdatesAndReturnsTrainee() {
-        when(traineeMapper.toUpdateEntity(updateRequestDto)).thenReturn(expectedTrainee);
-        when(traineeDao.get(USER_ID)).thenReturn(Optional.of(expectedTrainee));
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+        when(traineeMapper.update(expectedTrainee, updateRequestDto)).thenReturn(expectedTrainee);
         when(traineeDao.update(expectedTrainee)).thenReturn(expectedTrainee);
 
         Trainee actual = service.updateTrainee(updateRequestDto);
 
-        assertEquals(USER_ID, actual.getId());
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
         assertEquals(USERNAME, actual.getUser().getUsername());
@@ -87,75 +88,124 @@ class TraineeServiceImplTest {
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
-        verify(traineeMapper).toUpdateEntity(updateRequestDto);
-        verify(traineeDao).get(USER_ID);
+        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeMapper).update(expectedTrainee, updateRequestDto);
         verify(traineeDao).update(expectedTrainee);
     }
 
     @Test
     void updateTrainee_whenTraineeDoesNotExist_throwsServiceException() {
-        when(traineeMapper.toUpdateEntity(updateRequestDto)).thenReturn(expectedTrainee);
-        when(traineeDao.get(USER_ID)).thenReturn(Optional.empty());
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainee(updateRequestDto));
 
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
-        verify(traineeMapper).toUpdateEntity(updateRequestDto);
-        verify(traineeDao).get(USER_ID);
-        verify(traineeDao, times(0)).update(expectedTrainee);
+
+        verify(traineeDao).findByUsername(USERNAME);
     }
 
     @Test
-    void deleteTrainee_whenTraineeExists_deletesTrainee() {
-        when(traineeDao.get(USER_ID)).thenReturn(Optional.of(expectedTrainee));
+    void deleteTraineeByUsername_whenTraineeExists_deletesTrainee() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
 
-        service.deleteTrainee(USER_ID);
+        service.deleteTraineeByUsername(USERNAME);
 
-        verify(traineeDao).get(USER_ID);
-        verify(traineeDao).delete(USER_ID);
+        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeDao).deleteByUsername(USERNAME);
     }
 
     @Test
-    void deleteTrainee_whenTraineeDoesNotExist_throwsServiceException() {
-        when(traineeDao.get(USER_ID)).thenReturn(Optional.empty());
+    void deleteTraineeByUsername_whenTraineeDoesNotExist_throwsServiceException() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        ServiceException ex = assertThrows(ServiceException.class, () -> service.deleteTrainee(USER_ID));
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.deleteTraineeByUsername(USERNAME));
 
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
-        verify(traineeDao).get(USER_ID);
-        verify(traineeDao, times(0)).delete(USER_ID);
+
+        verify(traineeDao).findByUsername(USERNAME);
     }
 
     @Test
-    void getTrainee_whenTraineeExists_returnsTrainee() {
-        when(traineeDao.get(USER_ID)).thenReturn(Optional.of(expectedTrainee));
+    void getByUsername_whenTraineeExists_returnsTrainee() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
 
-        Trainee actual = service.getTrainee(USER_ID);
+        Trainee actual = service.getByUsername(USERNAME);
 
-        assertEquals(USER_ID, actual.getId());
+        assertEquals(USERNAME, actual.getUser().getUsername());
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertEquals(USERNAME, actual.getUser().getUsername());
         assertTrue(actual.getUser().getIsActive());
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
-        verify(traineeDao).get(USER_ID);
+        verify(traineeDao).findByUsername(USERNAME);
     }
 
     @Test
-    void getTrainee_whenTraineeDoesNotExist_throwsServiceException() {
-        when(traineeDao.get(USER_ID)).thenReturn(Optional.empty());
+    void getByUsername_whenTraineeDoesNotExist_throwsServiceException() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        ServiceException ex = assertThrows(ServiceException.class, () -> service.getTrainee(USER_ID));
-        assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
 
-        verify(traineeDao).get(USER_ID);
+        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void changePassword_whenOldPasswordMatches_updatesPassword() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername(USERNAME);
+        dto.setOldPassword(PASSWORD);
+        dto.setNewPassword("NewPassword123!");
+
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+
+        service.changePassword(dto);
+
+        ArgumentCaptor<Trainee> captor = ArgumentCaptor.forClass(Trainee.class);
+        verify(traineeDao).update(captor.capture());
+
+        Trainee updatedTrainee = captor.getValue();
+        assertEquals("NewPassword123!", updatedTrainee.getUser().getPassword());
+
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void changePassword_whenOldPasswordDoesNotMatch_throwsException() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername(USERNAME);
+        dto.setOldPassword("wrongOld");
+        dto.setNewPassword("NewPassword123!");
+
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+
+        ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
+
+        assertEquals("Old password is incorrect", exception.getMessage());
+
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void changePassword_whenTraineeNotFound_throwsException() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername(USERNAME);
+        dto.setOldPassword(PASSWORD);
+        dto.setNewPassword("NewPassword123!");
+
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
+
+        assertEquals("User not found: " + USERNAME, exception.getMessage());
+
+        verify(traineeDao).findByUsername(USERNAME);
     }
 
     private Trainee createTrainee() {
         return Trainee.builder()
-                .id(USER_ID)
                 .user(createUser())
                 .dateOfBirth(DATE_OF_BIRTH)
                 .address(ADDRESS)
@@ -184,7 +234,7 @@ class TraineeServiceImplTest {
 
     private TraineeUpdateRequestDto createTraineeUpdateRequestDto() {
         TraineeUpdateRequestDto dto = new TraineeUpdateRequestDto();
-        dto.setUserId(USER_ID);
+        dto.setUsername(USERNAME);
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
         dto.setDateOfBirth(DATE_OF_BIRTH);

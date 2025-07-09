@@ -1,5 +1,6 @@
 package com.gcs.app.facade;
 
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
@@ -35,57 +36,63 @@ public class GymFacade {
 
     public TraineeResponseDto createTrainee(TraineeCreateRequestDto traineeCreateRequestDto) {
         log.info("Creating trainee: {} {}", traineeCreateRequestDto.getFirstName(), traineeCreateRequestDto.getLastName());
-
         Trainee saved = traineeService.createTrainee(traineeCreateRequestDto);
 
         return traineeMapper.toDto(saved);
     }
 
     public TraineeResponseDto updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
-        log.info("Updating trainee with userId: {}", traineeUpdateRequestDto.getUserId());
-
+        log.info("Updating trainee with username: {}", traineeUpdateRequestDto.getUsername());
         Trainee updated = traineeService.updateTrainee(traineeUpdateRequestDto);
 
         return traineeMapper.toDto(updated);
     }
 
-    public void deleteTrainee(Long userId) {
-        log.info("Deleting trainee with userId: {}", userId);
-
-        traineeService.deleteTrainee(userId);
+    public void deleteTraineeByUsername(String username) {
+        log.info("Deleting trainee with username: {}", username);
+        traineeService.deleteTraineeByUsername(username);
     }
 
-    public TraineeResponseDto getTrainee(Long userId) {
-        log.info("Retrieving trainee with userId: {}", userId);
+    public TraineeResponseDto getTraineeByUsername(String username) {
+        log.info("Retrieving trainee by username: {}", username);
+        Trainee trainee = traineeService.getByUsername(username);
 
-        return traineeMapper.toDto(traineeService.getTrainee(userId));
+        return traineeMapper.toDto(trainee);
+    }
+
+    public void changeTraineePassword(PasswordChangeRequestDto dto) {
+        log.info("Changing password for trainee with username: {}", dto.getUsername());
+        traineeService.changePassword(dto);
     }
 
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         log.info("Creating trainer: {} {}", trainerCreateRequestDto.getFirstName(), trainerCreateRequestDto.getLastName());
-
         Trainer saved = trainerService.createTrainer(trainerCreateRequestDto);
 
         return trainerMapper.toDto(saved);
     }
 
     public TrainerResponseDto updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
-        log.info("Updating trainer with userId: {}", trainerUpdateRequestDto.getUserId());
-
+        log.info("Updating trainer with username: {}", trainerUpdateRequestDto.getUsername());
         Trainer updated = trainerService.updateTrainer(trainerUpdateRequestDto);
 
         return trainerMapper.toDto(updated);
     }
 
-    public TrainerResponseDto getTrainer(Long userId) {
-        log.info("Retrieving trainer with userId: {}", userId);
+    public TrainerResponseDto getTrainerByUsername(String username) {
+        log.info("Retrieving trainer by username: {}", username);
+        Trainer trainer = trainerService.getByUsername(username);
 
-        return trainerMapper.toDto(trainerService.getTrainer(userId));
+        return trainerMapper.toDto(trainer);
+    }
+
+    public void changeTrainerPassword(PasswordChangeRequestDto dto) {
+        log.info("Changing password for trainer with username: {}", dto.getUsername());
+        trainerService.changePassword(dto);
     }
 
     public TrainingResponseDto createTraining(TrainingCreateRequestDto trainingCreateRequestDto) {
         log.info("Creating training: {}", trainingCreateRequestDto.getName());
-
         Training saved = trainingService.createTraining(trainingCreateRequestDto);
 
         return trainingMapper.toDto(saved);
@@ -93,7 +100,8 @@ public class GymFacade {
 
     public TrainingResponseDto getTraining(Long id) {
         log.info("Retrieving training with id: {}", id);
+        Training training = trainingService.getTraining(id);
 
-        return trainingMapper.toDto(trainingService.getTraining(id));
+        return trainingMapper.toDto(training);
     }
 }

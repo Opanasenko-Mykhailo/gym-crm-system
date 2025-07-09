@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DataSet(value = "dataset/trainer-data.xml", cleanBefore = true, cleanAfter = true, transactional = true, disableConstraints = true)
 class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
 
-    private static final Long EXISTING_TRAINER_ID = 1L;
     private static final Long NON_EXISTENT_ID = 999L;
     private static final String FIRST_NAME = "Jane";
     private static final String LAST_NAME = "Smith";
@@ -28,25 +27,27 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
     private static final String SPECIALIZATION = "Yoga";
 
     @Test
-    void get_whenTrainerExists_returnsTrainer() {
-        Optional<Trainer> result = dao.get(EXISTING_TRAINER_ID);
+    void findByUsername_whenTrainerExists_returnsTrainer() {
+        Optional<Trainer> result = dao.findByUsername(USERNAME);
 
         assertTrue(result.isPresent());
-        assertEquals(EXISTING_TRAINER_ID, result.get().getId());
-        assertEquals("jane.smith", result.get().getUser().getUsername());
-        assertEquals("Jane", result.get().getUser().getFirstName());
+        assertEquals(USERNAME, result.get().getUser().getUsername());
+        assertEquals(FIRST_NAME, result.get().getUser().getFirstName());
     }
 
     @Test
-    void get_whenTrainerDoesNotExist_returnsEmptyOptional() {
-        Optional<Trainer> result = dao.get(NON_EXISTENT_ID);
+    void findByUsername_whenTrainerDoesNotExist_returnsEmptyOptional() {
+        Optional<Trainer> result = dao.findByUsername("non.existing.username");
 
         assertFalse(result.isPresent());
     }
 
     @Test
     void update_whenTrainerExists_mergesAndReturnsTrainer() {
-        Trainer existing = dao.get(EXISTING_TRAINER_ID).orElseThrow();
+        Optional<Trainer> existingOpt = dao.findByUsername(USERNAME);
+        assertTrue(existingOpt.isPresent());
+        Trainer existing = existingOpt.get();
+
         User updatedUser = existing.getUser().toBuilder()
                 .firstName("Anna")
                 .build();
@@ -58,7 +59,7 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
         Trainer result = dao.update(updated);
 
         assertEquals("Anna", result.getUser().getFirstName());
-        assertEquals("jane.smith", result.getUser().getUsername());
+        assertEquals(USERNAME, result.getUser().getUsername());
     }
 
     @Test
@@ -97,7 +98,6 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
         assertEquals(existingType.getName(), saved.getSpecialization().getName());
     }
 
-
     private User createUser() {
         return User.builder()
                 .username(USERNAME)
@@ -114,3 +114,4 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
                 .build();
     }
 }
+

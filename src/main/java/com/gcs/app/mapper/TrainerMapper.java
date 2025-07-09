@@ -5,6 +5,7 @@ import com.gcs.app.facade.dto.TrainerResponseDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.model.Trainer;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 
 @Mapper(componentModel = "spring")
@@ -12,7 +13,7 @@ public interface TrainerMapper {
 
     Trainer toEntity(TrainerCreateRequestDto dto);
 
-    Trainer toUpdateEntity(TrainerUpdateRequestDto dto);
-
     TrainerResponseDto toDto(Trainer trainer);
+
+    Trainer update(@MappingTarget Trainer trainer, TrainerUpdateRequestDto dto);
 }

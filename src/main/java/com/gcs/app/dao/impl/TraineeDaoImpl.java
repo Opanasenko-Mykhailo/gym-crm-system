@@ -1,9 +1,9 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TraineeDao;
-import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainee;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -12,15 +12,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 @Slf4j
-public class TraineeDaoImpl extends UserDao implements TraineeDao {
+public class TraineeDaoImpl implements TraineeDao {
 
     private final SessionFactory sessionFactory;
-
-    public TraineeDaoImpl(SessionFactory sessionFactory) {
-        super(sessionFactory);
-        this.sessionFactory = sessionFactory;
-    }
 
     @Override
     public Trainee create(Trainee trainee) {
@@ -28,13 +24,6 @@ public class TraineeDaoImpl extends UserDao implements TraineeDao {
         log.info("Created trainee with id: {}", trainee.getId());
 
         return trainee;
-    }
-
-    @Override
-    public Optional<Trainee> get(Long userId) {
-        Trainee trainee = getSession().byId(Trainee.class).load(userId);
-
-        return Optional.ofNullable(trainee);
     }
 
     @Override
@@ -52,16 +41,28 @@ public class TraineeDaoImpl extends UserDao implements TraineeDao {
     }
 
     @Override
-    public void delete(Long userId) {
-        Trainee trainee = getSession().byId(Trainee.class).load(userId);
-
-        if (trainee == null) {
-            throw new EntityNotFoundException(String.format("Trainee with id %d not found", userId));
-        }
+    public void deleteByUsername(String username) {
+        Trainee trainee = findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Trainee with username '%s' not found", username)));
 
         getSession().remove(trainee);
-        log.info("Deleted trainee with id: {}", userId);
+        log.info("Deleted trainee with username: {}", username);
     }
+
+    @Override
+    public Optional<Trainee> findByUsername(String username) {
+        String hql = "FROM Trainee t JOIN FETCH t.user u WHERE u.username = :username";
+
+        Trainee result = getSession()
+                .createQuery(hql, Trainee.class)
+                .setParameter("username", username)
+                .uniqueResult();
+
+        log.info("Find trainee by username '{}': {}", username, result);
+
+        return Optional.ofNullable(result);
+    }
+
 
     private Session getSession() {
         return sessionFactory.getCurrentSession();

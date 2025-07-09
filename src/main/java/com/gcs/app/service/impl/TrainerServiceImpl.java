@@ -1,7 +1,9 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
@@ -14,8 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Optional;
-
 import static com.gcs.app.util.UserUtils.generateRandomPassword;
 import static com.gcs.app.util.UserUtils.generateUsername;
 
@@ -26,6 +26,7 @@ import static com.gcs.app.util.UserUtils.generateUsername;
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerDao trainerDao;
+    private final UserDao userDao;
     private final TrainerMapper trainerMapper;
 
     @Override
@@ -43,46 +44,52 @@ public class TrainerServiceImpl implements TrainerService {
         return createdTrainer;
     }
 
-    public Trainer updateTrainer(@Valid TrainerUpdateRequestDto trainerUpdateRequestDto) {
-        Trainer updatedTrainer = trainerMapper.toUpdateEntity(trainerUpdateRequestDto);
+    @Override
+    public Trainer updateTrainer(@Valid TrainerUpdateRequestDto dto) {
+        String username = dto.getUsername();
+        Trainer existing = trainerDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainer with username %s not found", username)));
 
-        Long userId = updatedTrainer.getId();
-        log.info("Updating trainer with userId: {}", userId);
+        Trainer updated = trainerMapper.update(existing, dto);
 
-        validateTrainerExists(userId);
-
-        Trainer trainerWithId = updatedTrainer.toBuilder().id(userId).build();
-        Trainer savedTrainer = trainerDao.update(trainerWithId);
-        log.debug("Trainer updated: {}", savedTrainer);
-
-        return savedTrainer;
+        return trainerDao.update(updated);
     }
 
     @Override
-    public Trainer getTrainer(Long userId) {
-        log.info("Retrieving trainer with userId: {}", userId);
+    public Trainer getByUsername(String username) {
+        log.info("Getting trainer by username: {}", username);
 
-        Trainer trainer = validateTrainerExists(userId).orElseThrow(() -> new ServiceException(String.format("Trainer with userId {} not found", userId)));
-
-        log.debug("Trainer retrieved: {}", trainer);
-        return trainer;
+        return trainerDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
     }
 
-    private Optional<Trainer> validateTrainerExists(Long userId) {
-        Optional<Trainer> trainer = trainerDao.get(userId);
+    @Override
+    public void changePassword(@Valid PasswordChangeRequestDto dto) {
+        log.info("Changing password for username: {}", dto.getUsername());
 
-        if (trainer.isEmpty()) {
-            throw new ServiceException(String.format("Trainer with userId %d not found", userId));
+        Trainer trainer = trainerDao.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new ServiceException("User not found: " + dto.getUsername()));
+
+        if (!trainer.getUser().getPassword().equals(dto.getOldPassword())) {
+            throw new ServiceException("Old password is incorrect");
         }
 
-        return trainer;
+        User updatedUser = trainer.getUser().toBuilder()
+                .password(dto.getNewPassword())
+                .build();
+        Trainer updatedTrainer = trainer.toBuilder()
+                .user(updatedUser)
+                .build();
+
+        trainerDao.update(updatedTrainer);
+        log.info("Password changed successfully for username: {}", dto.getUsername());
     }
 
     private User userWithCredentials(User user) {
-        String username = generateUsername(user.getFirstName(), user.getLastName(), trainerDao.getAllUsernames());
+        String username = generateUsername(user.getFirstName(), user.getLastName(), userDao.findAllUsernames());
         String password = generateRandomPassword();
 
-        return user.builder()
+        return User.builder()
                 .username(username)
                 .password(password)
                 .isActive(true)

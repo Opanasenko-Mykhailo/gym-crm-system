@@ -1,9 +1,9 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TrainerDao;
-import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.model.Trainer;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -12,15 +12,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 @Slf4j
-public class TrainerDaoImpl extends UserDao implements TrainerDao {
+public class TrainerDaoImpl implements TrainerDao {
 
     private final SessionFactory sessionFactory;
-
-    public TrainerDaoImpl(SessionFactory sessionFactory) {
-        super(sessionFactory);
-        this.sessionFactory = sessionFactory;
-    }
 
     @Override
     public Trainer create(Trainer trainer) {
@@ -28,13 +24,6 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
         log.info("Created trainer with id: {}", trainer.getId());
 
         return trainer;
-    }
-
-    @Override
-    public Optional<Trainer> get(Long userId) {
-        Trainer trainer = getSession().byId(Trainer.class).load(userId);
-
-        return Optional.ofNullable(trainer);
     }
 
     @Override
@@ -50,6 +39,21 @@ public class TrainerDaoImpl extends UserDao implements TrainerDao {
 
         return merged;
     }
+
+    @Override
+    public Optional<Trainer> findByUsername(String username) {
+        String hql = "FROM Trainer t JOIN FETCH t.user u WHERE u.username = :username";
+
+        Trainer result = getSession()
+                .createQuery(hql, Trainer.class)
+                .setParameter("username", username)
+                .uniqueResult();
+
+        log.info("Find trainer by username '{}': {}", username, result);
+
+        return Optional.ofNullable(result);
+    }
+
 
     private Session getSession() {
         return sessionFactory.getCurrentSession();

@@ -1,7 +1,9 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
@@ -14,8 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Optional;
-
 import static com.gcs.app.util.UserUtils.generateRandomPassword;
 import static com.gcs.app.util.UserUtils.generateUsername;
 
@@ -26,6 +26,7 @@ import static com.gcs.app.util.UserUtils.generateUsername;
 public class TraineeServiceImpl implements TraineeService {
 
     private final TraineeDao traineeDao;
+    private final UserDao userDao;
     private final TraineeMapper traineeMapper;
 
     @Override
@@ -44,58 +45,63 @@ public class TraineeServiceImpl implements TraineeService {
         return createdTrainee;
     }
 
-
     @Override
-    public Trainee updateTrainee(@Valid TraineeUpdateRequestDto traineeUpdateRequestDto) {
-        Trainee updatedTrainee = traineeMapper.toUpdateEntity(traineeUpdateRequestDto);
+    public Trainee updateTrainee(@Valid TraineeUpdateRequestDto dto) {
+        String username = dto.getUsername();
+        Trainee existing = traineeDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
-        Long userId = updatedTrainee.getId();
-        log.info("Updating trainee with userId: {}", userId);
+        Trainee updated = traineeMapper.update(existing, dto);
 
-        validateTraineeExists(userId);
-
-        Trainee traineeWithId = updatedTrainee.toBuilder().id(userId).build();
-        Trainee savedTrainee = traineeDao.update(traineeWithId);
-        log.debug("Trainee updated: {}", savedTrainee);
-
-        return savedTrainee;
+        return traineeDao.update(updated);
     }
 
     @Override
-    public void deleteTrainee(Long userId) {
-        log.info("Deleting trainee with userId: {}", userId);
+    public void deleteTraineeByUsername(String username) {
+        log.info("Deleting trainee with username: {}", username);
 
-        validateTraineeExists(userId);
+        traineeDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
-        traineeDao.delete(userId);
-        log.debug("Trainee with userId {} deleted", userId);
+        traineeDao.deleteByUsername(username);
+        log.debug("Trainee with username {} deleted", username);
     }
 
     @Override
-    public Trainee getTrainee(Long userId) {
-        log.info("Retrieving trainee with userId: {}", userId);
+    public Trainee getByUsername(String username) {
+        log.info("Getting trainee by username: {}", username);
 
-        Trainee trainee = validateTraineeExists(userId).orElseThrow(() -> new ServiceException(String.format("Trainee with userId {} not found", userId)));
-        log.debug("Trainee retrieved: {}", trainee);
-
-        return trainee;
+        return traineeDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
     }
 
-    private Optional<Trainee> validateTraineeExists(Long userId) {
-        Optional<Trainee> trainee = traineeDao.get(userId);
+    @Override
+    public void changePassword(@Valid PasswordChangeRequestDto dto) {
+        log.info("Changing password for username: {}", dto.getUsername());
 
-        if (trainee.isEmpty()) {
-            throw new ServiceException(String.format("Trainee with userId %d not found", userId));
+        Trainee trainee = traineeDao.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new ServiceException("User not found: " + dto.getUsername()));
+
+        if (!trainee.getUser().getPassword().equals(dto.getOldPassword())) {
+            throw new ServiceException("Old password is incorrect");
         }
 
-        return trainee;
+        User updatedUser = trainee.getUser().toBuilder()
+                .password(dto.getNewPassword())
+                .build();
+        Trainee updatedTrainee = trainee.toBuilder()
+                .user(updatedUser)
+                .build();
+
+        traineeDao.update(updatedTrainee);
+        log.info("Password changed successfully for username: {}", dto.getUsername());
     }
 
     private User userWithCredentials(User user) {
-        String username = generateUsername(user.getFirstName(), user.getLastName(), traineeDao.getAllUsernames());
+        String username = generateUsername(user.getFirstName(), user.getLastName(), userDao.findAllUsernames());
         String password = generateRandomPassword();
 
-        return user.builder()
+        return User.builder()
                 .username(username)
                 .password(password)
                 .isActive(true)
