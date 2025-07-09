@@ -74,7 +74,6 @@ class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImpl> {
                 .build();
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> dao.update(trainee));
-
         assertEquals("Trainee with id 999 not found", exception.getMessage());
     }
 
@@ -89,7 +88,6 @@ class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImpl> {
     @Test
     void deleteByUsername_whenTraineeDoesNotExist_throwsException() {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> dao.deleteByUsername(NON_EXISTENT_USERNAME));
-
         assertEquals("Trainee with username 'non.existing.username' not found", exception.getMessage());
     }
 

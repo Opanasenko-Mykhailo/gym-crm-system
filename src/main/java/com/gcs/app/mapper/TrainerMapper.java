@@ -15,5 +15,5 @@ public interface TrainerMapper {
 
     TrainerResponseDto toDto(Trainer trainer);
 
-    void update(@MappingTarget Trainer trainer, TrainerUpdateRequestDto dto);
+    Trainer update(@MappingTarget Trainer trainer, TrainerUpdateRequestDto dto);
 }

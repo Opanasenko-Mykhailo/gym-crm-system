@@ -15,5 +15,5 @@ public interface TraineeMapper {
 
     TraineeResponseDto toDto(Trainee trainee);
 
-    void update(@MappingTarget Trainee trainee, TraineeUpdateRequestDto dto);
+    Trainee update(@MappingTarget Trainee trainee, TraineeUpdateRequestDto dto);
 }

@@ -12,11 +12,13 @@ import java.time.LocalDate;
 
 @Data
 public class TrainingCreateRequestDto {
-    @NotNull(message = "Trainee ID is required")
-    private Long traineeId;
+    @NotBlank(message = "Trainee username is required")
+    @Size(min = 4, max = 50, message = "Username must be between 4 and 50 characters")
+    private String traineeUsername;
 
-    @NotNull(message = "Trainer ID is required")
-    private Long trainerId;
+    @NotBlank(message = "Trainer username is required")
+    @Size(min = 4, max = 50, message = "Username must be between 4 and 50 characters")
+    private String trainerUsername;
 
     @NotBlank(message = "Training name is required")
     @Size(min = 2, max = 100, message = "Training name must be between 2 and 100 characters")

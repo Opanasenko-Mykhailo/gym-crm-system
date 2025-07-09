@@ -47,17 +47,12 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public Trainer updateTrainer(@Valid TrainerUpdateRequestDto dto) {
         String username = dto.getUsername();
-        log.info("Updating trainer with username: {}", username);
-
         Trainer existing = trainerDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainer with username %s not found", username)));
 
-        trainerMapper.update(existing, dto);
+        Trainer updated = trainerMapper.update(existing, dto);
 
-        Trainer savedTrainer = trainerDao.update(existing);
-        log.debug("Trainer updated: {}", savedTrainer);
-
-        return savedTrainer;
+        return trainerDao.update(updated);
     }
 
     @Override
@@ -76,7 +71,6 @@ public class TrainerServiceImpl implements TrainerService {
                 .orElseThrow(() -> new ServiceException("User not found: " + dto.getUsername()));
 
         if (!trainer.getUser().getPassword().equals(dto.getOldPassword())) {
-            log.warn("Old password does not match for username: {}", dto.getUsername());
             throw new ServiceException("Old password is incorrect");
         }
 

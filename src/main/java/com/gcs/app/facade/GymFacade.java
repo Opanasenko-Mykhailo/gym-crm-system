@@ -37,12 +37,14 @@ public class GymFacade {
     public TraineeResponseDto createTrainee(TraineeCreateRequestDto traineeCreateRequestDto) {
         log.info("Creating trainee: {} {}", traineeCreateRequestDto.getFirstName(), traineeCreateRequestDto.getLastName());
         Trainee saved = traineeService.createTrainee(traineeCreateRequestDto);
+
         return traineeMapper.toDto(saved);
     }
 
     public TraineeResponseDto updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
         log.info("Updating trainee with username: {}", traineeUpdateRequestDto.getUsername());
         Trainee updated = traineeService.updateTrainee(traineeUpdateRequestDto);
+
         return traineeMapper.toDto(updated);
     }
 
@@ -54,6 +56,7 @@ public class GymFacade {
     public TraineeResponseDto getTraineeByUsername(String username) {
         log.info("Retrieving trainee by username: {}", username);
         Trainee trainee = traineeService.getByUsername(username);
+
         return traineeMapper.toDto(trainee);
     }
 
@@ -65,18 +68,21 @@ public class GymFacade {
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         log.info("Creating trainer: {} {}", trainerCreateRequestDto.getFirstName(), trainerCreateRequestDto.getLastName());
         Trainer saved = trainerService.createTrainer(trainerCreateRequestDto);
+
         return trainerMapper.toDto(saved);
     }
 
     public TrainerResponseDto updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
         log.info("Updating trainer with username: {}", trainerUpdateRequestDto.getUsername());
         Trainer updated = trainerService.updateTrainer(trainerUpdateRequestDto);
+
         return trainerMapper.toDto(updated);
     }
 
     public TrainerResponseDto getTrainerByUsername(String username) {
         log.info("Retrieving trainer by username: {}", username);
         Trainer trainer = trainerService.getByUsername(username);
+
         return trainerMapper.toDto(trainer);
     }
 
@@ -88,12 +94,14 @@ public class GymFacade {
     public TrainingResponseDto createTraining(TrainingCreateRequestDto trainingCreateRequestDto) {
         log.info("Creating training: {}", trainingCreateRequestDto.getName());
         Training saved = trainingService.createTraining(trainingCreateRequestDto);
+
         return trainingMapper.toDto(saved);
     }
 
     public TrainingResponseDto getTraining(Long id) {
         log.info("Retrieving training with id: {}", id);
         Training training = trainingService.getTraining(id);
+
         return trainingMapper.toDto(training);
     }
 }

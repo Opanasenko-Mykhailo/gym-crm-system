@@ -48,17 +48,12 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public Trainee updateTrainee(@Valid TraineeUpdateRequestDto dto) {
         String username = dto.getUsername();
-        log.info("Updating trainee with username: {}", username);
-
         Trainee existing = traineeDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
-        traineeMapper.update(existing, dto);
+        Trainee updated = traineeMapper.update(existing, dto);
 
-        Trainee saved = traineeDao.update(existing);
-        log.debug("Trainee updated: {}", saved);
-
-        return saved;
+        return traineeDao.update(updated);
     }
 
     @Override
@@ -69,7 +64,6 @@ public class TraineeServiceImpl implements TraineeService {
                 .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
         traineeDao.deleteByUsername(username);
-
         log.debug("Trainee with username {} deleted", username);
     }
 
@@ -89,7 +83,6 @@ public class TraineeServiceImpl implements TraineeService {
                 .orElseThrow(() -> new ServiceException("User not found: " + dto.getUsername()));
 
         if (!trainee.getUser().getPassword().equals(dto.getOldPassword())) {
-            log.warn("Old password does not match for username: {}", dto.getUsername());
             throw new ServiceException("Old password is incorrect");
         }
 

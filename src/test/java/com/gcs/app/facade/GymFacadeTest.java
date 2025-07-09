@@ -390,8 +390,8 @@ class GymFacadeTest {
 
     private TrainingCreateRequestDto createTrainingCreateRequestDto() {
         TrainingCreateRequestDto dto = new TrainingCreateRequestDto();
-        dto.setTraineeId(TRAINEE_ID);
-        dto.setTrainerId(TRAINER_ID);
+        dto.setTrainerUsername(TRAINEE_USERNAME);
+        dto.setTrainerUsername(TRAINER_USERNAME);
         dto.setName(TRAINING_NAME);
         dto.setType(createTrainingType());
         dto.setDate(TRAINING_DATE);

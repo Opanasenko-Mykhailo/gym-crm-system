@@ -21,23 +21,21 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TrainerServiceImplTest {
 
-    private static final Long USER_ID = 1L;
     private static final String FIRST_NAME = "Jane";
     private static final String LAST_NAME = "Smith";
     private static final String USERNAME = "jane.smith";
     private static final String PASSWORD = "password123";
     private static final String SPECIALIZATION = "Yoga";
+    private static final String TRAINER_NOT_FOUND_MESSAGE = "Trainer with username " + USERNAME + " not found";
 
     private final Trainer expected = createTrainer();
     private final TrainerCreateRequestDto createRequestDto = createTrainerCreateRequestDto();
@@ -63,7 +61,6 @@ class TrainerServiceImplTest {
 
         Trainer actual = service.createTrainer(createRequestDto);
 
-        assertEquals(USER_ID, actual.getId());
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
         assertTrue(actual.getUser().getIsActive());
@@ -76,61 +73,30 @@ class TrainerServiceImplTest {
 
     @Test
     void updateTrainer_whenTrainerExists_mapsDtoUpdatesAndReturnsTrainer() {
-        when(trainerMapper.toUpdateEntity(updateRequestDto)).thenReturn(expected);
-        when(trainerDao.get(USER_ID)).thenReturn(Optional.of(expected));
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
+        when(trainerMapper.update(expected, updateRequestDto)).thenReturn(expected);
         when(trainerDao.update(expected)).thenReturn(expected);
 
         Trainer actual = service.updateTrainer(updateRequestDto);
 
-        assertEquals(USER_ID, actual.getId());
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
         assertEquals(USERNAME, actual.getUser().getUsername());
         assertTrue(actual.getUser().getIsActive());
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        verify(trainerMapper).toUpdateEntity(updateRequestDto);
-        verify(trainerDao).get(USER_ID);
+        verify(trainerDao).findByUsername(USERNAME);
+        verify(trainerMapper).update(expected, updateRequestDto);
         verify(trainerDao).update(expected);
     }
 
     @Test
     void updateTrainer_whenTrainerDoesNotExist_throwsServiceException() {
-        when(trainerMapper.toUpdateEntity(updateRequestDto)).thenReturn(expected);
-        when(trainerDao.get(USER_ID)).thenReturn(Optional.empty());
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainer(updateRequestDto));
-
-        assertEquals("Trainer with userId 1 not found", ex.getMessage());
-        verify(trainerMapper).toUpdateEntity(updateRequestDto);
-        verify(trainerDao).get(USER_ID);
-        verify(trainerDao, times(0)).update(expected);
-    }
-
-    @Test
-    void getTrainer_whenTrainerExists_returnsTrainer() {
-        when(trainerDao.get(USER_ID)).thenReturn(Optional.of(expected));
-
-        Trainer actual = service.getTrainer(USER_ID);
-
-        assertEquals(USER_ID, actual.getId());
-        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
-        assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertEquals(USERNAME, actual.getUser().getUsername());
-        assertTrue(actual.getUser().getIsActive());
-        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
-
-        verify(trainerDao).get(USER_ID);
-    }
-
-    @Test
-    void getTrainer_whenTrainerDoesNotExist_throwsServiceException() {
-        when(trainerDao.get(USER_ID)).thenReturn(Optional.empty());
-
-        ServiceException ex = assertThrows(ServiceException.class, () -> service.getTrainer(USER_ID));
-
-        assertEquals("Trainer with userId 1 not found", ex.getMessage());
-        verify(trainerDao).get(USER_ID);
+        assertEquals(TRAINER_NOT_FOUND_MESSAGE, ex.getMessage());
+        verify(trainerDao).findByUsername(USERNAME);
     }
 
     @Test
@@ -139,8 +105,11 @@ class TrainerServiceImplTest {
 
         Trainer actual = service.getByUsername(USERNAME);
 
-        assertEquals(USER_ID, actual.getId());
         assertEquals(USERNAME, actual.getUser().getUsername());
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertTrue(actual.getUser().getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(trainerDao).findByUsername(USERNAME);
     }
@@ -151,37 +120,6 @@ class TrainerServiceImplTest {
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
         assertEquals("Trainer not found with username: " + USERNAME, ex.getMessage());
-
-        verify(trainerDao).findByUsername(USERNAME);
-    }
-
-    @Test
-    void authenticateTrainer_whenCredentialsAreCorrect_returnsTrue() {
-        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
-
-        boolean result = service.authenticateTrainer(USERNAME, PASSWORD);
-
-        assertTrue(result);
-        verify(trainerDao).findByUsername(USERNAME);
-    }
-
-    @Test
-    void authenticateTrainer_whenPasswordIsIncorrect_returnsFalse() {
-        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
-
-        boolean result = service.authenticateTrainer(USERNAME, "wrongPassword");
-
-        assertFalse(result);
-        verify(trainerDao).findByUsername(USERNAME);
-    }
-
-    @Test
-    void authenticateTrainer_whenUserDoesNotExist_returnsFalse() {
-        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
-
-        boolean result = service.authenticateTrainer(USERNAME, PASSWORD);
-
-        assertFalse(result);
         verify(trainerDao).findByUsername(USERNAME);
     }
 
@@ -201,7 +139,6 @@ class TrainerServiceImplTest {
 
         Trainer updatedTrainer = captor.getValue();
         assertEquals("NewPassword123!", updatedTrainer.getUser().getPassword());
-
         verify(trainerDao).findByUsername(USERNAME);
     }
 
@@ -216,9 +153,7 @@ class TrainerServiceImplTest {
 
         ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
         assertEquals("Old password is incorrect", exception.getMessage());
-
         verify(trainerDao).findByUsername(USERNAME);
-        verify(trainerDao, times(0)).update(any());
     }
 
     @Test
@@ -232,14 +167,11 @@ class TrainerServiceImplTest {
 
         ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
         assertEquals("User not found: " + USERNAME, exception.getMessage());
-
         verify(trainerDao).findByUsername(USERNAME);
-        verify(trainerDao, times(0)).update(any());
     }
 
     private Trainer createTrainer() {
         return Trainer.builder()
-                .id(USER_ID)
                 .user(createUser())
                 .specialization(createTrainingType())
                 .build();
@@ -266,18 +198,16 @@ class TrainerServiceImplTest {
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
         dto.setSpecialization(createTrainingType());
-
         return dto;
     }
 
     private TrainerUpdateRequestDto createTrainerUpdateRequestDto() {
         TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
-        dto.setUserId(USER_ID);
+        dto.setUsername(USERNAME);
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
         dto.setSpecialization(createTrainingType());
         dto.setIsActive(true);
-
         return dto;
     }
 }
