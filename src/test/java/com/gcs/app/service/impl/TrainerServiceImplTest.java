@@ -95,7 +95,9 @@ class TrainerServiceImplTest {
         when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainer(updateRequestDto));
+
         assertEquals(TRAINER_NOT_FOUND_MESSAGE, ex.getMessage());
+
         verify(trainerDao).findByUsername(USERNAME);
     }
 
@@ -119,7 +121,9 @@ class TrainerServiceImplTest {
         when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
+
         assertEquals("Trainer not found with username: " + USERNAME, ex.getMessage());
+
         verify(trainerDao).findByUsername(USERNAME);
     }
 
@@ -139,6 +143,7 @@ class TrainerServiceImplTest {
 
         Trainer updatedTrainer = captor.getValue();
         assertEquals("NewPassword123!", updatedTrainer.getUser().getPassword());
+
         verify(trainerDao).findByUsername(USERNAME);
     }
 
@@ -152,7 +157,9 @@ class TrainerServiceImplTest {
         when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
 
         ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
+
         assertEquals("Old password is incorrect", exception.getMessage());
+
         verify(trainerDao).findByUsername(USERNAME);
     }
 
@@ -166,7 +173,9 @@ class TrainerServiceImplTest {
         when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
+
         assertEquals("User not found: " + USERNAME, exception.getMessage());
+
         verify(trainerDao).findByUsername(USERNAME);
     }
 
@@ -198,6 +207,7 @@ class TrainerServiceImplTest {
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
         dto.setSpecialization(createTrainingType());
+
         return dto;
     }
 
@@ -208,6 +218,7 @@ class TrainerServiceImplTest {
         dto.setLastName(LAST_NAME);
         dto.setSpecialization(createTrainingType());
         dto.setIsActive(true);
+
         return dto;
     }
 }

@@ -82,13 +82,14 @@ class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImpl> {
         dao.deleteByUsername(EXISTING_USERNAME);
 
         Optional<Trainee> afterDelete = dao.findByUsername(EXISTING_USERNAME);
+
         assertFalse(afterDelete.isPresent());
     }
 
     @Test
     void deleteByUsername_whenTraineeDoesNotExist_throwsException() {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> dao.deleteByUsername(NON_EXISTENT_USERNAME));
+
         assertEquals("Trainee with username 'non.existing.username' not found", exception.getMessage());
     }
-
 }

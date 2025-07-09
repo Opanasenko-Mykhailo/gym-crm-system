@@ -98,7 +98,9 @@ class TraineeServiceImplTest {
         when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainee(updateRequestDto));
+
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
+
         verify(traineeDao).findByUsername(USERNAME);
     }
 
@@ -117,7 +119,9 @@ class TraineeServiceImplTest {
         when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.deleteTraineeByUsername(USERNAME));
+
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
+
         verify(traineeDao).findByUsername(USERNAME);
     }
 
@@ -142,7 +146,9 @@ class TraineeServiceImplTest {
         when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
+
         assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+
         verify(traineeDao).findByUsername(USERNAME);
     }
 
@@ -162,6 +168,7 @@ class TraineeServiceImplTest {
 
         Trainee updatedTrainee = captor.getValue();
         assertEquals("NewPassword123!", updatedTrainee.getUser().getPassword());
+
         verify(traineeDao).findByUsername(USERNAME);
     }
 
@@ -175,7 +182,9 @@ class TraineeServiceImplTest {
         when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
 
         ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
+
         assertEquals("Old password is incorrect", exception.getMessage());
+
         verify(traineeDao).findByUsername(USERNAME);
     }
 
@@ -189,7 +198,9 @@ class TraineeServiceImplTest {
         when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException exception = assertThrows(ServiceException.class, () -> service.changePassword(dto));
+
         assertEquals("User not found: " + USERNAME, exception.getMessage());
+
         verify(traineeDao).findByUsername(USERNAME);
     }
 
@@ -217,6 +228,7 @@ class TraineeServiceImplTest {
         dto.setLastName(LAST_NAME);
         dto.setDateOfBirth(DATE_OF_BIRTH);
         dto.setAddress(ADDRESS);
+
         return dto;
     }
 
@@ -228,6 +240,7 @@ class TraineeServiceImplTest {
         dto.setDateOfBirth(DATE_OF_BIRTH);
         dto.setAddress(ADDRESS);
         dto.setIsActive(true);
+
         return dto;
     }
 }

@@ -333,6 +333,7 @@ class GymFacadeTest {
         dto.setLastName(TRAINEE_LAST_NAME);
         dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
         dto.setAddress(TRAINEE_ADDRESS);
+
         return dto;
     }
 
@@ -344,6 +345,7 @@ class GymFacadeTest {
         dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
         dto.setAddress(TRAINEE_ADDRESS);
         dto.setIsActive(true);
+
         return dto;
     }
 
@@ -356,6 +358,7 @@ class GymFacadeTest {
         dto.setIsActive(true);
         dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
         dto.setAddress(TRAINEE_ADDRESS);
+
         return dto;
     }
 
@@ -364,6 +367,7 @@ class GymFacadeTest {
         dto.setFirstName(TRAINER_FIRST_NAME);
         dto.setLastName(TRAINER_LAST_NAME);
         dto.setSpecialization(createTrainingType());
+
         return dto;
     }
 
@@ -374,6 +378,7 @@ class GymFacadeTest {
         dto.setLastName(TRAINER_LAST_NAME);
         dto.setSpecialization(createTrainingType());
         dto.setIsActive(true);
+
         return dto;
     }
 
@@ -385,6 +390,7 @@ class GymFacadeTest {
         dto.setUsername(TRAINER_USERNAME);
         dto.setIsActive(true);
         dto.setSpecialization(createTrainingType());
+
         return dto;
     }
 
@@ -396,6 +402,7 @@ class GymFacadeTest {
         dto.setType(createTrainingType());
         dto.setDate(TRAINING_DATE);
         dto.setDuration(TRAINING_DURATION);
+
         return dto;
     }
 
@@ -408,6 +415,7 @@ class GymFacadeTest {
         dto.setType(createTrainingType());
         dto.setDate(TRAINING_DATE);
         dto.setDuration(TRAINING_DURATION);
+
         return dto;
     }
 }

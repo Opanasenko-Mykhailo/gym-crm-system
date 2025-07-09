@@ -83,6 +83,7 @@ class TrainingServiceImplTest {
         ServiceException ex = assertThrows(ServiceException.class, () -> service.createTraining(createRequestDto));
 
         assertEquals("Trainee with username " + TRAINEE_USERNAME + " not found", ex.getMessage());
+
         verify(trainingMapper).toEntity(createRequestDto);
         verify(traineeService).getByUsername(TRAINEE_USERNAME);
     }
@@ -96,6 +97,7 @@ class TrainingServiceImplTest {
         ServiceException ex = assertThrows(ServiceException.class, () -> service.createTraining(createRequestDto));
 
         assertEquals("Trainer with id " + TRAINER_USERNAME + " not found", ex.getMessage());
+
         verify(trainingMapper).toEntity(createRequestDto);
         verify(traineeService).getByUsername(TRAINEE_USERNAME);
         verify(trainerService).getByUsername(TRAINER_USERNAME);
@@ -122,7 +124,9 @@ class TrainingServiceImplTest {
         when(trainingDao.get(1L)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getTraining(1L));
+
         assertEquals("Training with id 1 not found", ex.getMessage());
+
         verify(trainingDao).get(1L);
     }
 
@@ -169,6 +173,7 @@ class TrainingServiceImplTest {
         dto.setType(createTrainingType());
         dto.setDate(DATE);
         dto.setDuration(DURATION);
+
         return dto;
     }
 }

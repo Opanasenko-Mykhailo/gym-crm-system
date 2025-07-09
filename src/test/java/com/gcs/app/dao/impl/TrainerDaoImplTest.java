@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataSet(value = "dataset/trainer-data.xml", cleanBefore = true, cleanAfter = true, transactional = true, disableConstraints = true)
 class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
+
     private static final Long NON_EXISTENT_ID = 999L;
     private static final String FIRST_NAME = "Jane";
     private static final String LAST_NAME = "Smith";
@@ -70,6 +71,7 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
                 .build();
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> dao.update(ghost));
+
         assertEquals("Trainer with id 999 not found", ex.getMessage());
     }
 
@@ -112,3 +114,4 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
                 .build();
     }
 }
+
