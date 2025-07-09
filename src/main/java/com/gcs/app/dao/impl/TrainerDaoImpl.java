@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-public class TrainerDaoImplImpl implements TrainerDao {
+public class TrainerDaoImpl implements TrainerDao {
 
     private final SessionFactory sessionFactory;
 
@@ -24,13 +24,6 @@ public class TrainerDaoImplImpl implements TrainerDao {
         log.info("Created trainer with id: {}", trainer.getId());
 
         return trainer;
-    }
-
-    @Override
-    public Optional<Trainer> get(Long userId) {
-        Trainer trainer = getSession().byId(Trainer.class).load(userId);
-
-        return Optional.ofNullable(trainer);
     }
 
     @Override

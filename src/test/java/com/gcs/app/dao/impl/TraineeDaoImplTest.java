@@ -16,29 +16,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataSet(value = "dataset/trainee-data.xml", cleanBefore = true, cleanAfter = true, transactional = true)
-class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImplImpl> {
+class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImpl> {
 
-    private static final Long EXISTING_TRAINEE_ID = 1L;
-    private static final Long NON_EXISTENT_TRAINEE_ID = 999L;
+    private static final String EXISTING_USERNAME = "john.doe";
+    private static final String NON_EXISTENT_USERNAME = "non.existing.username";
 
     @Test
-    void get_whenTraineeExists_returnsTrainee() {
-        Optional<Trainee> result = dao.get(EXISTING_TRAINEE_ID);
+    void findByUsername_whenTraineeExists_returnsTrainee() {
+        Optional<Trainee> result = dao.findByUsername(EXISTING_USERNAME);
 
         assertTrue(result.isPresent());
-        assertEquals("john.doe", result.get().getUser().getUsername());
+        assertEquals(EXISTING_USERNAME, result.get().getUser().getUsername());
         assertEquals("John", result.get().getUser().getFirstName());
     }
 
     @Test
-    void get_whenTraineeDoesNotExist_returnsEmptyOptional() {
-        Optional<Trainee> result = dao.get(NON_EXISTENT_TRAINEE_ID);
+    void findByUsername_whenTraineeDoesNotExist_returnsEmptyOptional() {
+        Optional<Trainee> result = dao.findByUsername(NON_EXISTENT_USERNAME);
+
         assertFalse(result.isPresent());
     }
 
     @Test
     void update_whenTraineeExists_mergesAndReturnsTrainee() {
-        Trainee existing = dao.get(EXISTING_TRAINEE_ID).orElseThrow();
+        Trainee existing = dao.findByUsername(EXISTING_USERNAME).orElseThrow();
         User updatedUser = existing.getUser().toBuilder()
                 .firstName("UpdatedName")
                 .build();
@@ -66,7 +67,7 @@ class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImplImpl> {
                 .build();
 
         Trainee trainee = Trainee.builder()
-                .id(NON_EXISTENT_TRAINEE_ID)
+                .id(999L)
                 .user(user)
                 .address("Phantom Address")
                 .dateOfBirth(LocalDate.of(1980, 1, 1))
@@ -78,33 +79,18 @@ class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImplImpl> {
     }
 
     @Test
-    void delete_whenTraineeExists_removesTrainee() {
-        dao.delete(EXISTING_TRAINEE_ID);
+    void deleteByUsername_whenTraineeExists_removesTrainee() {
+        dao.deleteByUsername(EXISTING_USERNAME);
 
-        assertFalse(dao.get(EXISTING_TRAINEE_ID).isPresent());
+        Optional<Trainee> afterDelete = dao.findByUsername(EXISTING_USERNAME);
+        assertFalse(afterDelete.isPresent());
     }
 
     @Test
-    void delete_whenTraineeDoesNotExist_throwsException() {
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> dao.delete(NON_EXISTENT_TRAINEE_ID));
+    void deleteByUsername_whenTraineeDoesNotExist_throwsException() {
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> dao.deleteByUsername(NON_EXISTENT_USERNAME));
 
-        assertEquals("Trainee with id 999 not found", exception.getMessage());
-    }
-
-    @Test
-    void findByUsername_whenTraineeExists_returnsOptionalWithTrainee() {
-        Optional<Trainee> result = dao.findByUsername("john.doe");
-
-        assertTrue(result.isPresent());
-        assertEquals("john.doe", result.get().getUser().getUsername());
-        assertEquals("John", result.get().getUser().getFirstName());
-    }
-
-    @Test
-    void findByUsername_whenTraineeDoesNotExist_returnsEmptyOptional() {
-        Optional<Trainee> result = dao.findByUsername("non.existing.username");
-
-        assertFalse(result.isPresent());
+        assertEquals("Trainee with username 'non.existing.username' not found", exception.getMessage());
     }
 
 }

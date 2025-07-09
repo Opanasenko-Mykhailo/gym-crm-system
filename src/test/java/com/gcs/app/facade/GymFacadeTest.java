@@ -126,35 +126,10 @@ class GymFacadeTest {
     }
 
     @Test
-    void deleteTrainee_callsService() {
-        facade.deleteTrainee(TRAINEE_ID);
-        verify(traineeService).deleteTrainee(TRAINEE_ID);
-    }
-
-    @Test
     void deleteTraineeByUsername_callsService() {
         facade.deleteTraineeByUsername(TRAINEE_USERNAME);
 
         verify(traineeService).deleteTraineeByUsername(TRAINEE_USERNAME);
-    }
-
-    @Test
-    void getTrainee_callsServiceAndMapper_returnsTraineeResponseDto() {
-        when(traineeService.getTrainee(TRAINEE_ID)).thenReturn(trainee);
-        when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
-
-        TraineeResponseDto actual = facade.getTrainee(TRAINEE_ID);
-
-        assertEquals(TRAINEE_ID, actual.getUserId());
-        assertEquals(TRAINEE_FIRST_NAME, actual.getFirstName());
-        assertEquals(TRAINEE_LAST_NAME, actual.getLastName());
-        assertEquals(TRAINEE_USERNAME, actual.getUsername());
-        assertTrue(actual.getIsActive());
-        assertEquals(TRAINEE_DATE_OF_BIRTH, actual.getDateOfBirth());
-        assertEquals(TRAINEE_ADDRESS, actual.getAddress());
-
-        verify(traineeService).getTrainee(TRAINEE_ID);
-        verify(traineeMapper).toDto(trainee);
     }
 
     @Test
@@ -174,17 +149,7 @@ class GymFacadeTest {
     }
 
     @Test
-    void authenticateTrainee_callsService_returnsTrue() {
-        when(traineeService.authenticateTrainee(TRAINEE_USERNAME, "correctPassword")).thenReturn(true);
-
-        boolean result = facade.authenticateTrainee(TRAINEE_USERNAME, "correctPassword");
-
-        assertTrue(result);
-        verify(traineeService).authenticateTrainee(TRAINEE_USERNAME, "correctPassword");
-    }
-
-    @Test
-    void changeTraineePassword_callsTraineeService() {
+    void changeTraineePassword_callsService() {
         PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
         dto.setUsername(TRAINEE_USERNAME);
         dto.setOldPassword("oldPass123");
@@ -232,24 +197,6 @@ class GymFacadeTest {
     }
 
     @Test
-    void getTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
-        when(trainerService.getTrainer(TRAINER_ID)).thenReturn(trainer);
-        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
-
-        TrainerResponseDto actual = facade.getTrainer(TRAINER_ID);
-
-        assertEquals(TRAINER_ID, actual.getUserId());
-        assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
-        assertEquals(TRAINER_LAST_NAME, actual.getLastName());
-        assertEquals(TRAINER_USERNAME, actual.getUsername());
-        assertTrue(actual.getIsActive());
-        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
-
-        verify(trainerService).getTrainer(TRAINER_ID);
-        verify(trainerMapper).toDto(trainer);
-    }
-
-    @Test
     void getTrainerByUsername_callsServiceAndMapper_returnsTrainerResponseDto() {
         when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(trainer);
         when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
@@ -266,17 +213,7 @@ class GymFacadeTest {
     }
 
     @Test
-    void authenticateTrainer_callsService_returnsTrue() {
-        when(trainerService.authenticateTrainer(TRAINER_USERNAME, "correctPassword")).thenReturn(true);
-
-        boolean result = facade.authenticateTrainer(TRAINER_USERNAME, "correctPassword");
-
-        assertTrue(result);
-        verify(trainerService).authenticateTrainer(TRAINER_USERNAME, "correctPassword");
-    }
-
-    @Test
-    void changeTrainerPassword_callsTrainerService() {
+    void changeTrainerPassword_callsService() {
         PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
         dto.setUsername(TRAINER_USERNAME);
         dto.setOldPassword("oldPass123");
@@ -396,19 +333,17 @@ class GymFacadeTest {
         dto.setLastName(TRAINEE_LAST_NAME);
         dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
         dto.setAddress(TRAINEE_ADDRESS);
-
         return dto;
     }
 
     private TraineeUpdateRequestDto createTraineeUpdateRequestDto() {
         TraineeUpdateRequestDto dto = new TraineeUpdateRequestDto();
-        dto.setUserId(TRAINEE_ID);
+        dto.setUsername(TRAINEE_USERNAME);
         dto.setFirstName(TRAINEE_FIRST_NAME);
         dto.setLastName(TRAINEE_LAST_NAME);
         dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
         dto.setAddress(TRAINEE_ADDRESS);
         dto.setIsActive(true);
-
         return dto;
     }
 
@@ -421,7 +356,6 @@ class GymFacadeTest {
         dto.setIsActive(true);
         dto.setDateOfBirth(TRAINEE_DATE_OF_BIRTH);
         dto.setAddress(TRAINEE_ADDRESS);
-
         return dto;
     }
 
@@ -430,18 +364,16 @@ class GymFacadeTest {
         dto.setFirstName(TRAINER_FIRST_NAME);
         dto.setLastName(TRAINER_LAST_NAME);
         dto.setSpecialization(createTrainingType());
-
         return dto;
     }
 
     private TrainerUpdateRequestDto createTrainerUpdateRequestDto() {
         TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
-        dto.setUserId(TRAINER_ID);
+        dto.setUsername(TRAINER_USERNAME);
         dto.setFirstName(TRAINER_FIRST_NAME);
         dto.setLastName(TRAINER_LAST_NAME);
         dto.setSpecialization(createTrainingType());
         dto.setIsActive(true);
-
         return dto;
     }
 
@@ -453,7 +385,6 @@ class GymFacadeTest {
         dto.setUsername(TRAINER_USERNAME);
         dto.setIsActive(true);
         dto.setSpecialization(createTrainingType());
-
         return dto;
     }
 
@@ -465,7 +396,6 @@ class GymFacadeTest {
         dto.setType(createTrainingType());
         dto.setDate(TRAINING_DATE);
         dto.setDuration(TRAINING_DURATION);
-
         return dto;
     }
 
@@ -478,7 +408,6 @@ class GymFacadeTest {
         dto.setType(createTrainingType());
         dto.setDate(TRAINING_DATE);
         dto.setDuration(TRAINING_DURATION);
-
         return dto;
     }
 }

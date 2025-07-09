@@ -8,8 +8,6 @@ import com.gcs.app.model.Trainer;
 public interface TrainerService {
     Trainer createTrainer(TrainerCreateRequestDto trainerCreateRequestDto);
     Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto);
-    Trainer getTrainer(Long userId);
     Trainer getByUsername(String username);
-    boolean authenticateTrainer(String username, String password);
     void changePassword(PasswordChangeRequestDto passwordChangeRequestDto);
 }

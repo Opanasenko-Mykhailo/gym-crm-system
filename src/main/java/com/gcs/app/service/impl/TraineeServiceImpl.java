@@ -16,8 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.Optional;
-
 import static com.gcs.app.util.UserUtils.generateRandomPassword;
 import static com.gcs.app.util.UserUtils.generateUsername;
 
@@ -47,53 +45,32 @@ public class TraineeServiceImpl implements TraineeService {
         return createdTrainee;
     }
 
-
     @Override
-    public Trainee updateTrainee(@Valid TraineeUpdateRequestDto traineeUpdateRequestDto) {
-        Trainee updatedTrainee = traineeMapper.toUpdateEntity(traineeUpdateRequestDto);
+    public Trainee updateTrainee(@Valid TraineeUpdateRequestDto dto) {
+        String username = dto.getUsername();
+        log.info("Updating trainee with username: {}", username);
 
-        Long userId = updatedTrainee.getId();
-        log.info("Updating trainee with userId: {}", userId);
+        Trainee existing = traineeDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
-        validateTraineeExists(userId);
+        traineeMapper.update(existing, dto);
 
-        Trainee traineeWithId = updatedTrainee.toBuilder().id(userId).build();
-        Trainee savedTrainee = traineeDao.update(traineeWithId);
-        log.debug("Trainee updated: {}", savedTrainee);
+        Trainee saved = traineeDao.update(existing);
+        log.debug("Trainee updated: {}", saved);
 
-        return savedTrainee;
-    }
-
-    @Override
-    public void deleteTrainee(Long userId) {
-        log.info("Deleting trainee with userId: {}", userId);
-
-        validateTraineeExists(userId);
-
-        traineeDao.delete(userId);
-        log.debug("Trainee with userId {} deleted", userId);
+        return saved;
     }
 
     @Override
     public void deleteTraineeByUsername(String username) {
         log.info("Deleting trainee with username: {}", username);
 
-        Trainee trainee = traineeDao.findByUsername(username)
+        traineeDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
-        traineeDao.delete(trainee.getId());
+        traineeDao.deleteByUsername(username);
 
         log.debug("Trainee with username {} deleted", username);
-    }
-
-    @Override
-    public Trainee getTrainee(Long userId) {
-        log.info("Retrieving trainee with userId: {}", userId);
-
-        Trainee trainee = validateTraineeExists(userId).orElseThrow(() -> new ServiceException(String.format("Trainee with userId {} not found", userId)));
-        log.debug("Trainee retrieved: {}", trainee);
-
-        return trainee;
     }
 
     @Override
@@ -102,24 +79,6 @@ public class TraineeServiceImpl implements TraineeService {
 
         return traineeDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
-    }
-
-    @Override
-    public boolean authenticateTrainee(String username, String password) {
-        log.info("Authenticating trainee with username: {}", username);
-
-        return traineeDao.findByUsername(username)
-                .map(t -> {
-                    boolean matches = t.getUser().getPassword().equals(password);
-                    log.info("Trainee {} authentication {}", username, matches ? "successful" : "failed: wrong password");
-
-                    return matches;
-                })
-                .orElseGet(() -> {
-                    log.warn("Trainee not found for username: {}", username);
-
-                    return false;
-                });
     }
 
     @Override
@@ -137,7 +96,6 @@ public class TraineeServiceImpl implements TraineeService {
         User updatedUser = trainee.getUser().toBuilder()
                 .password(dto.getNewPassword())
                 .build();
-
         Trainee updatedTrainee = trainee.toBuilder()
                 .user(updatedUser)
                 .build();
@@ -146,21 +104,11 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Password changed successfully for username: {}", dto.getUsername());
     }
 
-    private Optional<Trainee> validateTraineeExists(Long userId) {
-        Optional<Trainee> trainee = traineeDao.get(userId);
-
-        if (trainee.isEmpty()) {
-            throw new ServiceException(String.format("Trainee with userId %d not found", userId));
-        }
-
-        return trainee;
-    }
-
     private User userWithCredentials(User user) {
         String username = generateUsername(user.getFirstName(), user.getLastName(), userDao.findAllUsernames());
         String password = generateRandomPassword();
 
-        return user.builder()
+        return User.builder()
                 .username(username)
                 .password(password)
                 .isActive(true)
