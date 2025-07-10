@@ -9,5 +9,4 @@ public interface TrainerService {
     Trainer createTrainer(TrainerCreateRequestDto trainerCreateRequestDto);
     Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto);
     Trainer getByUsername(String username);
-    void changePassword(PasswordChangeRequestDto passwordChangeRequestDto);
 }

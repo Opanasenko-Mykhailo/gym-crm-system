@@ -1,5 +1,7 @@
 package com.gcs.app.facade;
 
+import com.gcs.app.facade.dto.AuthRequestDto;
+import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
@@ -15,9 +17,11 @@ import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
+import com.gcs.app.service.AuthService;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
+import com.gcs.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,6 +34,8 @@ public class GymFacade {
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
+    private final UserService userService;
+    private final AuthService authService;
     private final TraineeMapper traineeMapper;
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
@@ -50,6 +56,7 @@ public class GymFacade {
 
     public void deleteTraineeByUsername(String username) {
         log.info("Deleting trainee with username: {}", username);
+
         traineeService.deleteTraineeByUsername(username);
     }
 
@@ -58,11 +65,6 @@ public class GymFacade {
         Trainee trainee = traineeService.getByUsername(username);
 
         return traineeMapper.toDto(trainee);
-    }
-
-    public void changeTraineePassword(PasswordChangeRequestDto dto) {
-        log.info("Changing password for trainee with username: {}", dto.getUsername());
-        traineeService.changePassword(dto);
     }
 
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
@@ -86,11 +88,6 @@ public class GymFacade {
         return trainerMapper.toDto(trainer);
     }
 
-    public void changeTrainerPassword(PasswordChangeRequestDto dto) {
-        log.info("Changing password for trainer with username: {}", dto.getUsername());
-        trainerService.changePassword(dto);
-    }
-
     public TrainingResponseDto createTraining(TrainingCreateRequestDto trainingCreateRequestDto) {
         log.info("Creating training: {}", trainingCreateRequestDto.getName());
         Training saved = trainingService.createTraining(trainingCreateRequestDto);
@@ -103,5 +100,17 @@ public class GymFacade {
         Training training = trainingService.getTraining(id);
 
         return trainingMapper.toDto(training);
+    }
+
+    public void changePassword(PasswordChangeRequestDto dto) {
+        log.info("Changing password for username: {}", dto.getUsername());
+
+        userService.changePassword(dto);
+    }
+
+    public AuthResponseDto authenticate(AuthRequestDto dto) {
+        log.info("Authenticating user: {}", dto.getUsername());
+
+        return authService.authenticate(dto);
     }
 }

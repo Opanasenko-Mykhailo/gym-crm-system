@@ -10,5 +10,4 @@ public interface TraineeService {
     Trainee updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto);
     void deleteTraineeByUsername(String username);
     Trainee getByUsername(String username);
-    void changePassword(PasswordChangeRequestDto passwordChangeRequestDto);
 }
