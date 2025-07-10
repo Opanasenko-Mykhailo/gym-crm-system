@@ -4,11 +4,11 @@ import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.model.User;
+import com.gcs.app.service.CredentialsService;
 import com.gcs.app.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -19,7 +19,7 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final CredentialsService credentialsService;
 
     @Override
     public User getByUsername(String username) {
@@ -35,21 +35,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changePassword(@Valid PasswordChangeRequestDto dto) {
         log.info("Changing password for username: {}", dto.getUsername());
-
         User user = getByUsername(dto.getUsername());
 
-        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+        if (!credentialsService.isPasswordCorrect(dto.getOldPassword(), user.getPassword())) {
             throw new ServiceException("Old password is incorrect");
         }
 
-        String encodedNewPassword = passwordEncoder.encode(dto.getNewPassword());
+        String encodedNewPassword = credentialsService.encodePassword(dto.getNewPassword());
 
         User updatedUser = user.toBuilder()
                 .password(encodedNewPassword)
                 .build();
 
         userDao.update(updatedUser);
-
         log.info("Password changed successfully for username: {}", dto.getUsername());
     }
 }

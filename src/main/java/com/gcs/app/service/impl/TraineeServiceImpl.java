@@ -7,17 +7,14 @@ import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
+import com.gcs.app.service.CredentialsService;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-
-import static com.gcs.app.util.UserUtils.generateRandomPassword;
-import static com.gcs.app.util.UserUtils.generateUsername;
 
 @Service
 @RequiredArgsConstructor
@@ -27,13 +24,12 @@ public class TraineeServiceImpl implements TraineeService {
 
     private final TraineeDao traineeDao;
     private final UserService userService;
+    private final CredentialsService credentialsService;
     private final TraineeMapper traineeMapper;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public Trainee createTrainee(@Valid TraineeCreateRequestDto requestDto) {
         Trainee trainee = traineeMapper.toEntity(requestDto);
-
         log.info("Creating trainee: {} {}", trainee.getUser().getFirstName(), trainee.getUser().getLastName());
 
         Trainee traineeWithCredentials = trainee.toBuilder()
@@ -77,8 +73,8 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     private User userWithCredentials(User user) {
-        String username = generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
-        String password = passwordEncoder.encode(generateRandomPassword());
+        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
+        String password = credentialsService.generateRandomPassword();
 
         return User.builder()
                 .username(username)

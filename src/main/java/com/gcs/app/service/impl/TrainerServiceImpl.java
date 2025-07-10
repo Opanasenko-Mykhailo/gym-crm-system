@@ -7,17 +7,14 @@ import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.User;
+import com.gcs.app.service.CredentialsService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-
-import static com.gcs.app.util.UserUtils.generateRandomPassword;
-import static com.gcs.app.util.UserUtils.generateUsername;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +24,8 @@ public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerDao trainerDao;
     private final UserService userService;
+    private final CredentialsService credentialsService;
     private final TrainerMapper trainerMapper;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Override
     public Trainer createTrainer(@Valid TrainerCreateRequestDto trainerCreateRequestDto) {
@@ -65,8 +62,8 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     private User userWithCredentials(User user) {
-        String username = generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
-        String password = passwordEncoder.encode(generateRandomPassword());
+        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
+        String password = credentialsService.generateRandomPassword();
 
         return User.builder()
                 .username(username)

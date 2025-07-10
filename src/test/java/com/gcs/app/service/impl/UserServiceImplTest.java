@@ -4,40 +4,35 @@ import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.model.User;
+import com.gcs.app.service.CredentialsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
     private static final String USERNAME = "john.doe";
     private static final String RAW_PASSWORD = "password123";
-    private static final String ENCODED_PASSWORD = new BCryptPasswordEncoder().encode(RAW_PASSWORD);
     private static final String NEW_PASSWORD = "NewPassword123!";
 
     @Mock
     private UserDao userDao;
 
+    @Mock
+    private CredentialsService credentialsService;
+
     @InjectMocks
     private UserServiceImpl service;
-
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Test
     void getAllUsernames_returnsSetOfUsernames() {
@@ -58,12 +53,17 @@ class UserServiceImplTest {
         dto.setOldPassword(RAW_PASSWORD);
         dto.setNewPassword(NEW_PASSWORD);
 
+        String encodedOldPassword = "$2a$10$someEncodedOldPassword";
+        String encodedNewPassword = "$2a$10$someEncodedNewPassword";
+
         User existingUser = User.builder()
                 .username(USERNAME)
-                .password(ENCODED_PASSWORD)
+                .password(encodedOldPassword)
                 .build();
 
         when(userDao.findByUsername(USERNAME)).thenReturn(Optional.of(existingUser));
+        when(credentialsService.isPasswordCorrect(RAW_PASSWORD, encodedOldPassword)).thenReturn(true);
+        when(credentialsService.encodePassword(NEW_PASSWORD)).thenReturn(encodedNewPassword);
 
         service.changePassword(dto);
 
@@ -72,7 +72,7 @@ class UserServiceImplTest {
 
         User updatedUser = captor.getValue();
 
-        assertTrue(passwordEncoder.matches(NEW_PASSWORD, updatedUser.getPassword()));
+        assertEquals(encodedNewPassword, updatedUser.getPassword());
         verify(userDao).findByUsername(USERNAME);
     }
 
@@ -98,12 +98,15 @@ class UserServiceImplTest {
         dto.setOldPassword("wrongPassword");
         dto.setNewPassword(NEW_PASSWORD);
 
+        String encodedOldPassword = "$2a$10$someEncodedOldPassword";
+
         User existingUser = User.builder()
                 .username(USERNAME)
-                .password(ENCODED_PASSWORD)
+                .password(encodedOldPassword)
                 .build();
 
         when(userDao.findByUsername(USERNAME)).thenReturn(Optional.of(existingUser));
+        when(credentialsService.isPasswordCorrect("wrongPassword", encodedOldPassword)).thenReturn(false);
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.changePassword(dto));
 
