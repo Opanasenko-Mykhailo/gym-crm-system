@@ -27,7 +27,6 @@ public class UserDaoImpl implements UserDao {
         User merged = session.merge(user);
 
         log.debug("Updated user: {}", merged.getUsername());
-
         return merged;
     }
 
