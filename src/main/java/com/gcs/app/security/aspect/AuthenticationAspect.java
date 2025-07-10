@@ -1,4 +1,4 @@
-package com.gcs.app.aspect;
+package com.gcs.app.security.aspect;
 
 import com.gcs.app.exception.UserNotAuthenticatedException;
 import com.gcs.app.model.User;
@@ -25,6 +25,6 @@ public class AuthenticationAspect {
             throw new UserNotAuthenticatedException("Access denied: user is not authenticated");
         }
 
-        log.debug("Authenticated user: {}", currentUser.getUsername());
+        log.info("Authenticated user: {}", currentUser.getUsername());
     }
 }

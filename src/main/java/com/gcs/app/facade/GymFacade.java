@@ -18,7 +18,7 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.security.Authenticated;
-import com.gcs.app.security.CheckOwnProfile;
+import com.gcs.app.security.MatchEntityOwner;
 import com.gcs.app.service.AuthService;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
@@ -50,7 +50,7 @@ public class GymFacade {
     }
 
     @Authenticated
-    @CheckOwnProfile(usernameParam = "traineeUpdateRequestDto")
+    @MatchEntityOwner(usernameParam = "traineeUpdateRequestDto")
     public TraineeResponseDto updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
         log.info("Updating trainee with username: {}", traineeUpdateRequestDto.getUsername());
         Trainee updated = traineeService.updateTrainee(traineeUpdateRequestDto);
@@ -81,7 +81,7 @@ public class GymFacade {
     }
 
     @Authenticated
-    @CheckOwnProfile(usernameParam = "trainerUpdateRequestDto")
+    @MatchEntityOwner(usernameParam = "trainerUpdateRequestDto")
     public TrainerResponseDto updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
         log.info("Updating trainer with username: {}", trainerUpdateRequestDto.getUsername());
         Trainer updated = trainerService.updateTrainer(trainerUpdateRequestDto);
