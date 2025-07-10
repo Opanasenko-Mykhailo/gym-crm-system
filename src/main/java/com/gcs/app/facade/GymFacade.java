@@ -1,5 +1,7 @@
 package com.gcs.app.facade;
 
+import com.gcs.app.facade.dto.AuthRequestDto;
+import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
@@ -15,9 +17,13 @@ import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
+import com.gcs.app.security.Authenticated;
+import com.gcs.app.security.MatchEntityOwner;
+import com.gcs.app.service.AuthService;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
+import com.gcs.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,6 +36,8 @@ public class GymFacade {
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
+    private final UserService userService;
+    private final AuthService authService;
     private final TraineeMapper traineeMapper;
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
@@ -41,6 +49,8 @@ public class GymFacade {
         return traineeMapper.toDto(saved);
     }
 
+    @Authenticated
+    @MatchEntityOwner(usernameParam = "traineeUpdateRequestDto")
     public TraineeResponseDto updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
         log.info("Updating trainee with username: {}", traineeUpdateRequestDto.getUsername());
         Trainee updated = traineeService.updateTrainee(traineeUpdateRequestDto);
@@ -48,21 +58,19 @@ public class GymFacade {
         return traineeMapper.toDto(updated);
     }
 
+    @Authenticated
     public void deleteTraineeByUsername(String username) {
         log.info("Deleting trainee with username: {}", username);
+
         traineeService.deleteTraineeByUsername(username);
     }
 
+    @Authenticated
     public TraineeResponseDto getTraineeByUsername(String username) {
         log.info("Retrieving trainee by username: {}", username);
         Trainee trainee = traineeService.getByUsername(username);
 
         return traineeMapper.toDto(trainee);
-    }
-
-    public void changeTraineePassword(PasswordChangeRequestDto dto) {
-        log.info("Changing password for trainee with username: {}", dto.getUsername());
-        traineeService.changePassword(dto);
     }
 
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
@@ -72,6 +80,8 @@ public class GymFacade {
         return trainerMapper.toDto(saved);
     }
 
+    @Authenticated
+    @MatchEntityOwner(usernameParam = "trainerUpdateRequestDto")
     public TrainerResponseDto updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
         log.info("Updating trainer with username: {}", trainerUpdateRequestDto.getUsername());
         Trainer updated = trainerService.updateTrainer(trainerUpdateRequestDto);
@@ -79,6 +89,7 @@ public class GymFacade {
         return trainerMapper.toDto(updated);
     }
 
+    @Authenticated
     public TrainerResponseDto getTrainerByUsername(String username) {
         log.info("Retrieving trainer by username: {}", username);
         Trainer trainer = trainerService.getByUsername(username);
@@ -86,11 +97,7 @@ public class GymFacade {
         return trainerMapper.toDto(trainer);
     }
 
-    public void changeTrainerPassword(PasswordChangeRequestDto dto) {
-        log.info("Changing password for trainer with username: {}", dto.getUsername());
-        trainerService.changePassword(dto);
-    }
-
+    @Authenticated
     public TrainingResponseDto createTraining(TrainingCreateRequestDto trainingCreateRequestDto) {
         log.info("Creating training: {}", trainingCreateRequestDto.getName());
         Training saved = trainingService.createTraining(trainingCreateRequestDto);
@@ -98,10 +105,24 @@ public class GymFacade {
         return trainingMapper.toDto(saved);
     }
 
+    @Authenticated
     public TrainingResponseDto getTraining(Long id) {
         log.info("Retrieving training with id: {}", id);
         Training training = trainingService.getTraining(id);
 
         return trainingMapper.toDto(training);
+    }
+
+    @Authenticated
+    public void changePassword(PasswordChangeRequestDto dto) {
+        log.info("Changing password for username: {}", dto.getUsername());
+
+        userService.changePassword(dto);
+    }
+
+    public AuthResponseDto authenticate(AuthRequestDto dto) {
+        log.info("Authenticating user: {}", dto.getUsername());
+
+        return authService.authenticate(dto);
     }
 }

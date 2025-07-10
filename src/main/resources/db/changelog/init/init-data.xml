@@ -11,35 +11,35 @@
             <column name="first_name" value="John"/>
             <column name="last_name" value="Smith"/>
             <column name="username" value="John.Smith"/>
-            <column name="password" value="password123"/>
+            <column name="password" value="$2a$10$ri96OzaJCTUZwWQRR3XW6Oljy9DXpePDWMgbtOZx199d8ReqiaIfi"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
         <insert tableName="users">
             <column name="first_name" value="John"/>
             <column name="last_name" value="Smith"/>
             <column name="username" value="John.Smith1"/>
-            <column name="password" value="password123"/>
+            <column name="password" value="$2a$10$/ZQ.3itOdeX/6kUVzEnkzOtFuEjKh3wn7MvFGnAKG9ZdB2YPIfCXu"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
         <insert tableName="users">
             <column name="first_name" value="Anna"/>
             <column name="last_name" value="Johnson"/>
             <column name="username" value="Anna.Johnson"/>
-            <column name="password" value="password123"/>
+            <column name="password" value="$2a$10$iP2CN6ybR0/28pCHpfZPGe/w2EF53ELy821qAlGiIW/dCfWwBwfK6"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
         <insert tableName="users">
             <column name="first_name" value="Jane"/>
             <column name="last_name" value="Doe"/>
             <column name="username" value="Jane.Doe"/>
-            <column name="password" value="password123"/>
+            <column name="password" value="$2a$10$77ers8mkYk4iR/xbSGtKGOS84XtR2lRtza5CONM.PpYOW0/C3480e"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
         <insert tableName="users">
             <column name="first_name" value="Mike"/>
             <column name="last_name" value="Wilson"/>
             <column name="username" value="Mike.Wilson"/>
-            <column name="password" value="password123"/>
+            <column name="password" value="$2a$10$eClIzveNMssCIS7hrybs0.kMVrrUoHXcwc4.XkwuKBVszNuwTcFQe"/>
             <column name="is_active" valueBoolean="true"/>
         </insert>
 

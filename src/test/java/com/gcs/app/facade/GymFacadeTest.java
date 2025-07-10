@@ -1,5 +1,7 @@
 package com.gcs.app.facade;
 
+import com.gcs.app.facade.dto.AuthRequestDto;
+import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
@@ -17,9 +19,11 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
+import com.gcs.app.service.AuthService;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
+import com.gcs.app.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -62,6 +66,12 @@ class GymFacadeTest {
 
     @Mock
     private TrainingService trainingService;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private AuthService authService;
 
     @Mock
     private TraineeMapper traineeMapper;
@@ -149,18 +159,6 @@ class GymFacadeTest {
     }
 
     @Test
-    void changeTraineePassword_callsService() {
-        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
-        dto.setUsername(TRAINEE_USERNAME);
-        dto.setOldPassword("oldPass123");
-        dto.setNewPassword("newPass123!");
-
-        facade.changeTraineePassword(dto);
-
-        verify(traineeService).changePassword(dto);
-    }
-
-    @Test
     void createTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
         when(trainerService.createTrainer(trainerCreateRequestDto)).thenReturn(trainer);
         when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
@@ -213,18 +211,6 @@ class GymFacadeTest {
     }
 
     @Test
-    void changeTrainerPassword_callsService() {
-        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
-        dto.setUsername(TRAINER_USERNAME);
-        dto.setOldPassword("oldPass123");
-        dto.setNewPassword("newPass123!");
-
-        facade.changeTrainerPassword(dto);
-
-        verify(trainerService).changePassword(dto);
-    }
-
-    @Test
     void createTraining_callsServiceAndMapper_returnsTrainingResponseDto() {
         when(trainingService.createTraining(trainingCreateRequestDto)).thenReturn(training);
         when(trainingMapper.toDto(training)).thenReturn(expectedTrainingResponse);
@@ -260,6 +246,37 @@ class GymFacadeTest {
 
         verify(trainingService).getTraining(TRAINING_ID);
         verify(trainingMapper).toDto(training);
+    }
+
+    @Test
+    void authenticate_callsService_returnsResponseDto() {
+        AuthRequestDto request = new AuthRequestDto();
+        request.setUsername("test.user");
+        request.setPassword("password123");
+
+        AuthResponseDto expected = new AuthResponseDto();
+        expected.setSuccess(true);
+        expected.setMessage("Login successful");
+
+        when(authService.authenticate(request)).thenReturn(expected);
+
+        AuthResponseDto actual = facade.authenticate(request);
+
+        assertTrue(actual.getSuccess());
+        assertEquals("Login successful", actual.getMessage());
+        verify(authService).authenticate(request);
+    }
+
+    @Test
+    void changePassword_callsUserService() {
+        PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
+        dto.setUsername("john.doe");
+        dto.setOldPassword("old123");
+        dto.setNewPassword("new123");
+
+        facade.changePassword(dto);
+
+        verify(userService).changePassword(dto);
     }
 
     private Trainee createTrainee() {
