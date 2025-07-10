@@ -1,6 +1,6 @@
 package com.gcs.app.aspect;
 
-import com.gcs.app.exception.ServiceException;
+import com.gcs.app.exception.UserNotAuthenticatedException;
 import com.gcs.app.model.User;
 import com.gcs.app.service.AuthContextHolder;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class AuthenticationAspect {
         User currentUser = authContextHolder.getCurrentUser();
 
         if (currentUser == null) {
-            throw new ServiceException("Access denied: user is not authenticated");
+            throw new UserNotAuthenticatedException("Access denied: user is not authenticated");
         }
 
         log.debug("Authenticated user: {}", currentUser.getUsername());

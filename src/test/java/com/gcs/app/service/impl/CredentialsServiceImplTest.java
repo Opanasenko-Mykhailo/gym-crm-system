@@ -1,7 +1,6 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.service.CredentialsService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -19,6 +18,7 @@ class CredentialsServiceImplTest {
     @Test
     void generateRandomPassword_returnsPasswordOfLength10() {
         String password = service.generateRandomPassword();
+
         assertNotNull(password);
         assertEquals(10, password.length());
     }
@@ -27,17 +27,17 @@ class CredentialsServiceImplTest {
     void generateRandomPassword_returnsDifferentPasswords() {
         String pwd1 = service.generateRandomPassword();
         String pwd2 = service.generateRandomPassword();
+
         assertNotEquals(pwd1, pwd2);
     }
 
     @Test
     void encodePassword_and_isPasswordCorrect_workCorrectly() {
         String rawPassword = "mySecret123";
-
         String encoded = service.encodePassword(rawPassword);
+
         assertNotNull(encoded);
         assertFalse(encoded.isEmpty());
-
         assertTrue(service.isPasswordCorrect(rawPassword, encoded));
         assertFalse(service.isPasswordCorrect("wrongPassword", encoded));
     }

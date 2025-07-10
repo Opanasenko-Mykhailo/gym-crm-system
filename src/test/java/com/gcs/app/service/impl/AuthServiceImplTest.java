@@ -69,6 +69,7 @@ class AuthServiceImplTest {
         when(userService.getByUsername(USERNAME)).thenThrow(new ServiceException("User not found: " + USERNAME));
 
         ServiceException ex = assertThrows(ServiceException.class, () -> authService.authenticate(dto));
+
         assertEquals("User not found: " + USERNAME, ex.getMessage());
     }
 
@@ -87,6 +88,7 @@ class AuthServiceImplTest {
         when(credentialsService.isPasswordCorrect("wrongPassword", ENCODED_PASSWORD)).thenReturn(false);
 
         ServiceException ex = assertThrows(ServiceException.class, () -> authService.authenticate(dto));
+
         assertEquals("Invalid username or password", ex.getMessage());
     }
 }

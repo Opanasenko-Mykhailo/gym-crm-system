@@ -18,6 +18,7 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.security.Authenticated;
+import com.gcs.app.security.CheckOwnProfile;
 import com.gcs.app.service.AuthService;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
@@ -41,7 +42,6 @@ public class GymFacade {
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
 
-    @Authenticated
     public TraineeResponseDto createTrainee(TraineeCreateRequestDto traineeCreateRequestDto) {
         log.info("Creating trainee: {} {}", traineeCreateRequestDto.getFirstName(), traineeCreateRequestDto.getLastName());
         Trainee saved = traineeService.createTrainee(traineeCreateRequestDto);
@@ -50,6 +50,7 @@ public class GymFacade {
     }
 
     @Authenticated
+    @CheckOwnProfile(usernameParam = "traineeUpdateRequestDto")
     public TraineeResponseDto updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
         log.info("Updating trainee with username: {}", traineeUpdateRequestDto.getUsername());
         Trainee updated = traineeService.updateTrainee(traineeUpdateRequestDto);
@@ -72,7 +73,6 @@ public class GymFacade {
         return traineeMapper.toDto(trainee);
     }
 
-    @Authenticated
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         log.info("Creating trainer: {} {}", trainerCreateRequestDto.getFirstName(), trainerCreateRequestDto.getLastName());
         Trainer saved = trainerService.createTrainer(trainerCreateRequestDto);
@@ -81,6 +81,7 @@ public class GymFacade {
     }
 
     @Authenticated
+    @CheckOwnProfile(usernameParam = "trainerUpdateRequestDto")
     public TrainerResponseDto updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
         log.info("Updating trainer with username: {}", trainerUpdateRequestDto.getUsername());
         Trainer updated = trainerService.updateTrainer(trainerUpdateRequestDto);
