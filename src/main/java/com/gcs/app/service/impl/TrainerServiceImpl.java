@@ -3,9 +3,11 @@ package com.gcs.app.service.impl;
 import com.gcs.app.dao.TrainerDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
+import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
+import com.gcs.app.model.Training;
 import com.gcs.app.model.User;
 import com.gcs.app.service.CredentialsService;
 import com.gcs.app.service.TrainerService;
@@ -15,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +63,13 @@ public class TrainerServiceImpl implements TrainerService {
 
         return trainerDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
+    }
+
+    @Override
+    public List<Training> getTrainerTrainings(@Valid TrainerTrainingSearchCriteriaDto criteria) {
+        log.info("Searching trainings with criteria: {}", criteria);
+
+        return trainerDao.findByTrainerAndCriteria(criteria);
     }
 
     private User userWithCredentials(User user) {

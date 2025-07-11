@@ -5,9 +5,11 @@ import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
+import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerResponseDto;
+import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.facade.dto.TrainingResponseDto;
@@ -27,6 +29,8 @@ import com.gcs.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -73,6 +77,17 @@ public class GymFacade {
         return traineeMapper.toDto(trainee);
     }
 
+    @Authenticated
+    public List<TrainingResponseDto> getTraineeTrainings(TraineeTrainingSearchCriteriaDto criteria) {
+        log.info("Getting trainee trainings with criteria: {}", criteria);
+        var trainings = traineeService.getTraineeTrainings(criteria);
+
+        return trainings.stream()
+                .map(trainingMapper::toDto)
+                .toList();
+    }
+
+
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         log.info("Creating trainer: {} {}", trainerCreateRequestDto.getFirstName(), trainerCreateRequestDto.getLastName());
         Trainer saved = trainerService.createTrainer(trainerCreateRequestDto);
@@ -111,6 +126,16 @@ public class GymFacade {
         Training training = trainingService.getTraining(id);
 
         return trainingMapper.toDto(training);
+    }
+
+    @Authenticated
+    public List<TrainingResponseDto> getTrainerTrainings(TrainerTrainingSearchCriteriaDto criteria) {
+        log.info("Getting trainer trainings with criteria: {}", criteria);
+        var trainings = trainerService.getTrainerTrainings(criteria);
+
+        return trainings.stream()
+                .map(trainingMapper::toDto)
+                .toList();
     }
 
     @Authenticated
