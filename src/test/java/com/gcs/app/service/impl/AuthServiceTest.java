@@ -4,9 +4,10 @@ import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.model.User;
-import com.gcs.app.service.AuthContextHolder;
-import com.gcs.app.service.CredentialsService;
 import com.gcs.app.service.UserService;
+import com.gcs.app.service.common.AuthContextHolder;
+import com.gcs.app.service.common.AuthService;
+import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AuthServiceImplTest {
+class AuthServiceTest {
 
     private static final String USERNAME = "john.doe";
     private static final String RAW_PASSWORD = "password123";
@@ -36,7 +37,7 @@ class AuthServiceImplTest {
     private CredentialsService credentialsService;
 
     @InjectMocks
-    private AuthServiceImpl authService;
+    private AuthService authService;
 
     @Test
     void authenticate_whenCredentialsAreCorrect_returnsSuccessResponse() {

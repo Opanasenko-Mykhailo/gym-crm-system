@@ -1,6 +1,6 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.service.CredentialsService;
+import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CredentialsServiceImplTest {
 
-    private final CredentialsService service = new CredentialsServiceImpl();
+    private final CredentialsService service = new CredentialsService();
 
     @Test
     void generateRandomPassword_returnsPasswordOfLength10() {
