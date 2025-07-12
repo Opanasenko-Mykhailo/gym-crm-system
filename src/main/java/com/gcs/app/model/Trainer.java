@@ -26,8 +26,8 @@ import java.util.Set;
 @Entity
 @Table(name = "trainers")
 @Getter
-@ToString
-@EqualsAndHashCode
+@ToString(exclude = "trainees")
+@EqualsAndHashCode(exclude = "trainees")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)

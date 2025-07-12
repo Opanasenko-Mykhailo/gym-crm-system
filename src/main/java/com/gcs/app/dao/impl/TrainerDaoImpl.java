@@ -4,6 +4,7 @@ import com.gcs.app.dao.TrainerDao;
 import com.gcs.app.dao.criteria.TrainingQueryBuilder;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
+import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -70,6 +71,21 @@ public class TrainerDaoImpl implements TrainerDao {
         CriteriaQuery<Training> query = trainingQueryBuilder.build(cb, criteria);
 
         return session.createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<Trainer> findAllNotAssignedToTrainee(Trainee trainee) {
+        String hql = "SELECT t FROM Trainer t WHERE t NOT IN" +
+                "(SELECT tr FROM Trainee trn JOIN trn.trainers tr WHERE trn = :trainee)";
+
+        List<Trainer> result = getSession()
+                .createQuery(hql, Trainer.class)
+                .setParameter("trainee", trainee)
+                .getResultList();
+
+        log.info("Found not assigned trainers for trainee '{}': {}", trainee.getId(), result);
+
+        return result;
     }
 
     private Session getSession() {

@@ -3,6 +3,7 @@ package com.gcs.app.dao.impl;
 import com.gcs.app.dao.AbstractRepositoryTest;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
+import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
@@ -142,6 +143,18 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
         assertTrue(trainings.isEmpty(), "Expected empty list when date range does not match any training");
     }
 
+    @Test
+    void findAllNotAssignedToTrainee_whenTraineeAssignedToSomeTrainers_returnsOthers() {
+        Trainee trainee = sessionFactory.getCurrentSession().find(Trainee.class, 1L);
+        assertNotNull(trainee, "Trainee with ID 1 should exist");
+
+        List<Trainer> unassigned = dao.findAllNotAssignedToTrainee(trainee);
+
+        assertFalse(unassigned.isEmpty(), "Expected non-empty list of unassigned trainers");
+        assertTrue(unassigned.stream().noneMatch(t -> t.getTrainees().contains(trainee)),
+                "Returned trainers should not be assigned to trainee");
+    }
+
     private User createUser() {
         return User.builder()
                 .username(USERNAME)
@@ -158,4 +171,3 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
                 .build();
     }
 }
-

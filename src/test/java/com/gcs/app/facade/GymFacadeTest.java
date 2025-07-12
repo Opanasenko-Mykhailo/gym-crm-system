@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -60,25 +61,18 @@ class GymFacadeTest {
 
     @Mock
     private TraineeService traineeService;
-
     @Mock
     private TrainerService trainerService;
-
     @Mock
     private TrainingService trainingService;
-
     @Mock
     private UserService userService;
-
     @Mock
     private AuthService authService;
-
     @Mock
     private TraineeMapper traineeMapper;
-
     @Mock
     private TrainerMapper trainerMapper;
-
     @Mock
     private TrainingMapper trainingMapper;
 
@@ -138,7 +132,6 @@ class GymFacadeTest {
     @Test
     void deleteTraineeByUsername_callsService() {
         facade.deleteTraineeByUsername(TRAINEE_USERNAME);
-
         verify(traineeService).deleteTraineeByUsername(TRAINEE_USERNAME);
     }
 
@@ -156,6 +149,59 @@ class GymFacadeTest {
 
         verify(traineeService).getByUsername(TRAINEE_USERNAME);
         verify(traineeMapper).toDto(trainee);
+    }
+
+    @Test
+    void updateTraineeTrainers_callsServiceAndMapper_returnsTraineeResponseDto() {
+        List<String> trainerUsernames = List.of(TRAINER_USERNAME);
+        when(traineeService.updateTraineeTrainers(TRAINEE_USERNAME, trainerUsernames)).thenReturn(trainee);
+        when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
+
+        TraineeResponseDto actual = facade.updateTraineeTrainers(TRAINEE_USERNAME, trainerUsernames);
+
+        assertEquals(TRAINEE_USERNAME, actual.getUsername());
+        verify(traineeService).updateTraineeTrainers(TRAINEE_USERNAME, trainerUsernames);
+        verify(traineeMapper).toDto(trainee);
+    }
+
+    @Test
+    void setTraineeActive_callsServiceAndMapper_returnsTraineeResponseDto() {
+        when(traineeService.setTraineeActive(TRAINEE_USERNAME, true)).thenReturn(trainee);
+        when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
+
+        TraineeResponseDto actual = facade.setTraineeActive(TRAINEE_USERNAME, true);
+
+        assertTrue(actual.getIsActive());
+        verify(traineeService).setTraineeActive(TRAINEE_USERNAME, true);
+        verify(traineeMapper).toDto(trainee);
+    }
+
+    @Test
+    void setTrainerActive_callsServiceAndMapper_returnsTrainerResponseDto() {
+        when(trainerService.setTrainerActive(TRAINER_USERNAME, true)).thenReturn(trainer);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
+
+        TrainerResponseDto actual = facade.setTrainerActive(TRAINER_USERNAME, true);
+
+        assertTrue(actual.getIsActive());
+        verify(trainerService).setTrainerActive(TRAINER_USERNAME, true);
+        verify(trainerMapper).toDto(trainer);
+    }
+
+    @Test
+    void getUnassignedTrainers_callsServiceAndMapper_returnsListOfTrainerResponseDto() {
+        List<Trainer> trainers = List.of(trainer);
+        List<TrainerResponseDto> expected = List.of(expectedTrainerResponse);
+
+        when(traineeService.getUnassignedTrainers(TRAINEE_USERNAME)).thenReturn(trainers);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
+
+        List<TrainerResponseDto> actual = facade.getUnassignedTrainers(TRAINEE_USERNAME);
+
+        assertEquals(1, actual.size());
+        assertEquals(TRAINER_USERNAME, actual.get(0).getUsername());
+        verify(traineeService).getUnassignedTrainers(TRAINEE_USERNAME);
+        verify(trainerMapper).toDto(trainer);
     }
 
     @Test
@@ -275,7 +321,6 @@ class GymFacadeTest {
         dto.setNewPassword("new123");
 
         facade.changePassword(dto);
-
         verify(userService).changePassword(dto);
     }
 
@@ -327,21 +372,15 @@ class GymFacadeTest {
     }
 
     private Trainee createTraineeForTraining() {
-        return Trainee.builder()
-                .id(TRAINEE_ID)
-                .build();
+        return Trainee.builder().id(TRAINEE_ID).build();
     }
 
     private Trainer createTrainerForTraining() {
-        return Trainer.builder()
-                .id(TRAINER_ID)
-                .build();
+        return Trainer.builder().id(TRAINER_ID).build();
     }
 
     private TrainingType createTrainingType() {
-        return TrainingType.builder()
-                .name(SPECIALIZATION)
-                .build();
+        return TrainingType.builder().name(SPECIALIZATION).build();
     }
 
     private TraineeCreateRequestDto createTraineeCreateRequestDto() {
@@ -413,7 +452,7 @@ class GymFacadeTest {
 
     private TrainingCreateRequestDto createTrainingCreateRequestDto() {
         TrainingCreateRequestDto dto = new TrainingCreateRequestDto();
-        dto.setTrainerUsername(TRAINEE_USERNAME);
+        dto.setTraineeUsername(TRAINEE_USERNAME);
         dto.setTrainerUsername(TRAINER_USERNAME);
         dto.setName(TRAINING_NAME);
         dto.setType(createTrainingType());

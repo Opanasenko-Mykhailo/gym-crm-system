@@ -6,7 +6,9 @@ import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Trainer;
 import com.gcs.app.model.User;
+import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;
@@ -17,9 +19,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,6 +57,9 @@ class TraineeServiceImplTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private TrainerService trainerService;
 
     @Mock
     private CredentialsService credentialsService;
@@ -154,6 +162,95 @@ class TraineeServiceImplTest {
         verify(traineeDao).findByUsername(USERNAME);
     }
 
+    @Test
+    void setTraineeActive_whenTraineeExists_updatesIsActiveAndReturnsTrainee() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+        when(traineeDao.update(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Trainee result = service.setTraineeActive(USERNAME, false);
+
+        assertEquals(USERNAME, result.getUser().getUsername());
+        assertFalse(result.getUser().getIsActive());
+        verify(traineeDao).update(any(Trainee.class));
+    }
+
+    @Test
+    void setTraineeActive_whenTraineeNotFound_throwsServiceException() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> service.setTraineeActive(USERNAME, true));
+
+        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+        verify(traineeDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void getUnassignedTrainers_whenTraineeExists_returnsTrainerList() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+        List<Trainer> expected = List.of(createTrainer("trainer.mock"));
+        when(trainerService.getUnassignedForTrainee(expectedTrainee)).thenReturn(expected);
+
+        List<Trainer> result = service.getUnassignedTrainers(USERNAME);
+
+        assertEquals(expected, result);
+        verify(trainerService).getUnassignedForTrainee(expectedTrainee);
+    }
+
+    @Test
+    void getUnassignedTrainers_whenTraineeNotFound_throwsServiceException() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> service.getUnassignedTrainers(USERNAME));
+
+        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+    }
+
+    @Test
+    void updateTraineeTrainers_whenTraineeExists_assignsNewTrainers() {
+        Trainer trainer1 = createTrainer("trainer.one");
+        Trainer trainer2 = createTrainer("trainer.two");
+
+        Trainer oldTrainer = createTrainer("old.trainer");
+        oldTrainer.getTrainees().add(expectedTrainee);
+        expectedTrainee.getTrainers().add(oldTrainer);
+
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+        when(trainerService.getByUsername("trainer.one")).thenReturn(trainer1);
+        when(trainerService.getByUsername("trainer.two")).thenReturn(trainer2);
+        when(traineeDao.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<String> trainerUsernames = List.of("trainer.one", "trainer.two");
+        Trainee result = service.updateTraineeTrainers(USERNAME, trainerUsernames);
+
+        assertFalse(result.getTrainers().stream()
+                .anyMatch(t -> t.getUser().getUsername().equals("old.trainer")));
+
+        List<String> resultUsernames = result.getTrainers().stream()
+                .map(t -> t.getUser().getUsername())
+                .toList();
+
+        assertEquals(2, resultUsernames.size());
+        assertTrue(resultUsernames.contains("trainer.one"));
+        assertTrue(resultUsernames.contains("trainer.two"));
+
+        verify(traineeDao).findByUsername(USERNAME);
+        verify(trainerService).getByUsername("trainer.one");
+        verify(trainerService).getByUsername("trainer.two");
+        verify(traineeDao).update(any());
+    }
+
+    @Test
+    void updateTraineeTrainers_whenTraineeNotFound_throwsServiceException() {
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> service.updateTraineeTrainers(USERNAME, List.of("trainer1")));
+
+        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+    }
+
     private Trainee createTrainee() {
         return Trainee.builder()
                 .user(createUser())
@@ -169,6 +266,20 @@ class TraineeServiceImplTest {
                 .isActive(true)
                 .firstName(FIRST_NAME)
                 .lastName(LAST_NAME)
+                .build();
+    }
+
+    private Trainer createTrainer(String username) {
+        User user = User.builder()
+                .username(username)
+                .firstName("Trainer")
+                .lastName("Test")
+                .isActive(true)
+                .build();
+
+        return Trainer.builder()
+                .user(user)
+                .trainees(new HashSet<>())
                 .build();
     }
 

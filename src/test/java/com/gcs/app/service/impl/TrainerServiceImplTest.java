@@ -3,9 +3,12 @@ package com.gcs.app.service.impl;
 import com.gcs.app.dao.TrainerDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
+import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
+import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
+import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import com.gcs.app.service.UserService;
@@ -16,10 +19,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,7 +42,7 @@ class TrainerServiceImplTest {
     private static final String SPECIALIZATION = "Yoga";
     private static final String TRAINER_NOT_FOUND_MESSAGE = "Trainer with username " + USERNAME + " not found";
 
-    private final Trainer expected = createTrainer();
+    private final Trainer expected = createTrainer(USERNAME);
     private final TrainerCreateRequestDto createRequestDto = createTrainerCreateRequestDto();
     private final TrainerUpdateRequestDto updateRequestDto = createTrainerUpdateRequestDto();
 
@@ -63,10 +69,7 @@ class TrainerServiceImplTest {
 
         Trainer actual = service.createTrainer(createRequestDto);
 
-        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
-        assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertTrue(actual.getUser().getIsActive());
-        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
+        assertTrainerFields(actual);
 
         verify(trainerMapper).toEntity(createRequestDto);
         verify(userService).getAllUsernames();
@@ -81,11 +84,7 @@ class TrainerServiceImplTest {
 
         Trainer actual = service.updateTrainer(updateRequestDto);
 
-        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
-        assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertEquals(USERNAME, actual.getUser().getUsername());
-        assertTrue(actual.getUser().getIsActive());
-        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
+        assertTrainerFields(actual);
 
         verify(trainerDao).findByUsername(USERNAME);
         verify(trainerMapper).update(expected, updateRequestDto);
@@ -109,11 +108,7 @@ class TrainerServiceImplTest {
 
         Trainer actual = service.getByUsername(USERNAME);
 
-        assertEquals(USERNAME, actual.getUser().getUsername());
-        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
-        assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertTrue(actual.getUser().getIsActive());
-        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
+        assertTrainerFields(actual);
 
         verify(trainerDao).findByUsername(USERNAME);
     }
@@ -129,26 +124,87 @@ class TrainerServiceImplTest {
         verify(trainerDao).findByUsername(USERNAME);
     }
 
-    private Trainer createTrainer() {
+    @Test
+    void setTrainerActive_whenTrainerExists_updatesIsActiveAndReturnsTrainer() {
+        User updatedUser = createUser(USERNAME, false);
+        Trainer updatedTrainer = expected.toBuilder().user(updatedUser).build();
+
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
+        when(trainerDao.update(any())).thenReturn(updatedTrainer);
+
+        Trainer result = service.setTrainerActive(USERNAME, false);
+
+        assertFalse(result.getUser().getIsActive());
+        verify(trainerDao).findByUsername(USERNAME);
+        verify(trainerDao).update(any(Trainer.class));
+    }
+
+    @Test
+    void setTrainerActive_whenTrainerDoesNotExist_throwsServiceException() {
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class,
+                () -> service.setTrainerActive(USERNAME, true));
+
+        assertEquals("Trainer not found with username: " + USERNAME, ex.getMessage());
+        verify(trainerDao).findByUsername(USERNAME);
+    }
+
+    @Test
+    void getUnassignedForTrainee_returnsListOfUnassignedTrainers() {
+        Trainee trainee = createTrainee("trainee.username");
+        List<Trainer> expectedList = List.of(expected);
+
+        when(trainerDao.findAllNotAssignedToTrainee(trainee)).thenReturn(expectedList);
+
+        List<Trainer> actual = service.getUnassignedForTrainee(trainee);
+
+        assertEquals(expectedList, actual);
+        verify(trainerDao).findAllNotAssignedToTrainee(trainee);
+    }
+
+    @Test
+    void getTrainerTrainings_returnsListOfTrainings() {
+        TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
+        Training training = Training.builder().id(1L).build();
+        List<Training> expectedTrainings = List.of(training);
+
+        when(trainerDao.findByTrainerCriteria(criteria)).thenReturn(expectedTrainings);
+
+        List<Training> actual = service.getTrainerTrainings(criteria);
+
+        assertEquals(expectedTrainings, actual);
+        verify(trainerDao).findByTrainerCriteria(criteria);
+    }
+
+    private Trainer createTrainer(String username) {
         return Trainer.builder()
-                .user(createUser())
-                .specialization(createTrainingType())
+                .user(createUser(username, true))
+                .specialization(createTrainingType(SPECIALIZATION))
                 .build();
     }
 
-    private User createUser() {
+    private User createUser(String username, boolean isActive) {
         return User.builder()
-                .username(USERNAME)
+                .username(username)
                 .password(PASSWORD)
-                .isActive(true)
+                .isActive(isActive)
                 .firstName(FIRST_NAME)
                 .lastName(LAST_NAME)
                 .build();
     }
 
-    private TrainingType createTrainingType() {
+    private TrainingType createTrainingType(String name) {
         return TrainingType.builder()
-                .name(SPECIALIZATION)
+                .name(name)
+                .build();
+    }
+
+    private Trainee createTrainee(String username) {
+        return Trainee.builder()
+                .user(createUser(username, true))
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .address("Trainee Address")
                 .build();
     }
 
@@ -156,7 +212,7 @@ class TrainerServiceImplTest {
         TrainerCreateRequestDto dto = new TrainerCreateRequestDto();
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
-        dto.setSpecialization(createTrainingType());
+        dto.setSpecialization(createTrainingType(SPECIALIZATION));
 
         return dto;
     }
@@ -166,9 +222,17 @@ class TrainerServiceImplTest {
         dto.setUsername(USERNAME);
         dto.setFirstName(FIRST_NAME);
         dto.setLastName(LAST_NAME);
-        dto.setSpecialization(createTrainingType());
+        dto.setSpecialization(createTrainingType(SPECIALIZATION));
         dto.setIsActive(true);
 
         return dto;
+    }
+
+    private void assertTrainerFields(Trainer trainer) {
+        assertEquals(FIRST_NAME, trainer.getUser().getFirstName());
+        assertEquals(LAST_NAME, trainer.getUser().getLastName());
+        assertEquals(USERNAME, trainer.getUser().getUsername());
+        assertTrue(trainer.getUser().getIsActive());
+        assertEquals(SPECIALIZATION, trainer.getSpecialization().getName());
     }
 }

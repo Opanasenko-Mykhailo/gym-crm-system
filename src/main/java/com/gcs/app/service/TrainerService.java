@@ -3,6 +3,7 @@ package com.gcs.app.service;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
+import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 
@@ -13,4 +14,6 @@ public interface TrainerService {
     Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto);
     Trainer getByUsername(String username);
     List<Training> getTrainerTrainings(TrainerTrainingSearchCriteriaDto criteria);
+    Trainer setTrainerActive(String username, boolean isActive);
+    List<Trainer> getUnassignedForTrainee(Trainee trainee);
 }

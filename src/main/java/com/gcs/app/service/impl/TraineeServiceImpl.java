@@ -7,9 +7,11 @@ import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.User;
 import com.gcs.app.service.TraineeService;
+import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import jakarta.validation.Valid;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ public class TraineeServiceImpl implements TraineeService {
 
     private final TraineeDao traineeDao;
     private final UserService userService;
+    private final TrainerService trainerService;
     private final CredentialsService credentialsService;
     private final TraineeMapper traineeMapper;
 
@@ -92,5 +97,52 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Searching trainings with criteria: {}", criteria);
 
         return traineeDao.findByTraineeCriteria(criteria);
+    }
+
+    @Override
+    public Trainee setTraineeActive(String username, boolean isActive) {
+        Trainee trainee = traineeDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
+
+        User updatedUser = trainee.getUser().toBuilder()
+                .isActive(isActive)
+                .build();
+
+        Trainee updatedTrainee = trainee.toBuilder()
+                .user(updatedUser)
+                .build();
+
+        Trainee result = traineeDao.update(updatedTrainee);
+        log.info("Trainee {} set to {}", username, isActive ? "active" : "inactive");
+
+        return result;
+    }
+
+    @Override
+    public List<Trainer> getUnassignedTrainers(String traineeUsername) {
+        Trainee trainee = traineeDao.findByUsername(traineeUsername)
+                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", traineeUsername)));
+
+        return trainerService.getUnassignedForTrainee(trainee);
+    }
+
+    @Override
+    public Trainee updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames) {
+        Trainee trainee = traineeDao.findByUsername(traineeUsername)
+                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", traineeUsername)));
+
+        Set<Trainer> newTrainers = trainerUsernames.stream()
+                .map(trainerService::getByUsername)
+                .collect(Collectors.toSet());
+
+        trainee.getTrainers().forEach(t -> t.getTrainees().remove(trainee));
+        trainee.getTrainers().clear();
+
+        for (Trainer trainer : newTrainers) {
+            trainee.getTrainers().add(trainer);
+            trainer.getTrainees().add(trainee);
+        }
+
+        return traineeDao.update(trainee);
     }
 }
