@@ -74,22 +74,20 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public Trainer setTrainerActive(String username, boolean isActive) {
+    public void setTrainerActivationStatus(String username, boolean isActive) {
         Trainer trainer = trainerDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
 
         User updatedUser = trainer.getUser().toBuilder()
                 .isActive(isActive)
                 .build();
-
         Trainer updatedTrainer = trainer.toBuilder()
                 .user(updatedUser)
                 .build();
 
-        Trainer result = trainerDao.update(updatedTrainer);
-        log.info("Trainer {} set to {}", username, isActive ? "active" : "inactive");
+        trainerDao.update(updatedTrainer);
 
-        return result;
+        log.info("Trainer {} set to {}", username, isActive ? "active" : "inactive");
     }
 
     @Override

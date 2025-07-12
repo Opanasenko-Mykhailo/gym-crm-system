@@ -36,6 +36,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -177,15 +178,11 @@ class GymFacadeTest {
     }
 
     @Test
-    void setTrainerActive_callsServiceAndMapper_returnsTrainerResponseDto() {
-        when(trainerService.setTrainerActive(TRAINER_USERNAME, true)).thenReturn(trainer);
-        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
+    void setTrainerActive_callsServiceAndLogsAction() {
+        facade.setTrainerActive(TRAINER_USERNAME, true);
 
-        TrainerResponseDto actual = facade.setTrainerActive(TRAINER_USERNAME, true);
-
-        assertTrue(actual.getIsActive());
-        verify(trainerService).setTrainerActive(TRAINER_USERNAME, true);
-        verify(trainerMapper).toDto(trainer);
+        verify(trainerService).setTrainerActivationStatus(TRAINER_USERNAME, true);
+        verifyNoMoreInteractions(trainerMapper);
     }
 
     @Test

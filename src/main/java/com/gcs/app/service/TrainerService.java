@@ -14,6 +14,6 @@ public interface TrainerService {
     Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto);
     Trainer getByUsername(String username);
     List<Training> getTrainerTrainings(TrainerTrainingSearchCriteriaDto criteria);
-    Trainer setTrainerActive(String username, boolean isActive);
+    void setTrainerActivationStatus(String username, boolean isActive);
     List<Trainer> getUnassignedForTrainee(Trainee trainee);
 }

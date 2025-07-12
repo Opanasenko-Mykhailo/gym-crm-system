@@ -15,6 +15,7 @@ import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -125,18 +126,20 @@ class TrainerServiceImplTest {
     }
 
     @Test
-    void setTrainerActive_whenTrainerExists_updatesIsActiveAndReturnsTrainer() {
-        User updatedUser = createUser(USERNAME, false);
-        Trainer updatedTrainer = expected.toBuilder().user(updatedUser).build();
-
+    void setTrainerActive_whenTrainerExists_updatesTrainerWithNewActiveStatus() {
         when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(expected));
-        when(trainerDao.update(any())).thenReturn(updatedTrainer);
 
-        Trainer result = service.setTrainerActive(USERNAME, false);
+        service.setTrainerActivationStatus(USERNAME, false);
 
-        assertFalse(result.getUser().getIsActive());
         verify(trainerDao).findByUsername(USERNAME);
-        verify(trainerDao).update(any(Trainer.class));
+
+        ArgumentCaptor<Trainer> trainerCaptor = ArgumentCaptor.forClass(Trainer.class);
+        verify(trainerDao).update(trainerCaptor.capture());
+
+        Trainer updated = trainerCaptor.getValue();
+
+        assertFalse(updated.getUser().getIsActive());
+        assertEquals(USERNAME, updated.getUser().getUsername());
     }
 
     @Test
@@ -144,7 +147,7 @@ class TrainerServiceImplTest {
         when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class,
-                () -> service.setTrainerActive(USERNAME, true));
+                () -> service.setTrainerActivationStatus(USERNAME, true));
 
         assertEquals("Trainer not found with username: " + USERNAME, ex.getMessage());
         verify(trainerDao).findByUsername(USERNAME);

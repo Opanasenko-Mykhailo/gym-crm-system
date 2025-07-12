@@ -14,6 +14,7 @@ import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
+import com.gcs.app.util.EntityAssociationHelper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -135,14 +136,9 @@ public class TraineeServiceImpl implements TraineeService {
                 .map(trainerService::getByUsername)
                 .collect(Collectors.toSet());
 
-        trainee.getTrainers().forEach(t -> t.getTrainees().remove(trainee));
-        trainee.getTrainers().clear();
-
-        for (Trainer trainer : newTrainers) {
-            trainee.getTrainers().add(trainer);
-            trainer.getTrainees().add(trainee);
-        }
+        EntityAssociationHelper.setTraineeTrainers(trainee, newTrainers);
 
         return traineeDao.update(trainee);
     }
+
 }

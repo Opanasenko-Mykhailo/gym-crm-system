@@ -155,11 +155,10 @@ public class GymFacade {
     }
 
     @Authenticated
-    public TrainerResponseDto setTrainerActive(String username, boolean isActive) {
+    public void setTrainerActive(String username, boolean isActive) {
         log.info("Setting trainer {} to {}", username, isActive ? "active" : "inactive");
-        Trainer updated = trainerService.setTrainerActive(username, isActive);
 
-        return trainerMapper.toDto(updated);
+        trainerService.setTrainerActivationStatus(username, isActive);
     }
 
     @Authenticated
