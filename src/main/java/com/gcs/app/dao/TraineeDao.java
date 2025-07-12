@@ -12,5 +12,5 @@ public interface TraineeDao {
     Trainee update(Trainee trainee);
     void deleteByUsername(String username);
     Optional<Trainee> findByUsername(String username);
-    List<Training> findByTraineeAndCriteria(TraineeTrainingSearchCriteriaDto criteria);
+    List<Training> findByTraineeCriteria(TraineeTrainingSearchCriteriaDto criteria);
 }

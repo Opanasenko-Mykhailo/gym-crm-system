@@ -11,5 +11,5 @@ public interface TrainerDao {
     Trainer create(Trainer trainer);
     Trainer update(Trainer trainer);
     Optional<Trainer> findByUsername(String username);
-    List<Training> findByTrainerAndCriteria(TrainerTrainingSearchCriteriaDto criteria);
+    List<Training> findByTrainerCriteria(TrainerTrainingSearchCriteriaDto criteria);
 }

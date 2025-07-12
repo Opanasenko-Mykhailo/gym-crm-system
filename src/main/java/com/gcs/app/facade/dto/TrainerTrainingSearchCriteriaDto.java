@@ -8,7 +8,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class TrainerTrainingSearchCriteriaDto {
+public class TrainerTrainingSearchCriteriaDto implements TrainingSearchCriteria {
 
     @NotBlank(message = "Username is required")
     @Size(max = 50, message = "Username must be at most 50 characters")
