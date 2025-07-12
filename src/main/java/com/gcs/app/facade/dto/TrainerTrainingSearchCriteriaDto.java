@@ -4,11 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class TrainerTrainingSearchCriteriaDto implements TrainingSearchCriteria {
+public class TrainerTrainingSearchCriteriaDto extends TrainingSearchCriteria {
 
     @NotBlank(message = "Username is required")
     @Size(max = 50, message = "Username must be at most 50 characters")

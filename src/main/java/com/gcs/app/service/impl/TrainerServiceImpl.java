@@ -69,7 +69,7 @@ public class TrainerServiceImpl implements TrainerService {
     public List<Training> getTrainerTrainings(@Valid TrainerTrainingSearchCriteriaDto criteria) {
         log.info("Searching trainings with criteria: {}", criteria);
 
-        return trainerDao.findByTrainerAndCriteria(criteria);
+        return trainerDao.findByTrainerCriteria(criteria);
     }
 
     private User userWithCredentials(User user) {

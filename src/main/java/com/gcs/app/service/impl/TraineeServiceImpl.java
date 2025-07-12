@@ -91,6 +91,6 @@ public class TraineeServiceImpl implements TraineeService {
     public List<Training> getTraineeTrainings(@Valid TraineeTrainingSearchCriteriaDto criteria) {
         log.info("Searching trainings with criteria: {}", criteria);
 
-        return traineeDao.findByTraineeAndCriteria(criteria);
+        return traineeDao.findByTraineeCriteria(criteria);
     }
 }

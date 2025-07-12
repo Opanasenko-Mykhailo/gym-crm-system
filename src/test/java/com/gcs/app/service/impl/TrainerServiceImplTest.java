@@ -8,6 +8,7 @@ import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
+import com.gcs.app.service.CredentialsService;
 import com.gcs.app.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,9 @@ class TrainerServiceImplTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private CredentialsService credentialsService;
 
     @Test
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {

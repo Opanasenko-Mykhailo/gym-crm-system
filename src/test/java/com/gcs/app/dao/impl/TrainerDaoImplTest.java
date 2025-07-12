@@ -2,12 +2,16 @@ package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.AbstractRepositoryTest;
 import com.gcs.app.exception.EntityNotFoundException;
+import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.model.Trainer;
+import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import com.github.database.rider.core.api.dataset.DataSet;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -96,6 +100,46 @@ class TrainerDaoImplTest extends AbstractRepositoryTest<TrainerDaoImpl> {
         assertNotNull(saved);
         assertEquals(existingUser.getUsername(), saved.getUser().getUsername());
         assertEquals(existingType.getName(), saved.getSpecialization().getName());
+    }
+
+    @Test
+    void findByTrainerCriteria_whenMatchingCriteria_returnsTrainings() {
+        TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
+        criteria.setUsername(USERNAME);
+        criteria.setFromDate(LocalDate.of(2025, 9, 1));
+        criteria.setToDate(LocalDate.of(2025, 12, 1));
+        criteria.setTraineeName("John Doe");
+
+        List<Training> trainings = dao.findByTrainerCriteria(criteria);
+
+        assertFalse(trainings.isEmpty(), "Expected non-empty list of trainings");
+        Training training = trainings.get(0);
+        assertEquals("Morning Yoga", training.getName(), "Training name mismatch");
+        assertEquals("jane.smith", training.getTrainer().getUser().getUsername(), "Trainer username mismatch");
+        assertEquals("John", training.getTrainee().getUser().getFirstName(), "Trainee first name mismatch");
+    }
+
+    @Test
+    void findByTrainerCriteria_whenNoMatchingTrainee_returnsEmptyList() {
+        TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
+        criteria.setUsername(USERNAME);
+        criteria.setTraineeName("Non Existent");
+
+        List<Training> trainings = dao.findByTrainerCriteria(criteria);
+
+        assertTrue(trainings.isEmpty(), "Expected empty list when no matching trainee found");
+    }
+
+    @Test
+    void findByTrainerCriteria_whenDateRangeDoesNotMatch_returnsEmptyList() {
+        TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
+        criteria.setUsername(USERNAME);
+        criteria.setFromDate(LocalDate.of(2026, 1, 1));
+        criteria.setToDate(LocalDate.of(2026, 12, 31));
+
+        List<Training> trainings = dao.findByTrainerCriteria(criteria);
+
+        assertTrue(trainings.isEmpty(), "Expected empty list when date range does not match any training");
     }
 
     private User createUser() {

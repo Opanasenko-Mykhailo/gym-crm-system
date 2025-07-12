@@ -2,12 +2,15 @@ package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.AbstractRepositoryTest;
 import com.gcs.app.exception.EntityNotFoundException;
+import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Training;
 import com.gcs.app.model.User;
 import com.github.database.rider.core.api.dataset.DataSet;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -91,5 +94,55 @@ class TraineeDaoImplTest extends AbstractRepositoryTest<TraineeDaoImpl> {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> dao.deleteByUsername(NON_EXISTENT_USERNAME));
 
         assertEquals("Trainee with username 'non.existing.username' not found", exception.getMessage());
+    }
+
+    @Test
+    void findByTraineeCriteria_whenCriteriaMatch_returnsTrainings() {
+        TraineeTrainingSearchCriteriaDto criteria = new TraineeTrainingSearchCriteriaDto();
+        criteria.setUsername(EXISTING_USERNAME);
+        criteria.setFromDate(LocalDate.of(2020, 1, 1));
+        criteria.setToDate(LocalDate.of(2030, 1, 1));
+        criteria.setTrainerName("Trainer One");
+        criteria.setTrainingTypeName("Yoga");
+
+        List<Training> trainings = dao.findByTraineeCriteria(criteria);
+
+        assertFalse(trainings.isEmpty(), "Expected non-empty list of trainings for matching criteria");
+        assertTrue(trainings.stream().allMatch(t -> t.getTrainee().getUser().getUsername().equals(EXISTING_USERNAME)));
+    }
+
+    @Test
+    void findByTraineeCriteria_whenNoCriteria_returnsEmpty() {
+        TraineeTrainingSearchCriteriaDto criteria = new TraineeTrainingSearchCriteriaDto();
+        criteria.setUsername("non.existing");
+
+        List<Training> trainings = dao.findByTraineeCriteria(criteria);
+
+        assertTrue(trainings.isEmpty(), "Expected empty list of trainings for non-existent trainee");
+    }
+
+    @Test
+    void findByTraineeCriteria_whenPartialCriteriaMatch_returnsFilteredTrainings() {
+        TraineeTrainingSearchCriteriaDto criteria = new TraineeTrainingSearchCriteriaDto();
+        criteria.setUsername(EXISTING_USERNAME);
+        criteria.setTrainerName("Trainer");
+
+        List<Training> trainings = dao.findByTraineeCriteria(criteria);
+
+        assertFalse(trainings.isEmpty(), "Expected trainings filtered by trainer name");
+        assertTrue(trainings.stream().allMatch(t -> t.getTrainee().getUser().getUsername().equals(EXISTING_USERNAME)));
+        assertTrue(trainings.stream().anyMatch(t -> t.getTrainer().getUser().getFirstName().toLowerCase().contains("trainer")));
+    }
+
+    @Test
+    void findByTraineeCriteria_whenDateRangeExcludesTrainings_returnsEmpty() {
+        TraineeTrainingSearchCriteriaDto criteria = new TraineeTrainingSearchCriteriaDto();
+        criteria.setUsername(EXISTING_USERNAME);
+        criteria.setFromDate(LocalDate.of(2030, 1, 1));
+        criteria.setToDate(LocalDate.of(2040, 1, 1));
+
+        List<Training> trainings = dao.findByTraineeCriteria(criteria);
+
+        assertTrue(trainings.isEmpty(), "Expected empty list of trainings when date range excludes all trainings");
     }
 }

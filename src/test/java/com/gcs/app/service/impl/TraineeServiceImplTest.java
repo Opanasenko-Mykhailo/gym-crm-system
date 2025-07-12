@@ -7,6 +7,7 @@ import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
+import com.gcs.app.service.CredentialsService;
 import com.gcs.app.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +52,9 @@ class TraineeServiceImplTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private CredentialsService credentialsService;
 
     @Test
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {
