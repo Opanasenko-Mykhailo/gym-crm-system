@@ -1,14 +1,15 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.model.User;
+import com.gcs.app.service.common.AuthContextHolder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-class AuthContextHolderImplTest {
+class AuthContextHolderTest {
 
-    private final AuthContextHolderImpl authContextHolder = new AuthContextHolderImpl();
+    private final AuthContextHolder authContextHolder = new AuthContextHolder();
 
     @Test
     void setCurrentUser_and_getCurrentUser_workCorrectly() {

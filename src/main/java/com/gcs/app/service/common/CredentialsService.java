@@ -1,6 +1,5 @@
-package com.gcs.app.service.impl;
+package com.gcs.app.service.common;
 
-import com.gcs.app.service.CredentialsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,12 +9,11 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class CredentialsServiceImpl implements CredentialsService {
+public class CredentialsService {
 
     private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    @Override
     public String generateRandomPassword() {
         Random random = new Random();
         StringBuilder password = new StringBuilder(10);
@@ -27,12 +25,10 @@ public class CredentialsServiceImpl implements CredentialsService {
         return password.toString();
     }
 
-    @Override
     public String encodePassword(String rawPassword) {
         return passwordEncoder.encode(rawPassword);
     }
 
-    @Override
     public String generateUsername(String firstName, String lastName, Set<String> existingUsernames) {
         String baseUsername = firstName + "." + lastName;
         String username = baseUsername;
@@ -45,7 +41,6 @@ public class CredentialsServiceImpl implements CredentialsService {
         return username;
     }
 
-    @Override
     public boolean isPasswordCorrect(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }

@@ -6,7 +6,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.gcs.app.model.User;
 import com.gcs.app.security.MatchEntityOwner;
-import com.gcs.app.service.impl.AuthContextHolderImpl;
+import com.gcs.app.service.common.AuthContextHolder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -47,7 +47,7 @@ class MatchEntityOwnerAspectTest {
     private MethodSignature signature;
 
     @Mock
-    private AuthContextHolderImpl authContextHolder;
+    private AuthContextHolder authContextHolder;
 
     @InjectMocks
     private MatchEntityOwnerAspect aspect;

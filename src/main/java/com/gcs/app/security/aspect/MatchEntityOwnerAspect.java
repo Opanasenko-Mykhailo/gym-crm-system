@@ -2,7 +2,7 @@ package com.gcs.app.security.aspect;
 
 import com.gcs.app.model.User;
 import com.gcs.app.security.MatchEntityOwner;
-import com.gcs.app.service.AuthContextHolder;
+import com.gcs.app.service.common.AuthContextHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
