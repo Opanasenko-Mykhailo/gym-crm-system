@@ -1,14 +1,20 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.dao.criteria.TrainingQueryBuilder;
 import com.gcs.app.exception.EntityNotFoundException;
+import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.model.Trainer;
+import com.gcs.app.model.Training;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +23,7 @@ import java.util.Optional;
 public class TrainerDaoImpl implements TrainerDao {
 
     private final SessionFactory sessionFactory;
+    private final TrainingQueryBuilder trainingQueryBuilder;
 
     @Override
     public Trainer create(Trainer trainer) {
@@ -54,6 +61,16 @@ public class TrainerDaoImpl implements TrainerDao {
         return Optional.ofNullable(result);
     }
 
+    @Override
+    public List<Training> findByTrainerCriteria(TrainerTrainingSearchCriteriaDto criteria) {
+        log.info("Searching trainings for trainer criteria: {}", criteria);
+
+        Session session = getSession();
+        CriteriaBuilder cb = session.getCriteriaBuilder();
+        CriteriaQuery<Training> query = trainingQueryBuilder.build(cb, criteria);
+
+        return session.createQuery(query).getResultList();
+    }
 
     private Session getSession() {
         return sessionFactory.getCurrentSession();

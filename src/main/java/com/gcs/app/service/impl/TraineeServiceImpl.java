@@ -3,9 +3,11 @@ package com.gcs.app.service.impl;
 import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
+import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
+import com.gcs.app.model.Training;
 import com.gcs.app.model.User;
 import com.gcs.app.service.CredentialsService;
 import com.gcs.app.service.TraineeService;
@@ -15,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -81,5 +85,12 @@ public class TraineeServiceImpl implements TraineeService {
                 .password(password)
                 .isActive(true)
                 .build();
+    }
+
+    @Override
+    public List<Training> getTraineeTrainings(@Valid TraineeTrainingSearchCriteriaDto criteria) {
+        log.info("Searching trainings with criteria: {}", criteria);
+
+        return traineeDao.findByTraineeCriteria(criteria);
     }
 }
