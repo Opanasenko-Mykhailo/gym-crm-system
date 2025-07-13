@@ -301,5 +301,4 @@ class TraineeServiceImplTest {
                 .trainees(new HashSet<>())
                 .build();
     }
-
 }
