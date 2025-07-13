@@ -1,6 +1,7 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainerDao;
+import com.gcs.app.dao.transaction.TransactionalContext;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
@@ -32,6 +33,7 @@ public class TrainerServiceImpl implements TrainerService {
     private final CredentialsService credentialsService;
     private final TrainerMapper trainerMapper;
 
+    @TransactionalContext
     @Override
     public Trainer createTrainer(@Valid TrainerCreateRequestDto trainerCreateRequestDto) {
         Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
@@ -47,6 +49,7 @@ public class TrainerServiceImpl implements TrainerService {
         return createdTrainer;
     }
 
+    @TransactionalContext
     @Override
     public Trainer updateTrainer(@Valid TrainerUpdateRequestDto dto) {
         String username = dto.getUsername();
@@ -58,6 +61,7 @@ public class TrainerServiceImpl implements TrainerService {
         return trainerDao.update(updated);
     }
 
+    @TransactionalContext(readOnly = true)
     @Override
     public Trainer getByUsername(String username) {
         log.info("Getting trainer by username: {}", username);
@@ -66,6 +70,7 @@ public class TrainerServiceImpl implements TrainerService {
                 .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
     }
 
+    @TransactionalContext(readOnly = true)
     @Override
     public List<Training> getTrainerTrainings(@Valid TrainerTrainingSearchCriteriaDto criteria) {
         log.info("Searching trainings with criteria: {}", criteria);
@@ -73,6 +78,7 @@ public class TrainerServiceImpl implements TrainerService {
         return trainerDao.findByTrainerCriteria(criteria);
     }
 
+    @TransactionalContext
     @Override
     public void setTrainerActivationStatus(String username, boolean isActive) {
         Trainer trainer = trainerDao.findByUsername(username)
@@ -90,6 +96,7 @@ public class TrainerServiceImpl implements TrainerService {
         log.info("Trainer {} set to {}", username, isActive ? "active" : "inactive");
     }
 
+    @TransactionalContext(readOnly = true)
     @Override
     public List<Trainer> getUnassignedForTrainee(Trainee trainee) {
         return trainerDao.findAllNotAssignedToTrainee(trainee);

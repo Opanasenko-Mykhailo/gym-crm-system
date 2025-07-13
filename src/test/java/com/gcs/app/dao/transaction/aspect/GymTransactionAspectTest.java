@@ -1,6 +1,6 @@
 package com.gcs.app.dao.transaction.aspect;
 
-import com.gcs.app.dao.transaction.GymTransactional;
+import com.gcs.app.dao.transaction.TransactionalContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -34,10 +34,10 @@ class GymTransactionAspectTest {
     private ProceedingJoinPoint pjp;
 
     @Mock
-    private GymTransactional annotation;
+    private TransactionalContext annotation;
 
     @InjectMocks
-    private GymTransactionAspect aspect;
+    private TransactionalContextAspect aspect;
 
     @Test
     @DisplayName("should commit transaction when readOnly is false")
@@ -47,14 +47,13 @@ class GymTransactionAspectTest {
         when(annotation.readOnly()).thenReturn(false);
         when(pjp.proceed()).thenReturn("result");
 
-        Object result = aspect.wrapInTransaction(pjp, annotation);
+        Object actual = aspect.wrapInTransaction(pjp, annotation);
 
+        assertEquals("result", actual);
         verify(session).setDefaultReadOnly(false);
         verify(transaction).commit();
         verify(transaction, never()).rollback();
         verify(pjp).proceed();
-
-        assertEquals("result", result);
     }
 
     @Test
@@ -65,14 +64,13 @@ class GymTransactionAspectTest {
         when(annotation.readOnly()).thenReturn(true);
         when(pjp.proceed()).thenReturn("readonly");
 
-        Object result = aspect.wrapInTransaction(pjp, annotation);
+        Object actual = aspect.wrapInTransaction(pjp, annotation);
 
+        assertEquals("readonly", actual);
         verify(session).setDefaultReadOnly(true);
         verify(transaction).rollback();
         verify(transaction, never()).commit();
         verify(pjp).proceed();
-
-        assertEquals("readonly", result);
     }
 
     @Test
@@ -87,10 +85,9 @@ class GymTransactionAspectTest {
         IllegalStateException ex = assertThrows(IllegalStateException.class,
                 () -> aspect.wrapInTransaction(pjp, annotation));
 
+        assertEquals("Simulated failure", ex.getMessage());
         verify(transaction).rollback();
         verify(transaction, never()).commit();
         verify(pjp).proceed();
-
-        assertEquals("Simulated failure", ex.getMessage());
     }
 }

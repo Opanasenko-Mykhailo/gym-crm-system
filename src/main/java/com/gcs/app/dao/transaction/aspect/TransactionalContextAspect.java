@@ -1,6 +1,6 @@
 package com.gcs.app.dao.transaction.aspect;
 
-import com.gcs.app.dao.transaction.GymTransactional;
+import com.gcs.app.dao.transaction.TransactionalContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class GymTransactionAspect {
-
-    private final SessionFactory sessionFactory;
+public class TransactionalContextAspect {
 
     private static final ThreadLocal<Boolean> isTransactionActive = ThreadLocal.withInitial(() -> false);
 
+    private final SessionFactory sessionFactory;
+
     @Around("@annotation(transactional)")
-    public Object wrapInTransaction(ProceedingJoinPoint pjp, GymTransactional transactional) throws Throwable {
+    public Object wrapInTransaction(ProceedingJoinPoint pjp, TransactionalContext transactional) throws Throwable {
         boolean outermost = !isTransactionActive.get();
         Session session = sessionFactory.getCurrentSession();
         Transaction tx = null;
@@ -36,7 +36,6 @@ public class GymTransactionAspect {
 
         try {
             Object result = pjp.proceed();
-
             if (outermost) {
                 if (transactional.readOnly()) {
                     tx.rollback();
@@ -46,9 +45,7 @@ public class GymTransactionAspect {
                     log.debug("Transaction committed [{}]", pjp.getSignature());
                 }
             }
-
             return result;
-
         } catch (Throwable ex) {
             if (outermost && tx != null && tx.isActive()) {
                 tx.rollback();

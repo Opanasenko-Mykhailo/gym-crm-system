@@ -2,7 +2,6 @@ package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TrainerDao;
 import com.gcs.app.dao.criteria.TrainingQueryBuilder;
-import com.gcs.app.dao.transaction.GymTransactional;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.model.Trainee;
@@ -27,7 +26,6 @@ public class TrainerDaoImpl implements TrainerDao {
     private final SessionFactory sessionFactory;
     private final TrainingQueryBuilder trainingQueryBuilder;
 
-    @GymTransactional
     @Override
     public Trainer create(Trainer trainer) {
         getSession().persist(trainer);
@@ -36,7 +34,6 @@ public class TrainerDaoImpl implements TrainerDao {
         return trainer;
     }
 
-    @GymTransactional
     @Override
     public Trainer update(Trainer trainer) {
         Trainer existing = getSession().byId(Trainer.class).load(trainer.getId());
@@ -51,7 +48,6 @@ public class TrainerDaoImpl implements TrainerDao {
         return merged;
     }
 
-    @GymTransactional(readOnly = true)
     @Override
     public Optional<Trainer> findByUsername(String username) {
         String hql = "FROM Trainer t JOIN FETCH t.user u WHERE u.username = :username";
@@ -66,7 +62,6 @@ public class TrainerDaoImpl implements TrainerDao {
         return Optional.ofNullable(result);
     }
 
-    @GymTransactional(readOnly = true)
     @Override
     public List<Training> findByTrainerCriteria(TrainerTrainingSearchCriteriaDto criteria) {
         log.info("Searching trainings for trainer criteria: {}", criteria);
@@ -78,7 +73,6 @@ public class TrainerDaoImpl implements TrainerDao {
         return session.createQuery(query).getResultList();
     }
 
-    @GymTransactional(readOnly = true)
     @Override
     public List<Trainer> findAllNotAssignedToTrainee(Trainee trainee) {
         String hql = "SELECT t FROM Trainer t WHERE t NOT IN" +

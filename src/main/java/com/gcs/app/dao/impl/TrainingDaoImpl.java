@@ -1,7 +1,6 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TrainingDao;
-import com.gcs.app.dao.transaction.GymTransactional;
 import com.gcs.app.model.Training;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +17,6 @@ public class TrainingDaoImpl implements TrainingDao {
 
     private final SessionFactory sessionFactory;
 
-    @GymTransactional
     @Override
     public Training create(Training training) {
         getSession().persist(training);
@@ -27,7 +25,6 @@ public class TrainingDaoImpl implements TrainingDao {
         return training;
     }
 
-    @GymTransactional(readOnly = true)
     @Override
     public Optional<Training> get(Long id) {
         Training training = getSession().byId(Training.class).load(id);
