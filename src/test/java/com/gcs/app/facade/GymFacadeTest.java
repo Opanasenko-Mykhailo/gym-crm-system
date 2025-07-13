@@ -5,9 +5,11 @@ import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeResponseDto;
+import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerResponseDto;
+import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.facade.dto.TrainingResponseDto;
@@ -166,15 +168,11 @@ class GymFacadeTest {
     }
 
     @Test
-    void setTraineeActive_callsServiceAndMapper_returnsTraineeResponseDto() {
-        when(traineeService.setTraineeActive(TRAINEE_USERNAME, true)).thenReturn(trainee);
-        when(traineeMapper.toDto(trainee)).thenReturn(expectedTraineeResponse);
+    void setTraineeActive_callsServiceAndLogsAction() {
+        facade.setTraineeActive(TRAINEE_USERNAME, true);
 
-        TraineeResponseDto actual = facade.setTraineeActive(TRAINEE_USERNAME, true);
-
-        assertTrue(actual.getIsActive());
-        verify(traineeService).setTraineeActive(TRAINEE_USERNAME, true);
-        verify(traineeMapper).toDto(trainee);
+        verify(traineeService).setTraineeActivationStatus(TRAINEE_USERNAME, true);
+        verifyNoMoreInteractions(traineeMapper);
     }
 
     @Test
@@ -288,6 +286,40 @@ class GymFacadeTest {
         assertEquals(TRAINING_DURATION, actual.getDuration());
 
         verify(trainingService).getTraining(TRAINING_ID);
+        verify(trainingMapper).toDto(training);
+    }
+
+    @Test
+    void getTraineeTrainings_callsServiceAndMapper_returnsListOfTrainingResponseDto() {
+        TraineeTrainingSearchCriteriaDto criteria = new TraineeTrainingSearchCriteriaDto();
+        List<Training> trainings = List.of(training);
+        List<TrainingResponseDto> expected = List.of(expectedTrainingResponse);
+
+        when(traineeService.getTraineeTrainings(criteria)).thenReturn(trainings);
+        when(trainingMapper.toDto(training)).thenReturn(expectedTrainingResponse);
+
+        List<TrainingResponseDto> actual = facade.getTraineeTrainings(criteria);
+
+        assertEquals(1, actual.size());
+        assertEquals(TRAINING_ID, actual.get(0).getId());
+        verify(traineeService).getTraineeTrainings(criteria);
+        verify(trainingMapper).toDto(training);
+    }
+
+    @Test
+    void getTrainerTrainings_callsServiceAndMapper_returnsListOfTrainingResponseDto() {
+        TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
+        List<Training> trainings = List.of(training);
+        List<TrainingResponseDto> expected = List.of(expectedTrainingResponse);
+
+        when(trainerService.getTrainerTrainings(criteria)).thenReturn(trainings);
+        when(trainingMapper.toDto(training)).thenReturn(expectedTrainingResponse);
+
+        List<TrainingResponseDto> actual = facade.getTrainerTrainings(criteria);
+
+        assertEquals(1, actual.size());
+        assertEquals(TRAINING_ID, actual.get(0).getId());
+        verify(trainerService).getTrainerTrainings(criteria);
         verify(trainingMapper).toDto(training);
     }
 

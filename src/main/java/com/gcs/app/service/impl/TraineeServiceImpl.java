@@ -14,13 +14,13 @@ import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
-import com.gcs.app.util.EntityAssociationHelper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -101,22 +101,19 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public Trainee setTraineeActive(String username, boolean isActive) {
+    public void setTraineeActivationStatus(String username, boolean isActive) {
         Trainee trainee = traineeDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
 
         User updatedUser = trainee.getUser().toBuilder()
                 .isActive(isActive)
                 .build();
-
         Trainee updatedTrainee = trainee.toBuilder()
                 .user(updatedUser)
                 .build();
 
-        Trainee result = traineeDao.update(updatedTrainee);
+        traineeDao.update(updatedTrainee);
         log.info("Trainee {} set to {}", username, isActive ? "active" : "inactive");
-
-        return result;
     }
 
     @Override
@@ -136,9 +133,30 @@ public class TraineeServiceImpl implements TraineeService {
                 .map(trainerService::getByUsername)
                 .collect(Collectors.toSet());
 
-        EntityAssociationHelper.setTraineeTrainers(trainee, newTrainers);
+        setTraineeTrainers(trainee, newTrainers);
 
         return traineeDao.update(trainee);
     }
 
+    private void addTrainerToTrainee(Trainee trainee, Trainer trainer) {
+        if (!trainee.getTrainers().contains(trainer)) {
+            trainee.getTrainers().add(trainer);
+        }
+
+        if (!trainer.getTrainees().contains(trainee)) {
+            trainer.getTrainees().add(trainee);
+        }
+    }
+
+    private void removeTrainerFromTrainee(Trainee trainee, Trainer trainer) {
+        trainee.getTrainers().remove(trainer);
+        trainer.getTrainees().remove(trainee);
+    }
+
+    private void setTraineeTrainers(Trainee trainee, Set<Trainer> newTrainers) {
+        new HashSet<>(trainee.getTrainers())
+                .forEach(oldTrainer -> removeTrainerFromTrainee(trainee, oldTrainer));
+
+        newTrainers.forEach(trainer -> addTrainerToTrainee(trainee, trainer));
+    }
 }

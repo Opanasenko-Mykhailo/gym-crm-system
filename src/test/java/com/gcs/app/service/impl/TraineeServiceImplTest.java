@@ -13,6 +13,7 @@ import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -42,18 +44,15 @@ class TraineeServiceImplTest {
     private static final String ADDRESS = "123 Main St";
     private static final String TRAINEE_NOT_FOUND_MESSAGE = "Trainee with username " + USERNAME + " not found";
 
-    private final Trainee expectedTrainee = createTrainee();
-    private final TraineeCreateRequestDto createRequestDto = createTraineeCreateRequestDto();
-    private final TraineeUpdateRequestDto updateRequestDto = createTraineeUpdateRequestDto();
+    private static final Trainee TRAINEE = createTrainee();
+    private static final TraineeCreateRequestDto CREATE_REQUEST = createTraineeCreateRequestDto();
+    private static final TraineeUpdateRequestDto UPDATE_REQUEST = createTraineeUpdateRequestDto();
 
     @Mock
     private TraineeDao traineeDao;
 
     @Mock
     private TraineeMapper traineeMapper;
-
-    @InjectMocks
-    private TraineeServiceImpl service;
 
     @Mock
     private UserService userService;
@@ -64,13 +63,16 @@ class TraineeServiceImplTest {
     @Mock
     private CredentialsService credentialsService;
 
+    @InjectMocks
+    private TraineeServiceImpl service;
+
     @Test
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {
-        when(traineeMapper.toEntity(createRequestDto)).thenReturn(expectedTrainee);
+        when(traineeMapper.toEntity(CREATE_REQUEST)).thenReturn(TRAINEE);
         when(userService.getAllUsernames()).thenReturn(Collections.emptySet());
-        when(traineeDao.create(any(Trainee.class))).thenReturn(expectedTrainee);
+        when(traineeDao.create(any(Trainee.class))).thenReturn(TRAINEE);
 
-        Trainee actual = service.createTrainee(createRequestDto);
+        Trainee actual = service.createTrainee(CREATE_REQUEST);
 
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
@@ -78,18 +80,18 @@ class TraineeServiceImplTest {
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
-        verify(traineeMapper).toEntity(createRequestDto);
+        verify(traineeMapper).toEntity(CREATE_REQUEST);
         verify(userService).getAllUsernames();
         verify(traineeDao).create(any(Trainee.class));
     }
 
     @Test
     void updateTrainee_whenTraineeExists_mapsDtoUpdatesAndReturnsTrainee() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
-        when(traineeMapper.update(expectedTrainee, updateRequestDto)).thenReturn(expectedTrainee);
-        when(traineeDao.update(expectedTrainee)).thenReturn(expectedTrainee);
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
+        when(traineeMapper.update(TRAINEE, UPDATE_REQUEST)).thenReturn(TRAINEE);
+        when(traineeDao.update(TRAINEE)).thenReturn(TRAINEE);
 
-        Trainee actual = service.updateTrainee(updateRequestDto);
+        Trainee actual = service.updateTrainee(UPDATE_REQUEST);
 
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
@@ -99,24 +101,23 @@ class TraineeServiceImplTest {
         assertEquals(ADDRESS, actual.getAddress());
 
         verify(traineeDao).findByUsername(USERNAME);
-        verify(traineeMapper).update(expectedTrainee, updateRequestDto);
-        verify(traineeDao).update(expectedTrainee);
+        verify(traineeMapper).update(TRAINEE, UPDATE_REQUEST);
+        verify(traineeDao).update(TRAINEE);
     }
 
     @Test
     void updateTrainee_whenTraineeDoesNotExist_throwsServiceException() {
         when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-        ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainee(updateRequestDto));
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainee(UPDATE_REQUEST));
 
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
-
         verify(traineeDao).findByUsername(USERNAME);
     }
 
     @Test
     void deleteTraineeByUsername_whenTraineeExists_deletesTrainee() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
 
         service.deleteTraineeByUsername(USERNAME);
 
@@ -131,13 +132,12 @@ class TraineeServiceImplTest {
         ServiceException ex = assertThrows(ServiceException.class, () -> service.deleteTraineeByUsername(USERNAME));
 
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
-
         verify(traineeDao).findByUsername(USERNAME);
     }
 
     @Test
     void getByUsername_whenTraineeExists_returnsTrainee() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
 
         Trainee actual = service.getByUsername(USERNAME);
 
@@ -158,20 +158,22 @@ class TraineeServiceImplTest {
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
 
         assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
-
         verify(traineeDao).findByUsername(USERNAME);
     }
 
     @Test
     void setTraineeActive_whenTraineeExists_updatesIsActiveAndReturnsTrainee() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
-        when(traineeDao.update(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
 
-        Trainee result = service.setTraineeActive(USERNAME, false);
+        service.setTraineeActivationStatus(USERNAME, false);
 
-        assertEquals(USERNAME, result.getUser().getUsername());
-        assertFalse(result.getUser().getIsActive());
-        verify(traineeDao).update(any(Trainee.class));
+        ArgumentCaptor<Trainee> captor = ArgumentCaptor.forClass(Trainee.class);
+        verify(traineeDao).update(captor.capture());
+
+        Trainee updated = captor.getValue();
+        assertFalse(updated.getUser().getIsActive());
+        assertEquals(USERNAME, updated.getUser().getUsername());
+        verify(traineeDao).findByUsername(USERNAME);
     }
 
     @Test
@@ -179,7 +181,7 @@ class TraineeServiceImplTest {
         when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class,
-                () -> service.setTraineeActive(USERNAME, true));
+                () -> service.setTraineeActivationStatus(USERNAME, true));
 
         assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
         verify(traineeDao).findByUsername(USERNAME);
@@ -187,14 +189,15 @@ class TraineeServiceImplTest {
 
     @Test
     void getUnassignedTrainers_whenTraineeExists_returnsTrainerList() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
         List<Trainer> expected = List.of(createTrainer("trainer.mock"));
-        when(trainerService.getUnassignedForTrainee(expectedTrainee)).thenReturn(expected);
+
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
+        when(trainerService.getUnassignedForTrainee(TRAINEE)).thenReturn(expected);
 
         List<Trainer> result = service.getUnassignedTrainers(USERNAME);
 
         assertEquals(expected, result);
-        verify(trainerService).getUnassignedForTrainee(expectedTrainee);
+        verify(trainerService).getUnassignedForTrainee(TRAINEE);
     }
 
     @Test
@@ -211,29 +214,23 @@ class TraineeServiceImplTest {
     void updateTraineeTrainers_whenTraineeExists_assignsNewTrainers() {
         Trainer trainer1 = createTrainer("trainer.one");
         Trainer trainer2 = createTrainer("trainer.two");
-
         Trainer oldTrainer = createTrainer("old.trainer");
-        oldTrainer.getTrainees().add(expectedTrainee);
-        expectedTrainee.getTrainers().add(oldTrainer);
+        oldTrainer.getTrainees().add(TRAINEE);
+        TRAINEE.getTrainers().add(oldTrainer);
+        List<String> trainerUsernames = List.of("trainer.one", "trainer.two");
 
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(expectedTrainee));
+        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
         when(trainerService.getByUsername("trainer.one")).thenReturn(trainer1);
         when(trainerService.getByUsername("trainer.two")).thenReturn(trainer2);
         when(traineeDao.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        List<String> trainerUsernames = List.of("trainer.one", "trainer.two");
-        Trainee result = service.updateTraineeTrainers(USERNAME, trainerUsernames);
+        Trainee actual = service.updateTraineeTrainers(USERNAME, trainerUsernames);
 
-        assertFalse(result.getTrainers().stream()
-                .anyMatch(t -> t.getUser().getUsername().equals("old.trainer")));
-
-        List<String> resultUsernames = result.getTrainers().stream()
-                .map(t -> t.getUser().getUsername())
-                .toList();
-
-        assertEquals(2, resultUsernames.size());
-        assertTrue(resultUsernames.contains("trainer.one"));
-        assertTrue(resultUsernames.contains("trainer.two"));
+        Set<Trainer> updatedTrainers = actual.getTrainers();
+        assertEquals(2, updatedTrainers.size());
+        assertFalse(updatedTrainers.contains(oldTrainer));
+        assertTrue(updatedTrainers.contains(trainer1));
+        assertTrue(updatedTrainers.contains(trainer2));
 
         verify(traineeDao).findByUsername(USERNAME);
         verify(trainerService).getByUsername("trainer.one");
@@ -251,7 +248,7 @@ class TraineeServiceImplTest {
         assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
     }
 
-    private Trainee createTrainee() {
+    private static Trainee createTrainee() {
         return Trainee.builder()
                 .user(createUser())
                 .dateOfBirth(DATE_OF_BIRTH)
@@ -259,7 +256,7 @@ class TraineeServiceImplTest {
                 .build();
     }
 
-    private User createUser() {
+    private static User createUser() {
         return User.builder()
                 .username(USERNAME)
                 .password(PASSWORD)
@@ -267,6 +264,28 @@ class TraineeServiceImplTest {
                 .firstName(FIRST_NAME)
                 .lastName(LAST_NAME)
                 .build();
+    }
+
+    private static TraineeCreateRequestDto createTraineeCreateRequestDto() {
+        TraineeCreateRequestDto dto = new TraineeCreateRequestDto();
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setDateOfBirth(DATE_OF_BIRTH);
+        dto.setAddress(ADDRESS);
+
+        return dto;
+    }
+
+    private static TraineeUpdateRequestDto createTraineeUpdateRequestDto() {
+        TraineeUpdateRequestDto dto = new TraineeUpdateRequestDto();
+        dto.setUsername(USERNAME);
+        dto.setFirstName(FIRST_NAME);
+        dto.setLastName(LAST_NAME);
+        dto.setDateOfBirth(DATE_OF_BIRTH);
+        dto.setAddress(ADDRESS);
+        dto.setIsActive(true);
+
+        return dto;
     }
 
     private Trainer createTrainer(String username) {
@@ -283,25 +302,4 @@ class TraineeServiceImplTest {
                 .build();
     }
 
-    private TraineeCreateRequestDto createTraineeCreateRequestDto() {
-        TraineeCreateRequestDto dto = new TraineeCreateRequestDto();
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setDateOfBirth(DATE_OF_BIRTH);
-        dto.setAddress(ADDRESS);
-
-        return dto;
-    }
-
-    private TraineeUpdateRequestDto createTraineeUpdateRequestDto() {
-        TraineeUpdateRequestDto dto = new TraineeUpdateRequestDto();
-        dto.setUsername(USERNAME);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
-        dto.setDateOfBirth(DATE_OF_BIRTH);
-        dto.setAddress(ADDRESS);
-        dto.setIsActive(true);
-
-        return dto;
-    }
 }

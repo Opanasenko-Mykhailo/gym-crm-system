@@ -97,11 +97,10 @@ public class GymFacade {
     }
 
     @Authenticated
-    public TraineeResponseDto setTraineeActive(String username, boolean isActive) {
+    public void setTraineeActive(String username, boolean isActive) {
         log.info("Setting trainee {} to {}", username, isActive ? "active" : "inactive");
-        Trainee updated = traineeService.setTraineeActive(username, isActive);
 
-        return traineeMapper.toDto(updated);
+        traineeService.setTraineeActivationStatus(username, isActive);
     }
 
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {

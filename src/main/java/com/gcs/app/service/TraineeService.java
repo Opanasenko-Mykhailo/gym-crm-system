@@ -15,7 +15,7 @@ public interface TraineeService {
     void deleteTraineeByUsername(String username);
     Trainee getByUsername(String username);
     List<Training> getTraineeTrainings(TraineeTrainingSearchCriteriaDto criteria);
-    Trainee setTraineeActive(String username, boolean isActive);
+    void setTraineeActivationStatus(String username, boolean isActive);
     List<Trainer> getUnassignedTrainers(String traineeUsername);
     Trainee updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames);
 }
