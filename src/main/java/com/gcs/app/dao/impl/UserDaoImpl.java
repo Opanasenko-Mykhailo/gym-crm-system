@@ -1,6 +1,7 @@
 package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.UserDao;
+import com.gcs.app.dao.transaction.GymTransactional;
 import com.gcs.app.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class UserDaoImpl implements UserDao {
 
     protected final SessionFactory sessionFactory;
 
+    @GymTransactional
     @Override
     public User update(User user) {
         Session session = sessionFactory.getCurrentSession();
@@ -30,6 +32,7 @@ public class UserDaoImpl implements UserDao {
         return merged;
     }
 
+    @GymTransactional(readOnly = true)
     @Override
     public Set<String> findAllUsernames() {
         Session session = sessionFactory.getCurrentSession();
@@ -43,6 +46,7 @@ public class UserDaoImpl implements UserDao {
         return new HashSet<>(usernames);
     }
 
+    @GymTransactional(readOnly = true)
     @Override
     public Optional<User> findByUsername(String username) {
         Session session = sessionFactory.getCurrentSession();

@@ -2,6 +2,7 @@ package com.gcs.app.dao.impl;
 
 import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.dao.criteria.TrainingQueryBuilder;
+import com.gcs.app.dao.transaction.GymTransactional;
 import com.gcs.app.exception.EntityNotFoundException;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.model.Trainee;
@@ -25,6 +26,7 @@ public class TraineeDaoImpl implements TraineeDao {
     private final SessionFactory sessionFactory;
     private final TrainingQueryBuilder trainingQueryBuilder;
 
+    @GymTransactional
     @Override
     public Trainee create(Trainee trainee) {
         getSession().persist(trainee);
@@ -33,6 +35,7 @@ public class TraineeDaoImpl implements TraineeDao {
         return trainee;
     }
 
+    @GymTransactional
     @Override
     public Trainee update(Trainee trainee) {
         Trainee existing = getSession().byId(Trainee.class).load(trainee.getId());
@@ -47,6 +50,7 @@ public class TraineeDaoImpl implements TraineeDao {
         return merged;
     }
 
+    @GymTransactional
     @Override
     public void deleteByUsername(String username) {
         Trainee trainee = findByUsername(username)
@@ -56,6 +60,7 @@ public class TraineeDaoImpl implements TraineeDao {
         log.info("Deleted trainee with username: {}", username);
     }
 
+    @GymTransactional(readOnly = true)
     @Override
     public Optional<Trainee> findByUsername(String username) {
         String hql = "FROM Trainee t JOIN FETCH t.user u WHERE u.username = :username";
@@ -70,6 +75,7 @@ public class TraineeDaoImpl implements TraineeDao {
         return Optional.ofNullable(result);
     }
 
+    @GymTransactional(readOnly = true)
     @Override
     public List<Training> findByTraineeCriteria(TraineeTrainingSearchCriteriaDto criteria) {
         log.info("Searching trainings for trainee criteria: {}", criteria);
