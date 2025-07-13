@@ -87,6 +87,21 @@ public class GymFacade {
                 .toList();
     }
 
+    @Authenticated
+    @MatchEntityOwner(usernameParam = "traineeUsername")
+    public TraineeResponseDto updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames) {
+        log.info("Updating trainers for trainee: {}", traineeUsername);
+        Trainee updated = traineeService.updateTraineeTrainers(traineeUsername, trainerUsernames);
+
+        return traineeMapper.toDto(updated);
+    }
+
+    @Authenticated
+    public void setTraineeActive(String username, boolean isActive) {
+        log.info("Setting trainee {} to {}", username, isActive ? "active" : "inactive");
+
+        traineeService.setTraineeActivationStatus(username, isActive);
+    }
 
     public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
         log.info("Creating trainer: {} {}", trainerCreateRequestDto.getFirstName(), trainerCreateRequestDto.getLastName());
@@ -135,6 +150,23 @@ public class GymFacade {
 
         return trainings.stream()
                 .map(trainingMapper::toDto)
+                .toList();
+    }
+
+    @Authenticated
+    public void setTrainerActive(String username, boolean isActive) {
+        log.info("Setting trainer {} to {}", username, isActive ? "active" : "inactive");
+
+        trainerService.setTrainerActivationStatus(username, isActive);
+    }
+
+    @Authenticated
+    public List<TrainerResponseDto> getUnassignedTrainers(String traineeUsername) {
+        log.info("Getting unassigned trainers for trainee: {}", traineeUsername);
+        List<Trainer> trainers = traineeService.getUnassignedTrainers(traineeUsername);
+
+        return trainers.stream()
+                .map(trainerMapper::toDto)
                 .toList();
     }
 

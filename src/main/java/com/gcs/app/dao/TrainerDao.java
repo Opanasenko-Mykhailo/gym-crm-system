@@ -1,6 +1,7 @@
 package com.gcs.app.dao;
 
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
+import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 
@@ -12,4 +13,5 @@ public interface TrainerDao {
     Trainer update(Trainer trainer);
     Optional<Trainer> findByUsername(String username);
     List<Training> findByTrainerCriteria(TrainerTrainingSearchCriteriaDto criteria);
+    List<Trainer> findAllNotAssignedToTrainee(Trainee trainee);
 }

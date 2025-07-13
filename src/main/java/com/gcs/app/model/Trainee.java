@@ -30,8 +30,8 @@ import java.util.Set;
 @Entity
 @Table(name = "trainees")
 @Getter
-@ToString
-@EqualsAndHashCode
+@ToString(exclude = "trainers")
+@EqualsAndHashCode(exclude = "trainers")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)

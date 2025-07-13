@@ -1,4 +1,4 @@
-package com.gcs.app.service.impl;
+package com.gcs.app.service.impl.common;
 
 import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;

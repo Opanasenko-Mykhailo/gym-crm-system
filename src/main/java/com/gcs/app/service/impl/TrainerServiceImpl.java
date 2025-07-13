@@ -6,6 +6,7 @@ import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
+import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.User;
@@ -70,6 +71,28 @@ public class TrainerServiceImpl implements TrainerService {
         log.info("Searching trainings with criteria: {}", criteria);
 
         return trainerDao.findByTrainerCriteria(criteria);
+    }
+
+    @Override
+    public void setTrainerActivationStatus(String username, boolean isActive) {
+        Trainer trainer = trainerDao.findByUsername(username)
+                .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
+
+        User updatedUser = trainer.getUser().toBuilder()
+                .isActive(isActive)
+                .build();
+        Trainer updatedTrainer = trainer.toBuilder()
+                .user(updatedUser)
+                .build();
+
+        trainerDao.update(updatedTrainer);
+
+        log.info("Trainer {} set to {}", username, isActive ? "active" : "inactive");
+    }
+
+    @Override
+    public List<Trainer> getUnassignedForTrainee(Trainee trainee) {
+        return trainerDao.findAllNotAssignedToTrainee(trainee);
     }
 
     private User userWithCredentials(User user) {
