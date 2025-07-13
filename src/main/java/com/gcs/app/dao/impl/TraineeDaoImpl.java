@@ -81,7 +81,6 @@ public class TraineeDaoImpl implements TraineeDao {
         return session.createQuery(query).getResultList();
     }
 
-
     private Session getSession() {
         return sessionFactory.getCurrentSession();
     }

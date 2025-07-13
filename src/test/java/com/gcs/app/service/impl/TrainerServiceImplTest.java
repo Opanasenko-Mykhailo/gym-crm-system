@@ -53,14 +53,14 @@ class TrainerServiceImplTest {
     @Mock
     private TrainerMapper trainerMapper;
 
-    @InjectMocks
-    private TrainerServiceImpl service;
-
     @Mock
     private UserService userService;
 
     @Mock
     private CredentialsService credentialsService;
+
+    @InjectMocks
+    private TrainerServiceImpl service;
 
     @Test
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
