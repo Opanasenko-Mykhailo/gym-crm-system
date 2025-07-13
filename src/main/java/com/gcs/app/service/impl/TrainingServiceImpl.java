@@ -1,6 +1,7 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainingDao;
+import com.gcs.app.dao.transaction.TransactionalContext;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.mapper.TrainingMapper;
@@ -27,6 +28,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TraineeService traineeService;
     private final TrainerService trainerService;
 
+    @TransactionalContext
     @Override
     public Training createTraining(@Valid TrainingCreateRequestDto createRequestDto) {
         Training training = trainingMapper.toEntity(createRequestDto);
@@ -41,6 +43,7 @@ public class TrainingServiceImpl implements TrainingService {
         return createdTraining;
     }
 
+    @TransactionalContext(readOnly = true)
     @Override
     public Training getTraining(Long id) {
         log.info("Retrieving training with id: {}", id);

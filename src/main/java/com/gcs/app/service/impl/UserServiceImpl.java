@@ -1,6 +1,7 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.UserDao;
+import com.gcs.app.dao.transaction.TransactionalContext;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.model.User;
@@ -21,17 +22,20 @@ public class UserServiceImpl implements UserService {
     private final UserDao userDao;
     private final CredentialsService credentialsService;
 
+    @TransactionalContext(readOnly = true)
     @Override
     public User getByUsername(String username) {
         return userDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException("User not found: " + username));
     }
 
+    @TransactionalContext(readOnly = true)
     @Override
     public Set<String> getAllUsernames() {
         return userDao.findAllUsernames();
     }
 
+    @TransactionalContext
     @Override
     public void changePassword(@Valid PasswordChangeRequestDto dto) {
         log.info("Changing password for username: {}", dto.getUsername());

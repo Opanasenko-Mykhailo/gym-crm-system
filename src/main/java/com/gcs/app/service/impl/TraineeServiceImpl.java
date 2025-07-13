@@ -1,6 +1,7 @@
 package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.dao.transaction.TransactionalContext;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
@@ -37,6 +38,7 @@ public class TraineeServiceImpl implements TraineeService {
     private final CredentialsService credentialsService;
     private final TraineeMapper traineeMapper;
 
+    @TransactionalContext
     @Override
     public Trainee createTrainee(@Valid TraineeCreateRequestDto requestDto) {
         Trainee trainee = traineeMapper.toEntity(requestDto);
@@ -52,6 +54,7 @@ public class TraineeServiceImpl implements TraineeService {
         return createdTrainee;
     }
 
+    @TransactionalContext
     @Override
     public Trainee updateTrainee(@Valid TraineeUpdateRequestDto dto) {
         String username = dto.getUsername();
@@ -63,6 +66,7 @@ public class TraineeServiceImpl implements TraineeService {
         return traineeDao.update(updated);
     }
 
+    @TransactionalContext
     @Override
     public void deleteTraineeByUsername(String username) {
         log.info("Deleting trainee with username: {}", username);
@@ -74,6 +78,7 @@ public class TraineeServiceImpl implements TraineeService {
         log.debug("Trainee with username {} deleted", username);
     }
 
+    @TransactionalContext(readOnly = true)
     @Override
     public Trainee getByUsername(String username) {
         log.info("Getting trainee by username: {}", username);
@@ -82,17 +87,7 @@ public class TraineeServiceImpl implements TraineeService {
                 .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
     }
 
-    private User userWithCredentials(User user) {
-        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
-        String password = credentialsService.generateRandomPassword();
-
-        return User.builder()
-                .username(username)
-                .password(password)
-                .isActive(true)
-                .build();
-    }
-
+    @TransactionalContext(readOnly = true)
     @Override
     public List<Training> getTraineeTrainings(@Valid TraineeTrainingSearchCriteriaDto criteria) {
         log.info("Searching trainings with criteria: {}", criteria);
@@ -100,6 +95,7 @@ public class TraineeServiceImpl implements TraineeService {
         return traineeDao.findByTraineeCriteria(criteria);
     }
 
+    @TransactionalContext(readOnly = true)
     @Override
     public void setTraineeActivationStatus(String username, boolean isActive) {
         Trainee trainee = traineeDao.findByUsername(username)
@@ -116,6 +112,7 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Trainee {} set to {}", username, isActive ? "active" : "inactive");
     }
 
+    @TransactionalContext(readOnly = true)
     @Override
     public List<Trainer> getUnassignedTrainers(String traineeUsername) {
         Trainee trainee = traineeDao.findByUsername(traineeUsername)
@@ -124,6 +121,7 @@ public class TraineeServiceImpl implements TraineeService {
         return trainerService.getUnassignedForTrainee(trainee);
     }
 
+    @TransactionalContext
     @Override
     public Trainee updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames) {
         Trainee trainee = traineeDao.findByUsername(traineeUsername)
@@ -136,6 +134,17 @@ public class TraineeServiceImpl implements TraineeService {
         setTraineeTrainers(trainee, newTrainers);
 
         return traineeDao.update(trainee);
+    }
+
+    private User userWithCredentials(User user) {
+        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
+        String password = credentialsService.generateRandomPassword();
+
+        return User.builder()
+                .username(username)
+                .password(password)
+                .isActive(true)
+                .build();
     }
 
     private void addTrainerToTrainee(Trainee trainee, Trainer trainer) {
