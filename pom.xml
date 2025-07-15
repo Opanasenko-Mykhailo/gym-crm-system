@@ -22,6 +22,8 @@
         <mockito.version>5.18.0</mockito.version>
         <junit.platform.version>1.13.3</junit.platform.version>
         <database-rider.version>1.44.0</database-rider.version>
+        <openapi-generator.version>7.14.0</openapi-generator.version>
+        <springdoc.version>2.8.9</springdoc.version>
     </properties>
 
     <dependencies>
@@ -49,6 +51,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-aspects</artifactId>
             <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -84,6 +91,11 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>0.2.6</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
@@ -204,6 +216,9 @@
                 <configuration>
                     <source>17</source>
                     <target>17</target>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -230,6 +245,30 @@
                 <configuration>
                     <warSourceDirectory>src/main/webapp</warSourceDirectory>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/gym.yml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>com.gcs.app.api</apiPackage>
+                            <modelPackage>com.gcs.app.dto</modelPackage>
+                            <output>${project.build.directory}/generated-sources/openapi</output>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useJakartaEe>true</useJakartaEe>
+                                <serializationLibrary>jackson</serializationLibrary>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
