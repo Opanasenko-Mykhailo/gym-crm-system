@@ -8,6 +8,7 @@ import com.gcs.app.dto.TrainerUpdateRequest;
 import com.gcs.app.dto.TrainingResponse;
 import com.gcs.app.facade.GymFacade;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -32,24 +33,30 @@ public class TrainerController {
     private final GymFacade gymFacade;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> registerTrainer(@RequestBody TrainerRegistrationRequest request) {
+    public ResponseEntity<AuthResponse> registerTrainer(
+            @Valid @RequestBody TrainerRegistrationRequest request) {
         return ResponseEntity.ok(gymFacade.createTrainer(request));
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<TrainerProfileResponse> getTrainerProfile(@PathVariable String username) {
+    public ResponseEntity<TrainerProfileResponse> getTrainerProfile(
+            @PathVariable String username) {
         return ResponseEntity.ok(gymFacade.getTrainerByUsername(username));
     }
 
     @PutMapping("/{username}")
-    public ResponseEntity<TrainerProfileResponse> updateTrainerProfile(@PathVariable String username, @RequestBody TrainerUpdateRequest request) {
-        return ResponseEntity.ok(gymFacade.updateTrainer(request));
+    public ResponseEntity<TrainerProfileResponse> updateTrainerProfile(
+            @PathVariable String username,
+            @Valid @RequestBody TrainerUpdateRequest request) {
+
+        return ResponseEntity.ok(gymFacade.updateTrainer(request, username));
     }
 
     @PatchMapping("/{username}/change-activation-status")
-    public ResponseEntity<Void> changeActivationStatus(@PathVariable String username, @RequestBody StatusUpdateRequest request) {
+    public ResponseEntity<Void> changeActivationStatus(
+            @PathVariable String username,
+            @Valid @RequestBody StatusUpdateRequest request) {
         gymFacade.setTrainerActive(username, request.getIsActive());
-
         return ResponseEntity.ok().build();
     }
 
