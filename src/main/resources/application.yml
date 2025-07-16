@@ -1,10 +1,6 @@
 server:
   port: 8080
 
-app:
-  api:
-    base-path: /api/v1
-
 spring:
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml

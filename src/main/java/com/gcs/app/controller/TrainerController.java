@@ -25,8 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.gcs.app.controller.constant.ApiPath.TRAINERS;
+
 @RestController
-@RequestMapping("${app.api.base-path}/trainers")
+@RequestMapping(TRAINERS)
 @RequiredArgsConstructor
 public class TrainerController {
 

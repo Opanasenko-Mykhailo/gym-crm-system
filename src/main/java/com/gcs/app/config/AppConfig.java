@@ -15,7 +15,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
         basePackages = "com.gcs.app",
         excludeFilters = {
                 @ComponentScan.Filter(type = FilterType.ANNOTATION, value = EnableWebMvc.class),
-                @ComponentScan.Filter(type = FilterType.ANNOTATION, value = Controller.class),
                 @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebConfig.class)
         }
 )

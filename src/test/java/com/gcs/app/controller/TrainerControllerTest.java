@@ -1,25 +1,24 @@
 package com.gcs.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.AuthResponse;
 import com.gcs.app.rest.StatusUpdateRequest;
 import com.gcs.app.rest.TrainerProfileResponse;
 import com.gcs.app.rest.TrainerRegistrationRequest;
 import com.gcs.app.rest.TrainerUpdateRequest;
 import com.gcs.app.rest.TrainingResponse;
-import com.gcs.app.facade.GymFacade;
+import com.gcs.app.util.JsonReaderUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -35,8 +34,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class TrainerControllerTest {
-    
+
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final String basePath = "/api/v1";
 
     private MockMvc mockMvc;
 
@@ -45,9 +46,6 @@ class TrainerControllerTest {
 
     @InjectMocks
     private TrainerController trainerController;
-
-    @Value("${app.api.base-path}")
-    private String basePath;
 
     @BeforeEach
     void setUp() {
@@ -133,12 +131,7 @@ class TrainerControllerTest {
 
     @Test
     void testGetTrainerTrainingsSuccess() throws Exception {
-        TrainingResponse training = new TrainingResponse();
-        training.setTrainingName("Yoga");
-        training.setTrainingDate(LocalDate.of(2025, 7, 15));
-        training.setTrainingType("Stretching");
-        training.setTrainingDuration(60);
-        training.setTraineeName("Jane");
+        TrainingResponse training = JsonReaderUtil.readFromJson("json/training-response.json", TrainingResponse.class);
 
         when(gymFacade.getTrainerTrainings(any())).thenReturn(List.of(training));
 
