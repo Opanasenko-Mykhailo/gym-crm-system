@@ -18,7 +18,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
                 @ComponentScan.Filter(type = FilterType.ANNOTATION, value = Controller.class),
                 @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebConfig.class)
         }
-)@PropertySource(value = "classpath:application.yml", factory = YamlPropertySourceFactory.class)
+)
+@PropertySource(value = "classpath:application.yml", factory = YamlPropertySourceFactory.class)
 @EnableAspectJAutoProxy
 public class AppConfig {
 
