@@ -93,8 +93,6 @@ class GymFacadeTest {
     private TraineeCreateRequestDto traineeCreateRequestDto = createTraineeCreateRequestDto();
     private TraineeUpdateRequestDto traineeUpdateRequestDto = createTraineeUpdateRequestDto();
     private TraineeResponseDto expectedTraineeResponse = createTraineeResponseDto();
-    private TrainerCreateRequestDto trainerCreateRequestDto = createTrainerCreateRequestDto();
-    private TrainerUpdateRequestDto trainerUpdateRequestDto = createTrainerUpdateRequestDto();
     private TrainerResponseDto expectedTrainerResponse = createTrainerResponseDto();
     private TrainingCreateRequestDto trainingCreateRequestDto = createTrainingCreateRequestDto();
     private TrainingResponseDto expectedTrainingResponse = createTrainingResponseDto();
@@ -219,7 +217,6 @@ class GymFacadeTest {
 
         assertEquals(TRAINER_USERNAME, actual.getUsername());
         assertEquals(trainer.getUser().getPassword(), actual.getPassword());
-
         verify(trainerMapper).toCreateRequestDto(swaggerRequest);
         verify(trainerService).createTrainer(createRequestDto);
     }
