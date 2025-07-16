@@ -1,10 +1,10 @@
 package com.gcs.app.facade;
 
-import com.gcs.app.dto.AuthResponse;
-import com.gcs.app.dto.TrainerProfileResponse;
-import com.gcs.app.dto.TrainerRegistrationRequest;
-import com.gcs.app.dto.TrainerUpdateRequest;
-import com.gcs.app.dto.TrainingResponse;
+import com.gcs.app.rest.AuthResponse;
+import com.gcs.app.rest.TrainerProfileResponse;
+import com.gcs.app.rest.TrainerRegistrationRequest;
+import com.gcs.app.rest.TrainerUpdateRequest;
+import com.gcs.app.rest.TrainingResponse;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;

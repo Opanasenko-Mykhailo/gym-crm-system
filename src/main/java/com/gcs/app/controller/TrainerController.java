@@ -1,11 +1,11 @@
 package com.gcs.app.controller;
 
-import com.gcs.app.dto.AuthResponse;
-import com.gcs.app.dto.StatusUpdateRequest;
-import com.gcs.app.dto.TrainerProfileResponse;
-import com.gcs.app.dto.TrainerRegistrationRequest;
-import com.gcs.app.dto.TrainerUpdateRequest;
-import com.gcs.app.dto.TrainingResponse;
+import com.gcs.app.rest.AuthResponse;
+import com.gcs.app.rest.StatusUpdateRequest;
+import com.gcs.app.rest.TrainerProfileResponse;
+import com.gcs.app.rest.TrainerRegistrationRequest;
+import com.gcs.app.rest.TrainerUpdateRequest;
+import com.gcs.app.rest.TrainingResponse;
 import com.gcs.app.facade.GymFacade;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import jakarta.validation.Valid;
@@ -26,7 +26,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/trainers")
+@RequestMapping("${app.api.base-path}/trainers")
 @RequiredArgsConstructor
 public class TrainerController {
 
@@ -34,17 +34,23 @@ public class TrainerController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> registerTrainer(@Valid @RequestBody TrainerRegistrationRequest request) {
-        return ResponseEntity.ok(gymFacade.createTrainer(request));
+        AuthResponse response = gymFacade.createTrainer(request);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{username}")
     public ResponseEntity<TrainerProfileResponse> getTrainerProfile(@PathVariable String username) {
-        return ResponseEntity.ok(gymFacade.getTrainerByUsername(username));
+        TrainerProfileResponse response = gymFacade.getTrainerByUsername(username);
+
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{username}")
     public ResponseEntity<TrainerProfileResponse> updateTrainerProfile(@PathVariable String username, @Valid @RequestBody TrainerUpdateRequest request) {
-        return ResponseEntity.ok(gymFacade.updateTrainer(request, username));
+        TrainerProfileResponse response = gymFacade.updateTrainer(request, username);
+
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{username}/change-activation-status")
@@ -67,6 +73,8 @@ public class TrainerController {
         criteria.setToDate(periodTo);
         criteria.setTraineeName(traineeName);
 
-        return ResponseEntity.ok(gymFacade.getTrainerTrainings(criteria));
+        List<TrainingResponse> response = gymFacade.getTrainerTrainings(criteria);
+
+        return ResponseEntity.ok(response);
     }
 }

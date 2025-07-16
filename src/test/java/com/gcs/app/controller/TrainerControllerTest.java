@@ -1,12 +1,12 @@
 package com.gcs.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gcs.app.dto.AuthResponse;
-import com.gcs.app.dto.StatusUpdateRequest;
-import com.gcs.app.dto.TrainerProfileResponse;
-import com.gcs.app.dto.TrainerRegistrationRequest;
-import com.gcs.app.dto.TrainerUpdateRequest;
-import com.gcs.app.dto.TrainingResponse;
+import com.gcs.app.rest.AuthResponse;
+import com.gcs.app.rest.StatusUpdateRequest;
+import com.gcs.app.rest.TrainerProfileResponse;
+import com.gcs.app.rest.TrainerRegistrationRequest;
+import com.gcs.app.rest.TrainerUpdateRequest;
+import com.gcs.app.rest.TrainingResponse;
 import com.gcs.app.facade.GymFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,12 +53,12 @@ class TrainerControllerTest {
     @Test
     void testRegisterTrainerSuccess() throws Exception {
         TrainerRegistrationRequest request = new TrainerRegistrationRequest();
-        request.setFirstName("John");
-        request.setLastName("Doe");
+        request.setFirstName("Rowan");
+        request.setLastName("Atkinson");
         request.setSpecializationId(1);
 
         AuthResponse response = new AuthResponse();
-        response.setUsername("john.doe");
+        response.setUsername("rowan.atkinson");
         response.setPassword("secret");
 
         when(gymFacade.createTrainer(any())).thenReturn(response);
@@ -68,25 +68,25 @@ class TrainerControllerTest {
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("john.doe"))
+                .andExpect(jsonPath("$.username").value("rowan.atkinson"))
                 .andExpect(jsonPath("$.password").value("secret"));
     }
 
     @Test
     void testGetTrainerProfileSuccess() throws Exception {
         TrainerProfileResponse profile = new TrainerProfileResponse();
-        profile.setUsername("john.doe");
-        profile.setFirstName("John");
-        profile.setLastName("Doe");
+        profile.setUsername("rowan.atkinson");
+        profile.setFirstName("Rowan");
+        profile.setLastName("Atkinson");
 
-        when(gymFacade.getTrainerByUsername("john.doe")).thenReturn(profile);
+        when(gymFacade.getTrainerByUsername("rowan.atkinson")).thenReturn(profile);
 
-        var result = mockMvc.perform(get("/api/v1/trainers/john.doe"));
+        var result = mockMvc.perform(get("/api/v1/trainers/rowan.atkinson"));
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("john.doe"))
-                .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"));
+                .andExpect(jsonPath("$.username").value("rowan.atkinson"))
+                .andExpect(jsonPath("$.firstName").value("Rowan"))
+                .andExpect(jsonPath("$.lastName").value("Atkinson"));
     }
 
     @Test
@@ -97,14 +97,14 @@ class TrainerControllerTest {
         request.setIsActive(true);
 
         TrainerProfileResponse response = new TrainerProfileResponse();
-        response.setUsername("john.doe");
+        response.setUsername("rowan.atkinson");
         response.setFirstName("Updated");
         response.setLastName("Trainer");
         response.setIsActive(true);
 
-        when(gymFacade.updateTrainer(any(), eq("john.doe"))).thenReturn(response);
+        when(gymFacade.updateTrainer(any(), eq("rowan.atkinson"))).thenReturn(response);
 
-        var result = mockMvc.perform(put("/api/v1/trainers/john.doe")
+        var result = mockMvc.perform(put("/api/v1/trainers/rowan.atkinson")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -119,12 +119,12 @@ class TrainerControllerTest {
         StatusUpdateRequest request = new StatusUpdateRequest();
         request.setIsActive(false);
 
-        var result = mockMvc.perform(patch("/api/v1/trainers/john.doe/change-activation-status")
+        var result = mockMvc.perform(patch("/api/v1/trainers/rowan.atkinson/change-activation-status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpect(status().isOk());
-        verify(gymFacade).setTrainerActive("john.doe", false);
+        verify(gymFacade).setTrainerActive("rowan.atkinson", false);
     }
 
     @Test
@@ -138,7 +138,7 @@ class TrainerControllerTest {
 
         when(gymFacade.getTrainerTrainings(any())).thenReturn(List.of(training));
 
-        var result = mockMvc.perform(get("/api/v1/trainers/john.doe/trainings")
+        var result = mockMvc.perform(get("/api/v1/trainers/rowan.atkinson/trainings")
                 .param("periodFrom", "2025-07-01")
                 .param("periodTo", "2025-07-31")
                 .param("traineeName", "Jane"));
@@ -155,7 +155,7 @@ class TrainerControllerTest {
 
     @Test
     void testGetTrainerTrainingsInvalidDate() throws Exception {
-        var result = mockMvc.perform(get("/api/v1/trainers/john.doe/trainings")
+        var result = mockMvc.perform(get("/api/v1/trainers/rowan.atkinson/trainings")
                 .param("periodFrom", "invalid-date"));
 
         result.andExpect(status().isBadRequest());

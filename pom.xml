@@ -265,7 +265,7 @@
                     <inputSpec>${project.basedir}/src/main/resources/gym.yml</inputSpec>
                     <generatorName>spring</generatorName>
                     <apiPackage>com.gcs.app.api</apiPackage>
-                    <modelPackage>com.gcs.app.dto</modelPackage>
+                    <modelPackage>com.gcs.app.rest</modelPackage>
                     <output>${project.build.directory}/generated-sources/openapi</output>
                     <configOptions>
                         <interfaceOnly>true</interfaceOnly>
