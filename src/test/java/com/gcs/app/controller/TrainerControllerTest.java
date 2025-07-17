@@ -132,8 +132,9 @@ class TrainerControllerTest {
 
     @Test
     void testGetTrainerTrainingsSuccess() throws Exception {
-        List<TrainingResponse> trainings = JsonReaderUtil.readFromJson("json/get-trainer-trainings-response.json", new TypeReference<List<TrainingResponse>>() {
-        });
+        List<TrainingResponse> trainings = JsonReaderUtil.readFromJson("json/get-trainer-trainings-response.json",
+                new TypeReference<List<TrainingResponse>>() {
+                });
 
         when(gymFacade.getTrainerTrainings(any())).thenReturn(trainings);
 
