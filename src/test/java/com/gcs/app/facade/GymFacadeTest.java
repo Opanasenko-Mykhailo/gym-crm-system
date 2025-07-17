@@ -1,10 +1,5 @@
 package com.gcs.app.facade;
 
-import com.gcs.app.rest.AuthResponse;
-import com.gcs.app.rest.TrainerProfileResponse;
-import com.gcs.app.rest.TrainerRegistrationRequest;
-import com.gcs.app.rest.TrainerUpdateRequest;
-import com.gcs.app.rest.TrainingResponse;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
@@ -93,6 +88,8 @@ class GymFacadeTest {
     private TraineeCreateRequestDto traineeCreateRequestDto = createTraineeCreateRequestDto();
     private TraineeUpdateRequestDto traineeUpdateRequestDto = createTraineeUpdateRequestDto();
     private TraineeResponseDto expectedTraineeResponse = createTraineeResponseDto();
+    private TrainerCreateRequestDto trainerCreateRequestDto = createTrainerCreateRequestDto();
+    private TrainerUpdateRequestDto trainerUpdateRequestDto = createTrainerUpdateRequestDto();
     private TrainerResponseDto expectedTrainerResponse = createTrainerResponseDto();
     private TrainingCreateRequestDto trainingCreateRequestDto = createTrainingCreateRequestDto();
     private TrainingResponseDto expectedTrainingResponse = createTrainingResponseDto();
@@ -203,70 +200,55 @@ class GymFacadeTest {
     }
 
     @Test
-    void createTrainer_callsServiceAndReturnsAuthResponse() {
-        TrainerRegistrationRequest swaggerRequest = new TrainerRegistrationRequest();
-        swaggerRequest.setFirstName(TRAINER_FIRST_NAME);
-        swaggerRequest.setLastName(TRAINER_LAST_NAME);
+    void createTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
+        when(trainerService.createTrainer(trainerCreateRequestDto)).thenReturn(trainer);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
-        TrainerCreateRequestDto createRequestDto = createTrainerCreateRequestDto();
+        TrainerResponseDto actual = facade.createTrainer(trainerCreateRequestDto);
 
-        when(trainerMapper.toCreateRequestDto(swaggerRequest)).thenReturn(createRequestDto);
-        when(trainerService.createTrainer(createRequestDto)).thenReturn(trainer);
-
-        AuthResponse actual = facade.createTrainer(swaggerRequest);
-
+        assertEquals(TRAINER_ID, actual.getUserId());
+        assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINER_LAST_NAME, actual.getLastName());
         assertEquals(TRAINER_USERNAME, actual.getUsername());
-        assertEquals(trainer.getUser().getPassword(), actual.getPassword());
-        verify(trainerMapper).toCreateRequestDto(swaggerRequest);
-        verify(trainerService).createTrainer(createRequestDto);
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
+
+        verify(trainerService).createTrainer(trainerCreateRequestDto);
+        verify(trainerMapper).toDto(trainer);
     }
 
     @Test
-    void updateTrainer_callsServiceAndMapper_returnsTrainerProfileResponse() {
-        TrainerUpdateRequest swaggerRequest = new TrainerUpdateRequest();
-        swaggerRequest.setFirstName(TRAINER_FIRST_NAME);
-        swaggerRequest.setLastName(TRAINER_LAST_NAME);
-        String username = TRAINER_USERNAME;
+    void updateTrainer_callsServiceAndMapper_returnsTrainerResponseDto() {
+        when(trainerService.updateTrainer(trainerUpdateRequestDto)).thenReturn(trainer);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
-        TrainerUpdateRequestDto updateRequestDto = createTrainerUpdateRequestDto();
-        Trainer updatedTrainer = trainer;
-        TrainerProfileResponse expectedResponse = new TrainerProfileResponse();
-        expectedResponse.setUsername(TRAINER_USERNAME);
-        expectedResponse.setFirstName(TRAINER_FIRST_NAME);
-        expectedResponse.setLastName(TRAINER_LAST_NAME);
+        TrainerResponseDto actual = facade.updateTrainer(trainerUpdateRequestDto);
 
-        when(trainerMapper.toUpdateRequestDto(swaggerRequest)).thenReturn(updateRequestDto);
-        when(trainerService.updateTrainer(updateRequestDto)).thenReturn(updatedTrainer);
-        when(trainerMapper.toRestModel(updatedTrainer)).thenReturn(expectedResponse);
+        assertEquals(TRAINER_ID, actual.getUserId());
+        assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINER_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINER_USERNAME, actual.getUsername());
+        assertTrue(actual.getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
-        TrainerProfileResponse actual = facade.updateTrainer(swaggerRequest, username);
-
-        assertEquals(expectedResponse.getUsername(), actual.getUsername());
-        assertEquals(expectedResponse.getFirstName(), actual.getFirstName());
-        assertEquals(expectedResponse.getLastName(), actual.getLastName());
-
-        verify(trainerMapper).toUpdateRequestDto(swaggerRequest);
-        verify(trainerService).updateTrainer(updateRequestDto);
-        verify(trainerMapper).toRestModel(updatedTrainer);
+        verify(trainerService).updateTrainer(trainerUpdateRequestDto);
+        verify(trainerMapper).toDto(trainer);
     }
 
     @Test
-    void getTrainerTrainings_callsServiceAndMapper_returnsListOfTrainingResponse() {
-        TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
-        List<Training> trainings = List.of(training);
-        Training training = createTraining();
-        TrainingResponse trainingResponse = createTrainingResponse();
+    void getTrainerByUsername_callsServiceAndMapper_returnsTrainerResponseDto() {
+        when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(trainer);
+        when(trainerMapper.toDto(trainer)).thenReturn(expectedTrainerResponse);
 
-        when(trainerService.getTrainerTrainings(criteria)).thenReturn(trainings);
-        when(trainingMapper.toRestModel(training)).thenReturn(trainingResponse);
+        TrainerResponseDto actual = facade.getTrainerByUsername(TRAINER_USERNAME);
 
-        List<TrainingResponse> actual = facade.getTrainerTrainings(criteria);
+        assertEquals(TRAINER_ID, actual.getUserId());
+        assertEquals(TRAINER_FIRST_NAME, actual.getFirstName());
+        assertEquals(TRAINER_LAST_NAME, actual.getLastName());
+        assertEquals(TRAINER_USERNAME, actual.getUsername());
 
-        assertEquals(1, actual.size());
-        assertEquals(trainingResponse, actual.get(0));
-
-        verify(trainerService).getTrainerTrainings(criteria);
-        verify(trainingMapper).toRestModel(training);
+        verify(trainerService).getByUsername(TRAINER_USERNAME);
+        verify(trainerMapper).toDto(trainer);
     }
 
     @Test
@@ -325,22 +307,20 @@ class GymFacadeTest {
     }
 
     @Test
-    void getTrainerByUsername_callsServiceAndMapper_returnsTrainerProfileResponse() {
-        when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(trainer);
-        TrainerProfileResponse expected = new TrainerProfileResponse();
-        expected.setUsername(TRAINER_USERNAME);
-        expected.setFirstName(TRAINER_FIRST_NAME);
-        expected.setLastName(TRAINER_LAST_NAME);
-        when(trainerMapper.toRestModel(trainer)).thenReturn(expected);
+    void getTrainerTrainings_callsServiceAndMapper_returnsListOfTrainingResponseDto() {
+        TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
+        List<Training> trainings = List.of(training);
+        List<TrainingResponseDto> expected = List.of(expectedTrainingResponse);
 
-        TrainerProfileResponse actual = facade.getTrainerByUsername(TRAINER_USERNAME);
+        when(trainerService.getTrainerTrainings(criteria)).thenReturn(trainings);
+        when(trainingMapper.toDto(training)).thenReturn(expectedTrainingResponse);
 
-        assertEquals(expected.getUsername(), actual.getUsername());
-        assertEquals(expected.getFirstName(), actual.getFirstName());
-        assertEquals(expected.getLastName(), actual.getLastName());
+        List<TrainingResponseDto> actual = facade.getTrainerTrainings(criteria);
 
-        verify(trainerService).getByUsername(TRAINER_USERNAME);
-        verify(trainerMapper).toRestModel(trainer);
+        assertEquals(1, actual.size());
+        assertEquals(TRAINING_ID, actual.get(0).getId());
+        verify(trainerService).getTrainerTrainings(criteria);
+        verify(trainingMapper).toDto(training);
     }
 
     @Test
@@ -523,15 +503,4 @@ class GymFacadeTest {
 
         return dto;
     }
-
-    private TrainingResponse createTrainingResponse() {
-        TrainingResponse response = new TrainingResponse();
-        response.setTraineeName(TRAINEE_USERNAME);
-        response.setTrainingDate(TRAINING_DATE);
-        response.setTrainingDuration(Math.toIntExact(TRAINING_DURATION));
-        response.setTrainingName(TRAINING_NAME);
-
-        return response;
-    }
-
 }

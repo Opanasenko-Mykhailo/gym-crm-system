@@ -19,11 +19,6 @@ import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
-import com.gcs.app.rest.AuthResponse;
-import com.gcs.app.rest.TrainerProfileResponse;
-import com.gcs.app.rest.TrainerRegistrationRequest;
-import com.gcs.app.rest.TrainerUpdateRequest;
-import com.gcs.app.rest.TrainingResponse;
 import com.gcs.app.security.Authenticated;
 import com.gcs.app.security.MatchEntityOwner;
 import com.gcs.app.service.TraineeService;
@@ -108,33 +103,28 @@ public class GymFacade {
         traineeService.setTraineeActivationStatus(username, isActive);
     }
 
-    public AuthResponse createTrainer(TrainerRegistrationRequest swaggerRequest) {
-        log.info("Creating trainer: {} {}", swaggerRequest.getFirstName(), swaggerRequest.getLastName());
-        TrainerCreateRequestDto createRequestDto = trainerMapper.toCreateRequestDto(swaggerRequest);
+    public TrainerResponseDto createTrainer(TrainerCreateRequestDto trainerCreateRequestDto) {
+        log.info("Creating trainer: {} {}", trainerCreateRequestDto.getFirstName(), trainerCreateRequestDto.getLastName());
+        Trainer saved = trainerService.createTrainer(trainerCreateRequestDto);
 
-        Trainer saved = trainerService.createTrainer(createRequestDto);
-
-        AuthResponse authResponse = new AuthResponse();
-        authResponse.setUsername(saved.getUser().getUsername());
-        authResponse.setPassword(saved.getUser().getPassword());
-
-        return authResponse;
+        return trainerMapper.toDto(saved);
     }
 
     @Authenticated
-    @MatchEntityOwner(usernameParam = "username")
-    public TrainerProfileResponse updateTrainer(TrainerUpdateRequest swaggerRequest, String username) {
-        log.info("Updating trainer with username: {}", username);
-        TrainerUpdateRequestDto updateRequestDto = trainerMapper.toUpdateRequestDto(swaggerRequest);
+    @MatchEntityOwner(usernameParam = "trainerUpdateRequestDto")
+    public TrainerResponseDto updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto) {
+        log.info("Updating trainer with username: {}", trainerUpdateRequestDto.getUsername());
+        Trainer updated = trainerService.updateTrainer(trainerUpdateRequestDto);
 
-        return trainerMapper.toRestModel(trainerService.updateTrainer(updateRequestDto));
+        return trainerMapper.toDto(updated);
     }
 
     @Authenticated
-    public TrainerProfileResponse getTrainerByUsername(String username) {
+    public TrainerResponseDto getTrainerByUsername(String username) {
         log.info("Retrieving trainer by username: {}", username);
         Trainer trainer = trainerService.getByUsername(username);
-        return trainerMapper.toRestModel(trainer);
+
+        return trainerMapper.toDto(trainer);
     }
 
     @Authenticated
@@ -154,12 +144,12 @@ public class GymFacade {
     }
 
     @Authenticated
-    public List<TrainingResponse> getTrainerTrainings(TrainerTrainingSearchCriteriaDto criteria) {
+    public List<TrainingResponseDto> getTrainerTrainings(TrainerTrainingSearchCriteriaDto criteria) {
         log.info("Getting trainer trainings with criteria: {}", criteria);
         var trainings = trainerService.getTrainerTrainings(criteria);
 
         return trainings.stream()
-                .map(trainingMapper::toRestModel)
+                .map(trainingMapper::toDto)
                 .toList();
     }
 
