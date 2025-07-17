@@ -1,13 +1,13 @@
 package com.gcs.app.controller;
 
+import com.gcs.app.facade.GymFacade;
+import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.rest.AuthResponse;
 import com.gcs.app.rest.StatusUpdateRequest;
 import com.gcs.app.rest.TrainerProfileResponse;
 import com.gcs.app.rest.TrainerRegistrationRequest;
 import com.gcs.app.rest.TrainerUpdateRequest;
 import com.gcs.app.rest.TrainingResponse;
-import com.gcs.app.facade.GymFacade;
-import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.gcs.app.controller.constant.ApiPath.TRAINERS;
+import static com.gcs.app.controller.ApiConstant.BASE_PATH;
 
 @RestController
-@RequestMapping(TRAINERS)
+@RequestMapping(BASE_PATH + "/trainers")
 @RequiredArgsConstructor
 public class TrainerController {
 

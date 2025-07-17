@@ -1,10 +1,5 @@
 package com.gcs.app.facade;
 
-import com.gcs.app.rest.AuthResponse;
-import com.gcs.app.rest.TrainerProfileResponse;
-import com.gcs.app.rest.TrainerRegistrationRequest;
-import com.gcs.app.rest.TrainerUpdateRequest;
-import com.gcs.app.rest.TrainingResponse;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
@@ -24,6 +19,11 @@ import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
+import com.gcs.app.rest.AuthResponse;
+import com.gcs.app.rest.TrainerProfileResponse;
+import com.gcs.app.rest.TrainerRegistrationRequest;
+import com.gcs.app.rest.TrainerUpdateRequest;
+import com.gcs.app.rest.TrainingResponse;
 import com.gcs.app.security.Authenticated;
 import com.gcs.app.security.MatchEntityOwner;
 import com.gcs.app.service.TraineeService;
@@ -159,7 +159,6 @@ public class GymFacade {
         var trainings = trainerService.getTrainerTrainings(criteria);
 
         return trainings.stream()
-                .map(trainingMapper::toDto)
                 .map(trainingMapper::toRestModel)
                 .toList();
     }

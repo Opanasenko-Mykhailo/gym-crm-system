@@ -13,5 +13,5 @@ public interface TrainingMapper {
 
     TrainingResponseDto toDto(Training training);
 
-    TrainingResponse toRestModel(TrainingResponseDto dto);
+    TrainingResponse toRestModel(Training training);
 }
