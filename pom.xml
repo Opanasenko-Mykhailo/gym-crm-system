@@ -22,7 +22,6 @@
         <mockito.version>5.18.0</mockito.version>
         <junit.platform.version>1.13.3</junit.platform.version>
         <database-rider.version>1.44.0</database-rider.version>
-        <openapi-generator.version>7.14.0</openapi-generator.version>
     </properties>
 
     <dependencies>
@@ -87,11 +86,6 @@
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openapitools</groupId>
-            <artifactId>jackson-databind-nullable</artifactId>
-            <version>0.2.6</version>
-        </dependency>
-        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>${snakeyaml.version}</version>
@@ -138,11 +132,6 @@
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
             <version>3.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>2.2.32</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -226,9 +215,6 @@
                 <configuration>
                     <source>17</source>
                     <target>17</target>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
-                    </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -255,30 +241,6 @@
                 <configuration>
                     <warSourceDirectory>src/main/webapp</warSourceDirectory>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.openapitools</groupId>
-                <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>${openapi-generator.version}</version>
-                <configuration>
-                    <inputSpec>${project.basedir}/src/main/resources/gym.yml</inputSpec>
-                    <generatorName>spring</generatorName>
-                    <apiPackage>com.gcs.app.api</apiPackage>
-                    <modelPackage>com.gcs.app.rest</modelPackage>
-                    <output>${project.build.directory}/generated-sources/openapi</output>
-                    <configOptions>
-                        <interfaceOnly>true</interfaceOnly>
-                        <useJakartaEe>true</useJakartaEe>
-                        <serializationLibrary>jackson</serializationLibrary>
-                    </configOptions>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
