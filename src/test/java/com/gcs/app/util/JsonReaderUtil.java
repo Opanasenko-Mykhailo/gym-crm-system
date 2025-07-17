@@ -1,5 +1,6 @@
 package com.gcs.app.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -21,6 +22,14 @@ public final class JsonReaderUtil {
             return objectMapper.readValue(is, clazz);
         } catch (IOException e) {
             throw new RuntimeException(String.format("Failed to read JSON from '%s'", path), e);
+        }
+    }
+
+    public static <T> T readFromJson(String path, TypeReference<T> typeReference) {
+        try (InputStream is = readResourceAsStream(path)) {
+            return objectMapper.readValue(is, typeReference);
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Failed to read JSON from з '%s': %s", path, e.getMessage()), e);
         }
     }
 

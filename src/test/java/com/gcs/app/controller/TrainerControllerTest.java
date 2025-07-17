@@ -1,5 +1,6 @@
 package com.gcs.app.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.AuthResponse;
@@ -93,16 +94,16 @@ class TrainerControllerTest {
 
     @Test
     void testUpdateTrainerProfileSuccess() throws Exception {
-        TrainerUpdateRequest request = new TrainerUpdateRequest();
-        request.setFirstName("Updated");
-        request.setLastName("Trainer");
-        request.setIsActive(true);
+        TrainerUpdateRequest request = JsonReaderUtil.readFromJson(
+                "json/trainer-update-request.json",
+                TrainerUpdateRequest.class
+        );
 
         TrainerProfileResponse response = new TrainerProfileResponse();
         response.setUsername("rowan.atkinson");
-        response.setFirstName("Updated");
-        response.setLastName("Trainer");
-        response.setIsActive(true);
+        response.setFirstName(request.getFirstName());
+        response.setLastName(request.getLastName());
+        response.setIsActive(request.getIsActive());
 
         when(gymFacade.updateTrainer(any(), eq("rowan.atkinson"))).thenReturn(response);
 
@@ -131,9 +132,10 @@ class TrainerControllerTest {
 
     @Test
     void testGetTrainerTrainingsSuccess() throws Exception {
-        TrainingResponse training = JsonReaderUtil.readFromJson("json/training-response.json", TrainingResponse.class);
+        List<TrainingResponse> trainings = JsonReaderUtil.readFromJson("json/get-trainer-trainings-response.json", new TypeReference<List<TrainingResponse>>() {
+        });
 
-        when(gymFacade.getTrainerTrainings(any())).thenReturn(List.of(training));
+        when(gymFacade.getTrainerTrainings(any())).thenReturn(trainings);
 
         var result = mockMvc.perform(get(basePath + "/trainers/rowan.atkinson/trainings")
                 .param("periodFrom", "2025-07-01")
@@ -147,7 +149,14 @@ class TrainerControllerTest {
                 .andExpect(jsonPath("$[0].trainingDate[2]").value(15))
                 .andExpect(jsonPath("$[0].trainingType").value("Stretching"))
                 .andExpect(jsonPath("$[0].trainingDuration").value(60))
-                .andExpect(jsonPath("$[0].traineeName").value("Jane"));
+                .andExpect(jsonPath("$[0].traineeName").value("Jane"))
+                .andExpect(jsonPath("$[1].trainingName").value("Pilates"))
+                .andExpect(jsonPath("$[1].trainingDate[0]").value(2025))
+                .andExpect(jsonPath("$[1].trainingDate[1]").value(7))
+                .andExpect(jsonPath("$[1].trainingDate[2]").value(20))
+                .andExpect(jsonPath("$[1].trainingType").value("Core"))
+                .andExpect(jsonPath("$[1].trainingDuration").value(45))
+                .andExpect(jsonPath("$[1].traineeName").value("Anna"));
     }
 
     @Test
