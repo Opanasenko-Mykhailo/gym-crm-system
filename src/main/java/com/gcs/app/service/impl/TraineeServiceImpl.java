@@ -143,8 +143,6 @@ public class TraineeServiceImpl implements TraineeService {
         return User.builder()
                 .username(username)
                 .password(password)
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
                 .isActive(true)
                 .build();
     }

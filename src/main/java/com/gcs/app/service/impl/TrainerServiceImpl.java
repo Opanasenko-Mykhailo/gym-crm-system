@@ -109,8 +109,6 @@ public class TrainerServiceImpl implements TrainerService {
         return User.builder()
                 .username(username)
                 .password(password)
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
                 .isActive(true)
                 .build();
     }
