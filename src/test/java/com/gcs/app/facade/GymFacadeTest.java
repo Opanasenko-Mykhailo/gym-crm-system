@@ -254,12 +254,11 @@ class GymFacadeTest {
     void getTrainerTrainings_callsServiceAndMapper_returnsListOfTrainingResponse() {
         TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
         List<Training> trainings = List.of(training);
-        TrainingResponseDto trainingResponseDto = createTrainingResponseDto();
+        Training training = createTraining();
         TrainingResponse trainingResponse = createTrainingResponse();
 
         when(trainerService.getTrainerTrainings(criteria)).thenReturn(trainings);
-        when(trainingMapper.toDto(training)).thenReturn(trainingResponseDto);
-        when(trainingMapper.toRestModel(trainingResponseDto)).thenReturn(trainingResponse);
+        when(trainingMapper.toRestModel(training)).thenReturn(trainingResponse);
 
         List<TrainingResponse> actual = facade.getTrainerTrainings(criteria);
 
@@ -267,8 +266,7 @@ class GymFacadeTest {
         assertEquals(trainingResponse, actual.get(0));
 
         verify(trainerService).getTrainerTrainings(criteria);
-        verify(trainingMapper).toDto(training);
-        verify(trainingMapper).toRestModel(trainingResponseDto);
+        verify(trainingMapper).toRestModel(training);
     }
 
     @Test
