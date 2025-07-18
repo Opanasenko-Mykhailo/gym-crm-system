@@ -3,12 +3,13 @@ package com.gcs.app.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gcs.app.facade.GymFacade;
-import com.gcs.app.rest.AuthResponse;
-import com.gcs.app.rest.StatusUpdateRequest;
-import com.gcs.app.rest.TrainerProfileResponse;
-import com.gcs.app.rest.TrainerRegistrationRequest;
+import com.gcs.app.rest.ActivationStatusRequest;
+import com.gcs.app.rest.TrainerCreateRequest;
+import com.gcs.app.rest.TrainerGetResponse;
+import com.gcs.app.rest.TrainerTrainingGetResponse;
 import com.gcs.app.rest.TrainerUpdateRequest;
-import com.gcs.app.rest.TrainingResponse;
+import com.gcs.app.rest.TrainerUpdateResponse;
+import com.gcs.app.rest.UserCreationResponse;
 import com.gcs.app.util.JsonReaderUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static com.gcs.app.controller.ApiConstant.BASE_PATH;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -38,8 +40,6 @@ class TrainerControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final String basePath = "/api/v1";
-
     private MockMvc mockMvc;
 
     @Mock
@@ -55,18 +55,18 @@ class TrainerControllerTest {
 
     @Test
     void testRegisterTrainerSuccess() throws Exception {
-        TrainerRegistrationRequest request = new TrainerRegistrationRequest();
+        TrainerCreateRequest request = new TrainerCreateRequest();
         request.setFirstName("Rowan");
         request.setLastName("Atkinson");
-        request.setSpecializationId(1);
+        request.specialization("Yoga");
 
-        AuthResponse response = new AuthResponse();
+        UserCreationResponse response = new UserCreationResponse();
         response.setUsername("rowan.atkinson");
         response.setPassword("secret");
 
         when(gymFacade.createTrainer(any())).thenReturn(response);
 
-        var result = mockMvc.perform(post(basePath + "/trainers/register")
+        var result = mockMvc.perform(post(BASE_PATH + "/trainers/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -77,14 +77,14 @@ class TrainerControllerTest {
 
     @Test
     void testGetTrainerProfileSuccess() throws Exception {
-        TrainerProfileResponse profile = new TrainerProfileResponse();
+        TrainerGetResponse profile = new TrainerGetResponse();
         profile.setUsername("rowan.atkinson");
         profile.setFirstName("Rowan");
         profile.setLastName("Atkinson");
 
         when(gymFacade.getTrainerByUsername("rowan.atkinson")).thenReturn(profile);
 
-        var result = mockMvc.perform(get(basePath + "/trainers/rowan.atkinson"));
+        var result = mockMvc.perform(get(BASE_PATH + "/trainers/rowan.atkinson"));
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("rowan.atkinson"))
@@ -99,7 +99,7 @@ class TrainerControllerTest {
                 TrainerUpdateRequest.class
         );
 
-        TrainerProfileResponse response = new TrainerProfileResponse();
+        TrainerUpdateResponse response = new TrainerUpdateResponse();
         response.setUsername("rowan.atkinson");
         response.setFirstName(request.getFirstName());
         response.setLastName(request.getLastName());
@@ -107,7 +107,7 @@ class TrainerControllerTest {
 
         when(gymFacade.updateTrainer(any(), eq("rowan.atkinson"))).thenReturn(response);
 
-        var result = mockMvc.perform(put(basePath + "/trainers/rowan.atkinson")
+        var result = mockMvc.perform(put(BASE_PATH + "/trainers/rowan.atkinson")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -119,10 +119,10 @@ class TrainerControllerTest {
 
     @Test
     void testChangeActivationStatusSuccess() throws Exception {
-        StatusUpdateRequest request = new StatusUpdateRequest();
+        ActivationStatusRequest request = new ActivationStatusRequest();
         request.setIsActive(false);
 
-        var result = mockMvc.perform(patch(basePath + "/trainers/rowan.atkinson/change-activation-status")
+        var result = mockMvc.perform(patch(BASE_PATH + "/trainers/rowan.atkinson/change-activation-status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -132,13 +132,13 @@ class TrainerControllerTest {
 
     @Test
     void testGetTrainerTrainingsSuccess() throws Exception {
-        List<TrainingResponse> trainings = JsonReaderUtil.readFromJson("json/get-trainer-trainings-response.json",
-                new TypeReference<List<TrainingResponse>>() {
+        List<TrainerTrainingGetResponse> trainings = JsonReaderUtil.readFromJson("json/get-trainer-trainings-response.json",
+                new TypeReference<List<TrainerTrainingGetResponse>>() {
                 });
 
         when(gymFacade.getTrainerTrainings(any())).thenReturn(trainings);
 
-        var result = mockMvc.perform(get(basePath + "/trainers/rowan.atkinson/trainings")
+        var result = mockMvc.perform(get(BASE_PATH + "/trainers/rowan.atkinson/trainings")
                 .param("periodFrom", "2025-07-01")
                 .param("periodTo", "2025-07-31")
                 .param("traineeName", "Jane"));
@@ -162,7 +162,7 @@ class TrainerControllerTest {
 
     @Test
     void testGetTrainerTrainingsInvalidDate() throws Exception {
-        var result = mockMvc.perform(get(basePath + "/trainers/rowan.atkinson/trainings")
+        var result = mockMvc.perform(get(BASE_PATH + "/trainers/rowan.atkinson/trainings")
                 .param("periodFrom", "invalid-date"));
 
         result.andExpect(status().isBadRequest());

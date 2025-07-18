@@ -1,10 +1,5 @@
 package com.gcs.app.facade;
 
-import com.gcs.app.rest.AuthResponse;
-import com.gcs.app.rest.TrainerProfileResponse;
-import com.gcs.app.rest.TrainerRegistrationRequest;
-import com.gcs.app.rest.TrainerUpdateRequest;
-import com.gcs.app.rest.TrainingResponse;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
@@ -26,6 +21,12 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
+import com.gcs.app.rest.TrainerCreateRequest;
+import com.gcs.app.rest.TrainerGetResponse;
+import com.gcs.app.rest.TrainerTrainingGetResponse;
+import com.gcs.app.rest.TrainerUpdateRequest;
+import com.gcs.app.rest.TrainerUpdateResponse;
+import com.gcs.app.rest.UserCreationResponse;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
@@ -204,7 +205,7 @@ class GymFacadeTest {
 
     @Test
     void createTrainer_callsServiceAndReturnsAuthResponse() {
-        TrainerRegistrationRequest swaggerRequest = new TrainerRegistrationRequest();
+        TrainerCreateRequest swaggerRequest = new TrainerCreateRequest();
         swaggerRequest.setFirstName(TRAINER_FIRST_NAME);
         swaggerRequest.setLastName(TRAINER_LAST_NAME);
 
@@ -213,7 +214,7 @@ class GymFacadeTest {
         when(trainerMapper.toCreateRequestDto(swaggerRequest)).thenReturn(createRequestDto);
         when(trainerService.createTrainer(createRequestDto)).thenReturn(trainer);
 
-        AuthResponse actual = facade.createTrainer(swaggerRequest);
+        UserCreationResponse actual = facade.createTrainer(swaggerRequest);
 
         assertEquals(TRAINER_USERNAME, actual.getUsername());
         assertEquals(trainer.getUser().getPassword(), actual.getPassword());
@@ -226,20 +227,19 @@ class GymFacadeTest {
         TrainerUpdateRequest swaggerRequest = new TrainerUpdateRequest();
         swaggerRequest.setFirstName(TRAINER_FIRST_NAME);
         swaggerRequest.setLastName(TRAINER_LAST_NAME);
-        String username = TRAINER_USERNAME;
 
         TrainerUpdateRequestDto updateRequestDto = createTrainerUpdateRequestDto();
         Trainer updatedTrainer = trainer;
-        TrainerProfileResponse expectedResponse = new TrainerProfileResponse();
+        TrainerUpdateResponse expectedResponse = new TrainerUpdateResponse();
         expectedResponse.setUsername(TRAINER_USERNAME);
         expectedResponse.setFirstName(TRAINER_FIRST_NAME);
         expectedResponse.setLastName(TRAINER_LAST_NAME);
 
         when(trainerMapper.toUpdateRequestDto(swaggerRequest)).thenReturn(updateRequestDto);
         when(trainerService.updateTrainer(updateRequestDto)).thenReturn(updatedTrainer);
-        when(trainerMapper.toRestModel(updatedTrainer)).thenReturn(expectedResponse);
+        when(trainerMapper.toUpdateRestModel(updatedTrainer)).thenReturn(expectedResponse);
 
-        TrainerProfileResponse actual = facade.updateTrainer(swaggerRequest, username);
+        TrainerUpdateResponse actual = facade.updateTrainer(swaggerRequest, TRAINER_USERNAME);
 
         assertEquals(expectedResponse.getUsername(), actual.getUsername());
         assertEquals(expectedResponse.getFirstName(), actual.getFirstName());
@@ -247,7 +247,7 @@ class GymFacadeTest {
 
         verify(trainerMapper).toUpdateRequestDto(swaggerRequest);
         verify(trainerService).updateTrainer(updateRequestDto);
-        verify(trainerMapper).toRestModel(updatedTrainer);
+        verify(trainerMapper).toUpdateRestModel(updatedTrainer);
     }
 
     @Test
@@ -255,12 +255,12 @@ class GymFacadeTest {
         TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
         List<Training> trainings = List.of(training);
         Training training = createTraining();
-        TrainingResponse trainingResponse = createTrainingResponse();
+        TrainerTrainingGetResponse trainingResponse = createTrainingResponse();
 
         when(trainerService.getTrainerTrainings(criteria)).thenReturn(trainings);
         when(trainingMapper.toRestModel(training)).thenReturn(trainingResponse);
 
-        List<TrainingResponse> actual = facade.getTrainerTrainings(criteria);
+        List<TrainerTrainingGetResponse> actual = facade.getTrainerTrainings(criteria);
 
         assertEquals(1, actual.size());
         assertEquals(trainingResponse, actual.get(0));
@@ -327,13 +327,13 @@ class GymFacadeTest {
     @Test
     void getTrainerByUsername_callsServiceAndMapper_returnsTrainerProfileResponse() {
         when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(trainer);
-        TrainerProfileResponse expected = new TrainerProfileResponse();
+        TrainerGetResponse expected = new TrainerGetResponse();
         expected.setUsername(TRAINER_USERNAME);
         expected.setFirstName(TRAINER_FIRST_NAME);
         expected.setLastName(TRAINER_LAST_NAME);
         when(trainerMapper.toRestModel(trainer)).thenReturn(expected);
 
-        TrainerProfileResponse actual = facade.getTrainerByUsername(TRAINER_USERNAME);
+        TrainerGetResponse actual = facade.getTrainerByUsername(TRAINER_USERNAME);
 
         assertEquals(expected.getUsername(), actual.getUsername());
         assertEquals(expected.getFirstName(), actual.getFirstName());
@@ -524,8 +524,8 @@ class GymFacadeTest {
         return dto;
     }
 
-    private TrainingResponse createTrainingResponse() {
-        TrainingResponse response = new TrainingResponse();
+    private TrainerTrainingGetResponse createTrainingResponse() {
+        TrainerTrainingGetResponse response = new TrainerTrainingGetResponse();
         response.setTraineeName(TRAINEE_USERNAME);
         response.setTrainingDate(TRAINING_DATE);
         response.setTrainingDuration(Math.toIntExact(TRAINING_DURATION));
