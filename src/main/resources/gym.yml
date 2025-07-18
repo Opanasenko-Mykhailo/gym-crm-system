@@ -762,7 +762,6 @@ components:
           description: Last name
           maxLength: 50
           example: "Herrington"
-
     Profile:
       type: object
       required:
@@ -778,7 +777,6 @@ components:
           type: boolean
           description: Indicates if the user is active
           example: true
-
     TrainingTypeRef:
       type: object
       required:
@@ -788,7 +786,6 @@ components:
           type: string
           description: Trainer's specialization (training type)
           example: "Yoga"
-
     AssignedUser:
       type: object
       required:
@@ -811,7 +808,6 @@ components:
           description: User's last name
           maxLength: 50
           example: "Herrington"
-
     Trainee:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -827,10 +823,8 @@ components:
               description: Contact address
               maxLength: 200
               example: "123 Main St"
-
     TraineeCreateRequest:
       $ref: '#/components/schemas/Trainee'
-
     UserCreationResponse:
       type: object
       required:
@@ -845,7 +839,6 @@ components:
           type: string
           description: Generated secure password
           example: "secure-password"
-
     TraineeGetResponse:
       allOf:
         - $ref: '#/components/schemas/Trainee'
@@ -868,7 +861,6 @@ components:
                   firstName: "Eren"
                   lastName: "Yeager"
                   specialization: "Cardio"
-
     TraineeUpdateRequest:
       allOf:
         - $ref: '#/components/schemas/Trainee'
@@ -886,7 +878,6 @@ components:
         dateOfBirth: "1967-07-26"
         address: "456 Action Ave, London"
         isActive: false
-
     TraineeUpdateResponse:
       allOf:
         - $ref: '#/components/schemas/Trainee'
@@ -909,12 +900,10 @@ components:
                   firstName: "Eren"
                   lastName: "Yeager"
                   specialization: "Cardio"
-
     Trainer:
       allOf:
         - $ref: '#/components/schemas/User'
         - $ref: '#/components/schemas/TrainingTypeRef'
-
     TrainerCreateRequest:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -926,7 +915,6 @@ components:
               type: string
               description: Trainer's specialization (training type)
               example: "Yoga"
-
     TrainerGetResponse:
       allOf:
         - $ref: '#/components/schemas/Trainer'
@@ -945,7 +933,6 @@ components:
                 - username: "jason.statham"
                   firstName: "Jason"
                   lastName: "Statham"
-
     TrainerUpdateRequest:
       allOf:
         - $ref: '#/components/schemas/User'
@@ -967,7 +954,6 @@ components:
         lastName: "Milos"
         isActive: true
         specialization: "Yoga"
-
     TrainerUpdateResponse:
       allOf:
         - $ref: '#/components/schemas/Trainer'
@@ -986,7 +972,6 @@ components:
                 - username: "jason.statham"
                   firstName: "Jason"
                   lastName: "Statham"
-
     ActivationStatusRequest:
       type: object
       required:
@@ -996,7 +981,6 @@ components:
           type: boolean
           description: New activation status
           example: true
-
     TraineeAssignedTrainersUpdateRequest:
       type: object
       required:
@@ -1010,7 +994,6 @@ components:
             pattern: '^[a-zA-Z]+\.[a-zA-Z]+(\d+)?$'
           example: ["ricardo.milos", "eren.yeager"]
           minItems: 1
-
     TraineeAssignedTrainersUpdateResponse:
       type: array
       description: List of updated trainers
@@ -1027,12 +1010,10 @@ components:
           firstName: "Eren"
           lastName: "Yeager"
           specialization: "Cardio"
-
     AvailableTrainerGetResponse:
       allOf:
         - $ref: '#/components/schemas/Trainer'
         - $ref: '#/components/schemas/Profile'
-
     TrainingBase:
       type: object
       required:
@@ -1059,7 +1040,6 @@ components:
           description: Duration of training in minutes
           minimum: 1
           example: 60
-
     TraineeTrainingGetResponse:
       allOf:
         - $ref: '#/components/schemas/TrainingBase'
@@ -1071,7 +1051,6 @@ components:
               type: string
               description: Name of the trainer
               example: "Eren"
-
     TrainerTrainingGetResponse:
       allOf:
         - $ref: '#/components/schemas/TrainingBase'
@@ -1083,7 +1062,6 @@ components:
               type: string
               description: Name of the trainee
               example: "Billy"
-
     TrainingCreateRequest:
       type: object
       required:
@@ -1117,7 +1095,6 @@ components:
           description: Duration of training in minutes
           minimum: 1
           example: 60
-
     TrainingTypeResponse:
       type: object
       required:
@@ -1132,7 +1109,6 @@ components:
           type: integer
           description: ID of the training type
           example: 1
-
     LoginRequest:
       type: object
       required:
@@ -1148,7 +1124,6 @@ components:
           type: string
           description: Password of the user
           example: "secure-password"
-
     ChangePasswordRequest:
       type: object
       required:
@@ -1169,7 +1144,6 @@ components:
           type: string
           description: New password
           example: "new-secure-password"
-
     ErrorResponse:
       type: object
       required:
