@@ -5,5 +5,5 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ApiConstant {
-    public static final String BASE_PATH = "/api/v1";
+    public static final String BASE_PATH = "/gym-crm-core/api/v1";
 }
