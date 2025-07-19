@@ -824,7 +824,8 @@ components:
               maxLength: 200
               example: "123 Main St"
     TraineeCreateRequest:
-      $ref: '#/components/schemas/Trainee'
+      allOf:
+        - $ref: '#/components/schemas/Trainee'
     UserCreationResponse:
       type: object
       required:
@@ -992,24 +993,28 @@ components:
           items:
             type: string
             pattern: '^[a-zA-Z]+\.[a-zA-Z]+(\d+)?$'
-          example: ["ricardo.milos", "eren.yeager"]
+          example: [ "ricardo.milos", "eren.yeager" ]
           minItems: 1
     TraineeAssignedTrainersUpdateResponse:
-      type: array
-      description: List of updated trainers
-      items:
-        allOf:
-          - $ref: '#/components/schemas/AssignedUser'
-          - $ref: '#/components/schemas/TrainingTypeRef'
-      example:
-        - username: "ricardo.milos"
-          firstName: "Ricardo"
-          lastName: "Milos"
-          specialization: "Yoga"
-        - username: "eren.yeager"
-          firstName: "Eren"
-          lastName: "Yeager"
-          specialization: "Cardio"
+      type: object
+      description: List wrapper of updated trainers
+      properties:
+        trainers:
+          type: array
+          items:
+            type: object
+            allOf:
+              - $ref: '#/components/schemas/AssignedUser'
+              - $ref: '#/components/schemas/TrainingTypeRef'
+          example:
+            - username: "ricardo.milos"
+              firstName: "Ricardo"
+              lastName: "Milos"
+              specialization: "Yoga"
+            - username: "eren.yeager"
+              firstName: "Eren"
+              lastName: "Yeager"
+              specialization: "Cardio"
     AvailableTrainerGetResponse:
       allOf:
         - $ref: '#/components/schemas/Trainer'
