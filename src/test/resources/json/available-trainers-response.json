@@ -1,0 +1,14 @@
+[
+  {
+    "username": "jane.smith",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "specialization": "Yoga"
+  },
+  {
+    "username": "bob.jones",
+    "firstName": "Bob",
+    "lastName": "Jones",
+    "specialization": "Pilates"
+  }
+]
