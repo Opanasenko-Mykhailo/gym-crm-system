@@ -4,6 +4,10 @@ import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerResponseDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.model.Trainer;
+import com.gcs.app.rest.AvailableTrainerGetResponse;
+import com.gcs.app.rest.TraineeAssignedTrainersUpdateResponseTrainersInner;
+import com.gcs.app.rest.TraineeGetResponseAllOfTrainers;
+import com.gcs.app.rest.TraineeUpdateResponseAllOfTrainers;
 import com.gcs.app.rest.TrainerCreateRequest;
 import com.gcs.app.rest.TrainerGetResponse;
 import com.gcs.app.rest.TrainerUpdateRequest;
@@ -42,4 +46,22 @@ public interface TrainerMapper {
     @Mapping(source = "user.isActive", target = "isActive")
     @Mapping(source = "specialization.name", target = "specialization")
     TrainerUpdateResponse toUpdateRestModel(Trainer trainer);
+
+    @Mapping(source = "specialization.name", target = "specialization")
+    AvailableTrainerGetResponse toAvailableTrainerRestModel(Trainer trainer);
+
+    @Mapping(source = "specialization.name", target = "specialization")
+    TraineeGetResponseAllOfTrainers toTraineeTrainerRestModel(Trainer trainer);
+
+    @Mapping(source = "user.firstName", target = "firstName")
+    @Mapping(source = "user.lastName", target = "lastName")
+    @Mapping(source = "user.username", target = "username")
+    @Mapping(source = "specialization.name", target = "specialization")
+    TraineeUpdateResponseAllOfTrainers toTraineeUpdateTrainerRestModel(Trainer trainer);
+
+    @Mapping(source = "user.firstName", target = "firstName")
+    @Mapping(source = "user.lastName", target = "lastName")
+    @Mapping(source = "user.username", target = "username")
+    @Mapping(source = "specialization.name", target = "specialization")
+    TraineeAssignedTrainersUpdateResponseTrainersInner toTraineeAssignedTrainerInnerRestModel(Trainer trainer);
 }

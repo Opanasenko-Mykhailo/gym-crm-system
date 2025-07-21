@@ -4,11 +4,9 @@ import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
-import com.gcs.app.facade.dto.TraineeResponseDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
-import com.gcs.app.facade.dto.TrainerResponseDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
@@ -19,6 +17,13 @@ import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
+import com.gcs.app.rest.AvailableTrainerGetResponse;
+import com.gcs.app.rest.TraineeAssignedTrainersUpdateResponse;
+import com.gcs.app.rest.TraineeCreateRequest;
+import com.gcs.app.rest.TraineeGetResponse;
+import com.gcs.app.rest.TraineeTrainingGetResponse;
+import com.gcs.app.rest.TraineeUpdateRequest;
+import com.gcs.app.rest.TraineeUpdateResponse;
 import com.gcs.app.rest.TrainerCreateRequest;
 import com.gcs.app.rest.TrainerGetResponse;
 import com.gcs.app.rest.TrainerTrainingGetResponse;
@@ -52,20 +57,26 @@ public class GymFacade {
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
 
-    public TraineeResponseDto createTrainee(TraineeCreateRequestDto traineeCreateRequestDto) {
-        log.info("Creating trainee: {} {}", traineeCreateRequestDto.getFirstName(), traineeCreateRequestDto.getLastName());
-        Trainee saved = traineeService.createTrainee(traineeCreateRequestDto);
+    public UserCreationResponse createTrainee(TraineeCreateRequest request) {
+        log.info("Creating trainee: {} {}", request.getFirstName(), request.getLastName());
+        TraineeCreateRequestDto createRequestDto = traineeMapper.toCreateRequestDto(request);
 
-        return traineeMapper.toDto(saved);
+        Trainee saved = traineeService.createTrainee(createRequestDto);
+
+        UserCreationResponse authResponse = new UserCreationResponse();
+        authResponse.setUsername(saved.getUser().getUsername());
+        authResponse.setPassword(saved.getUser().getPassword());
+
+        return authResponse;
     }
 
     @Authenticated
-    @MatchEntityOwner(usernameParam = "traineeUpdateRequestDto")
-    public TraineeResponseDto updateTrainee(TraineeUpdateRequestDto traineeUpdateRequestDto) {
-        log.info("Updating trainee with username: {}", traineeUpdateRequestDto.getUsername());
-        Trainee updated = traineeService.updateTrainee(traineeUpdateRequestDto);
+    @MatchEntityOwner(usernameParam = "username")
+    public TraineeUpdateResponse updateTrainee(TraineeUpdateRequest request, String username) {
+        log.info("Updating trainee with username: {}", username);
+        TraineeUpdateRequestDto updateRequestDto = traineeMapper.toUpdateRequestDto(request);
 
-        return traineeMapper.toDto(updated);
+        return traineeMapper.toUpdateRestModel(traineeService.updateTrainee(updateRequestDto));
     }
 
     @Authenticated
@@ -76,30 +87,30 @@ public class GymFacade {
     }
 
     @Authenticated
-    public TraineeResponseDto getTraineeByUsername(String username) {
+    public TraineeGetResponse getTraineeByUsername(String username) {
         log.info("Retrieving trainee by username: {}", username);
         Trainee trainee = traineeService.getByUsername(username);
 
-        return traineeMapper.toDto(trainee);
+        return traineeMapper.toRestModel(trainee);
     }
 
     @Authenticated
-    public List<TrainingResponseDto> getTraineeTrainings(TraineeTrainingSearchCriteriaDto criteria) {
+    public List<TraineeTrainingGetResponse> getTraineeTrainings(TraineeTrainingSearchCriteriaDto criteria) {
         log.info("Getting trainee trainings with criteria: {}", criteria);
         var trainings = traineeService.getTraineeTrainings(criteria);
 
         return trainings.stream()
-                .map(trainingMapper::toDto)
+                .map(trainingMapper::toTraineeTrainingRestModel)
                 .toList();
     }
 
     @Authenticated
     @MatchEntityOwner(usernameParam = "traineeUsername")
-    public TraineeResponseDto updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames) {
+    public TraineeAssignedTrainersUpdateResponse updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames) {
         log.info("Updating trainers for trainee: {}", traineeUsername);
         Trainee updated = traineeService.updateTraineeTrainers(traineeUsername, trainerUsernames);
 
-        return traineeMapper.toDto(updated);
+        return traineeMapper.toAssignedTrainersRestModel(updated);
     }
 
     @Authenticated
@@ -160,7 +171,7 @@ public class GymFacade {
         var trainings = trainerService.getTrainerTrainings(criteria);
 
         return trainings.stream()
-                .map(trainingMapper::toRestModel)
+                .map(trainingMapper::toTrainerTrainingRestModel)
                 .toList();
     }
 
@@ -172,12 +183,12 @@ public class GymFacade {
     }
 
     @Authenticated
-    public List<TrainerResponseDto> getUnassignedTrainers(String traineeUsername) {
+    public List<AvailableTrainerGetResponse> getUnassignedTrainers(String traineeUsername) {
         log.info("Getting unassigned trainers for trainee: {}", traineeUsername);
         List<Trainer> trainers = traineeService.getUnassignedTrainers(traineeUsername);
 
         return trainers.stream()
-                .map(trainerMapper::toDto)
+                .map(trainerMapper::toAvailableTrainerRestModel)
                 .toList();
     }
 
