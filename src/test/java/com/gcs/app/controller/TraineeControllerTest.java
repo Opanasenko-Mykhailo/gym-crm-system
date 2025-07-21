@@ -44,6 +44,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class TraineeControllerTest {
 
+    private static final String TRAINEE_USERNAME = "oleksandr.kovalenko";
+    private static final String TRAINEE_FIRST_NAME = "Oleksandr";
+    private static final String TRAINEE_LAST_NAME = "Kovalenko";
+    private static final String TRAINEE_ADDRESS = "123 Main St";
+
+    private static final String TRAINER_1_USERNAME = "sofia.melnyk";
+    private static final String TRAINER_1_FIRST_NAME = "Sofia";
+    private static final String TRAINER_1_LAST_NAME = "Melnyk";
+    private static final String TRAINER_1_SPECIALIZATION = "Yoga";
+    private static final String TRAINER_2_USERNAME = "andriy.shevchenko";
+    private static final String TRAINER_2_FIRST_NAME = "Andriy";
+    private static final String TRAINER_2_LAST_NAME = "Shevchenko";
+    private static final String TRAINER_2_SPECIALIZATION = "Pilates";
+
+    private static final String TRAINING_NAME_YOGA = "Yoga";
+    private static final String TRAINING_NAME_PILATES = "Pilates";
+    private static final int TRAINING_DURATION_YOGA = 60;
+    private static final int TRAINING_DURATION_PILATES = 45;
+
     private ObjectMapper objectMapper;
 
     private MockMvc mockMvc;
@@ -63,13 +82,13 @@ class TraineeControllerTest {
     @Test
     void testRegisterTraineeSuccess() throws Exception {
         TraineeCreateRequest request = new TraineeCreateRequest();
-        request.setFirstName("John");
-        request.setLastName("Doe");
+        request.setFirstName(TRAINEE_FIRST_NAME);
+        request.setLastName(TRAINEE_LAST_NAME);
         request.setDateOfBirth(java.time.LocalDate.of(1990, 1, 1));
-        request.setAddress("123 Main St");
+        request.setAddress(TRAINEE_ADDRESS);
 
         UserCreationResponse response = new UserCreationResponse();
-        response.setUsername("john.doe");
+        response.setUsername(TRAINEE_USERNAME);
         response.setPassword("secret");
 
         when(gymFacade.createTrainee(any())).thenReturn(response);
@@ -79,7 +98,7 @@ class TraineeControllerTest {
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("john.doe"))
+                .andExpect(jsonPath("$.username").value(TRAINEE_USERNAME))
                 .andExpect(jsonPath("$.password").value("secret"));
 
         verify(gymFacade).createTrainee(any(TraineeCreateRequest.class));
@@ -88,20 +107,20 @@ class TraineeControllerTest {
     @Test
     void testGetTraineeProfileSuccess() throws Exception {
         TraineeGetResponse profile = new TraineeGetResponse();
-        profile.setUsername("john.doe");
-        profile.setFirstName("John");
-        profile.setLastName("Doe");
+        profile.setUsername(TRAINEE_USERNAME);
+        profile.setFirstName(TRAINEE_FIRST_NAME);
+        profile.setLastName(TRAINEE_LAST_NAME);
 
-        when(gymFacade.getTraineeByUsername("john.doe")).thenReturn(profile);
+        when(gymFacade.getTraineeByUsername(TRAINEE_USERNAME)).thenReturn(profile);
 
-        var result = mockMvc.perform(get(BASE_PATH + "/trainees/john.doe"));
+        var result = mockMvc.perform(get(BASE_PATH + "/trainees/" + TRAINEE_USERNAME));
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("john.doe"))
-                .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"));
+                .andExpect(jsonPath("$.username").value(TRAINEE_USERNAME))
+                .andExpect(jsonPath("$.firstName").value(TRAINEE_FIRST_NAME))
+                .andExpect(jsonPath("$.lastName").value(TRAINEE_LAST_NAME));
 
-        verify(gymFacade).getTraineeByUsername("john.doe");
+        verify(gymFacade).getTraineeByUsername(TRAINEE_USERNAME);
     }
 
     @Test
@@ -112,33 +131,33 @@ class TraineeControllerTest {
         );
 
         TraineeUpdateResponse response = new TraineeUpdateResponse();
-        response.setUsername("john.doe");
+        response.setUsername(TRAINEE_USERNAME);
         response.setFirstName(request.getFirstName());
         response.setLastName(request.getLastName());
         response.setIsActive(request.getIsActive());
 
-        when(gymFacade.updateTrainee(any(), eq("john.doe"))).thenReturn(response);
+        when(gymFacade.updateTrainee(any(), eq(TRAINEE_USERNAME))).thenReturn(response);
 
-        var result = mockMvc.perform(put(BASE_PATH + "/trainees/john.doe")
+        var result = mockMvc.perform(put(BASE_PATH + "/trainees/" + TRAINEE_USERNAME)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("john.doe"))
+                .andExpect(jsonPath("$.username").value(TRAINEE_USERNAME))
                 .andExpect(jsonPath("$.firstName").value(request.getFirstName()))
                 .andExpect(jsonPath("$.lastName").value(request.getLastName()))
                 .andExpect(jsonPath("$.isActive").value(request.getIsActive()));
 
-        verify(gymFacade).updateTrainee(any(TraineeUpdateRequest.class), eq("john.doe"));
+        verify(gymFacade).updateTrainee(any(TraineeUpdateRequest.class), eq(TRAINEE_USERNAME));
     }
 
     @Test
     void testDeleteTraineeProfileSuccess() throws Exception {
-        var result = mockMvc.perform(delete(BASE_PATH + "/trainees/john.doe"));
+        var result = mockMvc.perform(delete(BASE_PATH + "/trainees/" + TRAINEE_USERNAME));
 
         result.andExpect(status().isOk());
 
-        verify(gymFacade).deleteTraineeByUsername("john.doe");
+        verify(gymFacade).deleteTraineeByUsername(TRAINEE_USERNAME);
     }
 
     @Test
@@ -146,13 +165,13 @@ class TraineeControllerTest {
         ActivationStatusRequest request = new ActivationStatusRequest();
         request.setIsActive(false);
 
-        var result = mockMvc.perform(patch(BASE_PATH + "/trainees/john.doe/change-activation-status")
+        var result = mockMvc.perform(patch(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/change-activation-status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpect(status().isOk());
 
-        verify(gymFacade).setTraineeActive("john.doe", false);
+        verify(gymFacade).setTraineeActive(TRAINEE_USERNAME, false);
     }
 
     @Test
@@ -163,58 +182,58 @@ class TraineeControllerTest {
                 }
         );
 
-        when(gymFacade.getUnassignedTrainers("john.doe")).thenReturn(trainers);
+        when(gymFacade.getUnassignedTrainers(TRAINEE_USERNAME)).thenReturn(trainers);
 
-        var result = mockMvc.perform(get(BASE_PATH + "/trainees/john.doe/available-trainers"));
+        var result = mockMvc.perform(get(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/available-trainers"));
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].username").value("jane.smith"))
-                .andExpect(jsonPath("$[0].firstName").value("Jane"))
-                .andExpect(jsonPath("$[0].lastName").value("Smith"))
-                .andExpect(jsonPath("$[0].specialization").value("Yoga"))
-                .andExpect(jsonPath("$[1].username").value("bob.jones"))
-                .andExpect(jsonPath("$[1].firstName").value("Bob"))
-                .andExpect(jsonPath("$[1].lastName").value("Jones"))
-                .andExpect(jsonPath("$[1].specialization").value("Pilates"));
+                .andExpect(jsonPath("$[0].username").value(TRAINER_1_USERNAME))
+                .andExpect(jsonPath("$[0].firstName").value(TRAINER_1_FIRST_NAME))
+                .andExpect(jsonPath("$[0].lastName").value(TRAINER_1_LAST_NAME))
+                .andExpect(jsonPath("$[0].specialization").value(TRAINER_1_SPECIALIZATION))
+                .andExpect(jsonPath("$[1].username").value(TRAINER_2_USERNAME))
+                .andExpect(jsonPath("$[1].firstName").value(TRAINER_2_FIRST_NAME))
+                .andExpect(jsonPath("$[1].lastName").value(TRAINER_2_LAST_NAME))
+                .andExpect(jsonPath("$[1].specialization").value(TRAINER_2_SPECIALIZATION));
 
-        verify(gymFacade).getUnassignedTrainers("john.doe");
+        verify(gymFacade).getUnassignedTrainers(TRAINEE_USERNAME);
     }
 
     @Test
     void testUpdateTraineeTrainersSuccess() throws Exception {
         TraineeAssignedTrainersUpdateRequest request = new TraineeAssignedTrainersUpdateRequest();
-        request.setTrainerUsernames(List.of("jane.smith", "bob.jones"));
+        request.setTrainerUsernames(List.of(TRAINER_1_USERNAME, TRAINER_2_USERNAME));
 
         TraineeAssignedTrainersUpdateResponse response = new TraineeAssignedTrainersUpdateResponse();
         TraineeAssignedTrainersUpdateResponseTrainersInner trainer1 = new TraineeAssignedTrainersUpdateResponseTrainersInner();
-        trainer1.setUsername("jane.smith");
-        trainer1.setFirstName("Jane");
-        trainer1.setLastName("Smith");
-        trainer1.setSpecialization("Yoga");
+        trainer1.setUsername(TRAINER_1_USERNAME);
+        trainer1.setFirstName(TRAINER_1_FIRST_NAME);
+        trainer1.setLastName(TRAINER_1_LAST_NAME);
+        trainer1.setSpecialization(TRAINER_1_SPECIALIZATION);
         TraineeAssignedTrainersUpdateResponseTrainersInner trainer2 = new TraineeAssignedTrainersUpdateResponseTrainersInner();
-        trainer2.setUsername("bob.jones");
-        trainer2.setFirstName("Bob");
-        trainer2.setLastName("Jones");
-        trainer2.setSpecialization("Pilates");
+        trainer2.setUsername(TRAINER_2_USERNAME);
+        trainer2.setFirstName(TRAINER_2_FIRST_NAME);
+        trainer2.setLastName(TRAINER_2_LAST_NAME);
+        trainer2.setSpecialization(TRAINER_2_SPECIALIZATION);
         response.setTrainers(List.of(trainer1, trainer2));
 
-        when(gymFacade.updateTraineeTrainers(eq("john.doe"), any())).thenReturn(response);
+        when(gymFacade.updateTraineeTrainers(eq(TRAINEE_USERNAME), any())).thenReturn(response);
 
-        var result = mockMvc.perform(put(BASE_PATH + "/trainees/john.doe/trainers")
+        var result = mockMvc.perform(put(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/trainers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$.trainers[0].username").value("jane.smith"))
-                .andExpect(jsonPath("$.trainers[0].firstName").value("Jane"))
-                .andExpect(jsonPath("$.trainers[0].lastName").value("Smith"))
-                .andExpect(jsonPath("$.trainers[0].specialization").value("Yoga"))
-                .andExpect(jsonPath("$.trainers[1].username").value("bob.jones"))
-                .andExpect(jsonPath("$.trainers[1].firstName").value("Bob"))
-                .andExpect(jsonPath("$.trainers[1].lastName").value("Jones"))
-                .andExpect(jsonPath("$.trainers[1].specialization").value("Pilates"));
+                .andExpect(jsonPath("$.trainers[0].username").value(TRAINER_1_USERNAME))
+                .andExpect(jsonPath("$.trainers[0].firstName").value(TRAINER_1_FIRST_NAME))
+                .andExpect(jsonPath("$.trainers[0].lastName").value(TRAINER_1_LAST_NAME))
+                .andExpect(jsonPath("$.trainers[0].specialization").value(TRAINER_1_SPECIALIZATION))
+                .andExpect(jsonPath("$.trainers[1].username").value(TRAINER_2_USERNAME))
+                .andExpect(jsonPath("$.trainers[1].firstName").value(TRAINER_2_FIRST_NAME))
+                .andExpect(jsonPath("$.trainers[1].lastName").value(TRAINER_2_LAST_NAME))
+                .andExpect(jsonPath("$.trainers[1].specialization").value(TRAINER_2_SPECIALIZATION));
 
-        verify(gymFacade).updateTraineeTrainers(eq("john.doe"), any());
+        verify(gymFacade).updateTraineeTrainers(eq(TRAINEE_USERNAME), any());
     }
 
     @Test
@@ -227,31 +246,31 @@ class TraineeControllerTest {
 
         when(gymFacade.getTraineeTrainings(any())).thenReturn(trainings);
 
-        var result = mockMvc.perform(get(BASE_PATH + "/trainees/john.doe/trainings")
+        var result = mockMvc.perform(get(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/trainings")
                 .param("periodFrom", "2025-07-01")
                 .param("periodTo", "2025-07-31")
-                .param("trainerName", "Jane"));
+                .param("trainerName", TRAINER_1_FIRST_NAME));
 
         result.andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].trainingName").value("Yoga"))
+                .andExpect(jsonPath("$[0].trainingName").value(TRAINING_NAME_YOGA))
                 .andExpect(jsonPath("$[0].trainingDate[0]").value(2025))
                 .andExpect(jsonPath("$[0].trainingDate[1]").value(7))
                 .andExpect(jsonPath("$[0].trainingDate[2]").value(15))
-                .andExpect(jsonPath("$[0].trainerName").value("Jane"))
-                .andExpect(jsonPath("$[0].trainingDuration").value(60))
-                .andExpect(jsonPath("$[1].trainingName").value("Pilates"))
+                .andExpect(jsonPath("$[0].trainerName").value(TRAINER_1_FIRST_NAME))
+                .andExpect(jsonPath("$[0].trainingDuration").value(TRAINING_DURATION_YOGA))
+                .andExpect(jsonPath("$[1].trainingName").value(TRAINING_NAME_PILATES))
                 .andExpect(jsonPath("$[1].trainingDate[0]").value(2025))
                 .andExpect(jsonPath("$[1].trainingDate[1]").value(7))
                 .andExpect(jsonPath("$[1].trainingDate[2]").value(20))
-                .andExpect(jsonPath("$[1].trainerName").value("Bob"))
-                .andExpect(jsonPath("$[1].trainingDuration").value(45));
+                .andExpect(jsonPath("$[1].trainerName").value(TRAINER_2_FIRST_NAME))
+                .andExpect(jsonPath("$[1].trainingDuration").value(TRAINING_DURATION_PILATES));
 
         verify(gymFacade).getTraineeTrainings(any());
     }
 
     @Test
     void testGetTraineeTrainingsInvalidDate() throws Exception {
-        var result = mockMvc.perform(get(BASE_PATH + "/trainees/john.doe/trainings")
+        var result = mockMvc.perform(get(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/trainings")
                 .param("periodFrom", "invalid-date"));
 
         result.andExpect(status().isBadRequest());

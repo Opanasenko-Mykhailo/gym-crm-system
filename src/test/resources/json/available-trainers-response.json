@@ -1,14 +1,14 @@
 [
   {
-    "username": "jane.smith",
-    "firstName": "Jane",
-    "lastName": "Smith",
+    "username": "sofia.melnyk",
+    "firstName": "Sofia",
+    "lastName": "Melnyk",
     "specialization": "Yoga"
   },
   {
-    "username": "bob.jones",
-    "firstName": "Bob",
-    "lastName": "Jones",
+    "username": "andriy.shevchenko",
+    "firstName": "Andriy",
+    "lastName": "Shevchenko",
     "specialization": "Pilates"
   }
 ]
