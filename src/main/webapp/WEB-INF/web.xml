@@ -15,7 +15,10 @@
         </init-param>
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>com.gcs.app.config.AppConfig</param-value>
+            <param-value>
+                com.gcs.app.config.AppConfig,
+                com.gcs.app.config.WebConfig
+            </param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
