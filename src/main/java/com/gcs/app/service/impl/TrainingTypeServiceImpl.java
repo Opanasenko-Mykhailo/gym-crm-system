@@ -23,7 +23,7 @@ public class TrainingTypeServiceImpl implements TrainingTypeService {
     @Override
     @TransactionalContext(readOnly = true)
     public List<TrainingTypeResponseDto> getAll() {
-        log.debug("Fetching all training types");
+        log.info("Fetching all training types");
         List<TrainingType> trainingTypes = trainingTypeDao.findAll();
 
         return trainingTypeMapper.toDtoList(trainingTypes);
