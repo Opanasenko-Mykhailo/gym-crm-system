@@ -42,16 +42,24 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public Trainee createTrainee(@Valid TraineeCreateRequestDto requestDto) {
         Trainee trainee = traineeMapper.toEntity(requestDto);
-        log.info("Creating trainee: {} {}", trainee.getUser().getFirstName(), trainee.getUser().getLastName());
+        User user = trainee.getUser();
+        log.info("Creating trainee: {} {}", user.getFirstName(), user.getLastName());
+
+        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
+        String password = credentialsService.generateRandomPassword();
+        String encryptedPassword = credentialsService.encodePassword(password);
+
 
         Trainee traineeWithCredentials = trainee.toBuilder()
-                .user(userWithCredentials(trainee.getUser()))
+                .user(userWithCredentials(user, username, encryptedPassword))
                 .build();
 
         Trainee createdTrainee = traineeDao.create(traineeWithCredentials);
         log.debug("Trainee created: {}", createdTrainee);
 
-        return createdTrainee;
+        return createdTrainee.toBuilder()
+                .user(userWithCredentials(user, username, password))
+                .build();
     }
 
     @TransactionalContext
@@ -136,10 +144,7 @@ public class TraineeServiceImpl implements TraineeService {
         return traineeDao.update(trainee);
     }
 
-    private User userWithCredentials(User user) {
-        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
-        String password = credentialsService.generateRandomPassword();
-
+    private User userWithCredentials(User user, String username, String password) {
         return User.builder()
                 .username(username)
                 .password(password)

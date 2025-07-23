@@ -26,8 +26,8 @@ import java.util.Set;
 @Entity
 @Table(name = "trainers")
 @Getter
-@ToString(exclude = "trainees")
-@EqualsAndHashCode(exclude = "trainees")
+@ToString
+@EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -38,15 +38,21 @@ public class Trainer {
     @Column(name = "id", updatable = false, nullable = false)
     private Long id;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(optional = false)
     @JoinColumn(name = "specialization_id", nullable = false)
     private TrainingType specialization;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
 
     @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "trainers", fetch = FetchType.LAZY)
     private Set<Trainee> trainees = new HashSet<>();
 }

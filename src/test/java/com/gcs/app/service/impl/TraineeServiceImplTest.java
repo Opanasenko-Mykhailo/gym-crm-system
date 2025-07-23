@@ -212,9 +212,10 @@ class TraineeServiceImplTest {
 
     @Test
     void updateTraineeTrainers_whenTraineeExists_assignsNewTrainers() {
-        Trainer trainer1 = createTrainer("trainer.one");
-        Trainer trainer2 = createTrainer("trainer.two");
-        Trainer oldTrainer = createTrainer("old.trainer");
+        Trainer trainer1 = createTrainer("trainer.one").toBuilder().id(1L).build();
+        Trainer trainer2 = createTrainer("trainer.two").toBuilder().id(2L).build();
+        Trainer oldTrainer = createTrainer("old.trainer").toBuilder().id(3L).build();
+
         oldTrainer.getTrainees().add(TRAINEE);
         TRAINEE.getTrainers().add(oldTrainer);
         List<String> trainerUsernames = List.of("trainer.one", "trainer.two");

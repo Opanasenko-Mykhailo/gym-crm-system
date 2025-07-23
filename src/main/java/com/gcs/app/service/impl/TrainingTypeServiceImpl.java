@@ -2,6 +2,7 @@ package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainingTypeDao;
 import com.gcs.app.dao.transaction.TransactionalContext;
+import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainingTypeResponseDto;
 import com.gcs.app.mapper.TrainingTypeMapper;
 import com.gcs.app.model.TrainingType;
@@ -27,5 +28,13 @@ public class TrainingTypeServiceImpl implements TrainingTypeService {
         List<TrainingType> trainingTypes = trainingTypeDao.findAll();
 
         return trainingTypeMapper.toDtoList(trainingTypes);
+    }
+
+    @Override
+    public TrainingType getByName(String trainingTypeName) {
+        log.info("Fetching TrainingType by name: {}", trainingTypeName);
+
+        return trainingTypeDao.findByName(trainingTypeName)
+                .orElseThrow(() -> new ServiceException(String.format("TrainingType not found with name: %s", trainingTypeName)));
     }
 }

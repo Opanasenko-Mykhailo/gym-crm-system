@@ -42,14 +42,20 @@ public class Training {
     @Column(name = "training_duration", nullable = false)
     private Long duration;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(optional = false)
     @JoinColumn(name = "trainee_id", referencedColumnName = "id", nullable = false)
     private Trainee trainee;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(optional = false)
     @JoinColumn(name = "trainer_id", referencedColumnName = "id", nullable = false)
     private Trainer trainer;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(optional = false)
     @JoinColumn(name = "type_id", referencedColumnName = "id", nullable = false)
     private TrainingType type;

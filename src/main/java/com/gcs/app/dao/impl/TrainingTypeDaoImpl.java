@@ -9,6 +9,7 @@ import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -25,6 +26,19 @@ public class TrainingTypeDaoImpl implements TrainingTypeDao {
 
         log.info("Loaded {} training types", result.size());
         return result;
+    }
+
+    @Override
+    public Optional<TrainingType> findByName(String name) {
+        log.info("Searching TrainingType by name: {}", name);
+
+        String hql = "FROM TrainingType tt WHERE tt.name = :name";
+        TrainingType trainingType = sessionFactory.getCurrentSession()
+                .createQuery(hql, TrainingType.class)
+                .setParameter("name", name)
+                .uniqueResult();
+
+        return Optional.ofNullable(trainingType);
     }
 
     private Session getSession() {

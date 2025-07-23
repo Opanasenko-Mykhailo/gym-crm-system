@@ -17,7 +17,7 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 @org.springframework.context.annotation.Configuration
-@Import({AppConfig.class, TestLiquibaseConfig.class})
+@Import({AppConfig.class, TestLiquibaseConfig.class, TestHttpSessionConfig.class})
 public class TestConfig {
 
     @Value("${database.driver-class-name}")

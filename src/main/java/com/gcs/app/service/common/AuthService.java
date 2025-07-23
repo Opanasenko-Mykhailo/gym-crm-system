@@ -5,6 +5,7 @@ import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.model.User;
 import com.gcs.app.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class AuthService {
     private final UserService userService;
     private final CredentialsService credentialsService;
     private final AuthContextHolder authContextHolder;
+    private final HttpSession httpSession;
 
     public AuthResponseDto authenticate(@Valid AuthRequestDto dto) {
         User user = userService.getByUsername(dto.getUsername());
@@ -29,6 +31,7 @@ public class AuthService {
         }
 
         authContextHolder.setCurrentUser(user);
+        httpSession.setAttribute("authenticatedUser", user);
 
         return new AuthResponseDto(true, "Login successful");
     }

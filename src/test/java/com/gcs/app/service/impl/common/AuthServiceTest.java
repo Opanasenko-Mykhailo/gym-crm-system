@@ -8,6 +8,7 @@ import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.AuthContextHolder;
 import com.gcs.app.service.common.AuthService;
 import com.gcs.app.service.common.CredentialsService;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +39,9 @@ class AuthServiceTest {
 
     @Mock
     private CredentialsService credentialsService;
+
+    @Mock
+    private HttpSession httpSession;
 
     @InjectMocks
     private AuthService authService;
@@ -59,6 +66,7 @@ class AuthServiceTest {
         assertEquals("Login successful", response.getMessage());
 
         verify(authContextHolder).setCurrentUser(user);
+        verify(httpSession).setAttribute("authenticatedUser", user);
     }
 
     @Test
@@ -72,6 +80,7 @@ class AuthServiceTest {
         ServiceException ex = assertThrows(ServiceException.class, () -> authService.authenticate(dto));
 
         assertEquals("User not found: " + USERNAME, ex.getMessage());
+        verify(httpSession, never()).setAttribute(anyString(), any());
     }
 
     @Test
@@ -91,5 +100,6 @@ class AuthServiceTest {
         ServiceException ex = assertThrows(ServiceException.class, () -> authService.authenticate(dto));
 
         assertEquals("Invalid username or password", ex.getMessage());
+        verify(httpSession, never()).setAttribute(anyString(), any());
     }
 }
