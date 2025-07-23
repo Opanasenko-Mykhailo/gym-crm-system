@@ -19,7 +19,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -31,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +42,8 @@ class TrainerServiceImplTest {
 
     private static final String FIRST_NAME = "Jane";
     private static final String LAST_NAME = "Smith";
+    private static final String UPDATED_FIRST_NAME = "Janet";
+    private static final String UPDATED_LAST_NAME = "Johnson";
     private static final String USERNAME = "jane.smith";
     private static final String PASSWORD = "password123";
     private static final String ENCODED_PASSWORD = "$2a$encodedPass";
@@ -52,8 +57,8 @@ class TrainerServiceImplTest {
     @Mock
     private TrainerDao trainerDao;
 
-    @Mock
-    private TrainerMapper trainerMapper;
+    @Spy
+    private TrainerMapper trainerMapper = spy(TrainerMapper.class);
 
     @Mock
     private UserService userService;
@@ -78,8 +83,6 @@ class TrainerServiceImplTest {
         when(trainerDao.create(any(Trainer.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Trainer actual = service.createTrainer(CREATE_REQUEST);
-
-        System.out.println("specialization = " + actual.getSpecialization());
 
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
@@ -110,6 +113,32 @@ class TrainerServiceImplTest {
         verify(trainerDao).findByUsername(USERNAME);
         verify(trainerMapper).update(TRAINER, UPDATE_REQUEST);
         verify(trainerDao).update(TRAINER);
+    }
+
+    void updateTrainer_whenTrainerExists_usingSpyMapper_mapsDtoUpdatesAndReturnsTrainer() {
+        ReflectionTestUtils.setField(service, "trainerMapper", trainerMapper);
+
+        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINER));
+        when(trainerMapper.update(TRAINER, UPDATE_REQUEST)).thenReturn(TRAINER);
+        when(trainerDao.update(TRAINER)).thenReturn(TRAINER);
+
+        Trainer actual = service.updateTrainer(UPDATE_REQUEST);
+
+        ArgumentCaptor<Trainer> captor = ArgumentCaptor.forClass(Trainer.class);
+        verify(trainerDao).update(captor.capture());
+
+        Trainer updatedTrainer = captor.getValue();
+        assertEquals(UPDATE_REQUEST.getFirstName(), updatedTrainer.getUser().getFirstName());
+        assertEquals(UPDATE_REQUEST.getLastName(), updatedTrainer.getUser().getLastName());
+        assertEquals(UPDATE_REQUEST.getUsername(), updatedTrainer.getUser().getUsername());
+        assertEquals(UPDATE_REQUEST.getIsActive(), updatedTrainer.getUser().getIsActive());
+        assertEquals(UPDATE_REQUEST.getSpecialization().getName(), updatedTrainer.getSpecialization().getName());
+
+        assertTrainerFields(actual);
+
+        verify(trainerDao).findByUsername(USERNAME);
+        verify(trainerMapper).update(TRAINER, UPDATE_REQUEST);
+        verify(trainerDao).update(captor.getValue());
     }
 
     @Test
@@ -238,8 +267,8 @@ class TrainerServiceImplTest {
     private static TrainerUpdateRequestDto createTrainerUpdateRequestDto() {
         TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
         dto.setUsername(USERNAME);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
+        dto.setFirstName(UPDATED_FIRST_NAME);
+        dto.setLastName(UPDATED_LAST_NAME);
         dto.setSpecialization(createTrainingType());
         dto.setIsActive(true);
 
