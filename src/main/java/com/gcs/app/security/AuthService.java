@@ -4,6 +4,7 @@ import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.model.User;
+import com.gcs.app.security.AuthContextHolder;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import jakarta.validation.Valid;
