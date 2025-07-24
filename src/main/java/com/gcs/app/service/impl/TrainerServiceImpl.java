@@ -152,6 +152,7 @@ public class TrainerServiceImpl implements TrainerService {
         if (specialization == null || specialization.getName() == null) {
             throw new ServiceException("Specialization cannot be null");
         }
+
         return trainingTypeService.getByName(specialization.getName());
     }
 }
