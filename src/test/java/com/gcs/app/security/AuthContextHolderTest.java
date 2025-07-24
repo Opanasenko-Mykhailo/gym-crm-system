@@ -16,7 +16,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AuthContextHolderTest {
 
-    private static final String AUTHENTICATED_USER = "authenticatedUser";
+    private static final String USERNAME = "rowan.atkinson";
+
+    private final User user = createUser();
 
     @Mock
     private HttpSession httpSession;
@@ -25,42 +27,35 @@ class AuthContextHolderTest {
     private AuthContextHolder authContextHolder;
 
     @Test
-    void setCurrentUser_and_getCurrentUser_workCorrectly() {
-        User user = User.builder()
-                .username("john.doe")
-                .build();
-
+    void setCurrentUser_storesUserInThreadLocalAndSession() {
         authContextHolder.setCurrentUser(user);
-        User actual = authContextHolder.getCurrentUser();
 
-        assertSame(user, actual);
-        verify(httpSession).setAttribute(AUTHENTICATED_USER, user);
+        assertSame(user, authContextHolder.getCurrentUser());
+        verify(httpSession).setAttribute("authenticatedUser", user);
     }
 
     @Test
-    void getCurrentUser_restoresFromSession_ifThreadLocalEmpty() {
-        User user = User.builder()
-                .username("john.doe")
-                .build();
-
-        when(httpSession.getAttribute(AUTHENTICATED_USER)).thenReturn(user);
+    void getCurrentUser_restoresUserFromSessionIfThreadLocalEmpty() {
+        when(httpSession.getAttribute("authenticatedUser")).thenReturn(user);
 
         User actual = authContextHolder.getCurrentUser();
 
         assertSame(user, actual);
-        verify(httpSession).getAttribute(AUTHENTICATED_USER);
     }
 
     @Test
-    void clear_removesCurrentUserFromThreadLocal_andSession() {
-        User user = User.builder()
-                .username("john.doe")
-                .build();
-
+    void clear_removesUserFromThreadLocalAndSession() {
         authContextHolder.setCurrentUser(user);
+
         authContextHolder.clear();
 
         assertNull(authContextHolder.getCurrentUser());
-        verify(httpSession).removeAttribute(AUTHENTICATED_USER);
+        verify(httpSession).removeAttribute("authenticatedUser");
+    }
+
+    private User createUser() {
+        return User.builder()
+                .username(USERNAME)
+                .build();
     }
 }

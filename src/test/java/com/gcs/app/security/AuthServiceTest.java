@@ -6,7 +6,6 @@ import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.model.User;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
-import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,16 +15,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    private static final String USERNAME = "john.doe";
+    private static final String USERNAME = "rowan.atkinson";
     private static final String RAW_PASSWORD = "password123";
     private static final String ENCODED_PASSWORD = "$2a$10$dummyhashhere";
 
