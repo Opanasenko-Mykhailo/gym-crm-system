@@ -58,7 +58,7 @@ public class TraineeDaoImpl implements TraineeDao {
 
     @Override
     public Optional<Trainee> findByUsername(String username) {
-        String hql = "FROM Trainee t JOIN FETCH t.user u WHERE u.username = :username";
+        String hql = "FROM Trainee t JOIN FETCH t.user u LEFT JOIN FETCH t.trainers WHERE u.username = :username";
 
         Trainee result = getSession()
                 .createQuery(hql, Trainee.class)

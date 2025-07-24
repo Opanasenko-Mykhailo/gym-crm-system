@@ -30,8 +30,8 @@ import java.util.Set;
 @Entity
 @Table(name = "trainees")
 @Getter
-@ToString(exclude = "trainers")
-@EqualsAndHashCode(exclude = "trainers")
+@ToString
+@EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -48,14 +48,20 @@ public class Trainee {
     @Column(name = "address", length = 255)
     private String address;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "trainee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Training> trainings = new ArrayList<>();
 
     @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinTable(
             name = "trainee_trainer",

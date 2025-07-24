@@ -44,7 +44,7 @@ import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
 import com.gcs.app.service.TrainingTypeService;
 import com.gcs.app.service.UserService;
-import com.gcs.app.service.common.AuthService;
+import com.gcs.app.security.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -86,6 +86,7 @@ public class GymFacade {
     public TraineeUpdateResponse updateTrainee(TraineeUpdateRequest request, String username) {
         log.info("Updating trainee with username: {}", username);
         TraineeUpdateRequestDto updateRequestDto = traineeMapper.toUpdateRequestDto(request);
+        updateRequestDto.setUsername(username);
 
         return traineeMapper.toUpdateRestModel(traineeService.updateTrainee(updateRequestDto));
     }
@@ -149,6 +150,7 @@ public class GymFacade {
     public TrainerUpdateResponse updateTrainer(TrainerUpdateRequest request, String username) {
         log.info("Updating trainer with username: {}", username);
         TrainerUpdateRequestDto updateRequestDto = trainerMapper.toUpdateRequestDto(request);
+        updateRequestDto.setUsername(username);
 
         return trainerMapper.toUpdateRestModel(trainerService.updateTrainer(updateRequestDto));
     }
@@ -211,7 +213,6 @@ public class GymFacade {
                 .toList();
     }
 
-    @Authenticated
     public void changePassword(ChangePasswordRequest request) {
         log.info("Changing password for username: {}", request.getUsername());
         PasswordChangeRequestDto dto = userMapper.toPasswordChangeRequestDto(request);

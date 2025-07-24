@@ -11,6 +11,7 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
+import com.gcs.app.service.TrainingTypeService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;
@@ -38,8 +39,11 @@ class TrainerServiceImplTest {
 
     private static final String FIRST_NAME = "Jane";
     private static final String LAST_NAME = "Smith";
+    private static final String UPDATED_FIRST_NAME = "Janet";
+    private static final String UPDATED_LAST_NAME = "Johnson";
     private static final String USERNAME = "jane.smith";
     private static final String PASSWORD = "password123";
+    private static final String ENCODED_PASSWORD = "$2a$encodedPass";
     private static final String SPECIALIZATION = "Yoga";
     private static final String TRAINER_NOT_FOUND_MESSAGE = "Trainer with username " + USERNAME + " not found";
 
@@ -57,6 +61,9 @@ class TrainerServiceImplTest {
     private UserService userService;
 
     @Mock
+    private TrainingTypeService trainingTypeService;
+
+    @Mock
     private CredentialsService credentialsService;
 
     @InjectMocks
@@ -66,30 +73,56 @@ class TrainerServiceImplTest {
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
         when(trainerMapper.toEntity(CREATE_REQUEST)).thenReturn(TRAINER);
         when(userService.getAllUsernames()).thenReturn(Collections.emptySet());
-        when(trainerDao.create(any(Trainer.class))).thenReturn(TRAINER);
+        when(credentialsService.generateUsername(FIRST_NAME, LAST_NAME, Collections.emptySet())).thenReturn(USERNAME);
+        when(credentialsService.generateRandomPassword()).thenReturn(PASSWORD);
+        when(credentialsService.encodePassword(PASSWORD)).thenReturn(ENCODED_PASSWORD);
+        when(trainingTypeService.getByName(SPECIALIZATION)).thenReturn(createTrainingType());
+        when(trainerDao.create(any(Trainer.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Trainer actual = service.createTrainer(CREATE_REQUEST);
 
-        assertTrainerFields(actual);
+        assertEquals(FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertEquals(PASSWORD, actual.getUser().getPassword());
+        assertTrue(actual.getUser().getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(trainerMapper).toEntity(CREATE_REQUEST);
         verify(userService).getAllUsernames();
+        verify(credentialsService).generateUsername(FIRST_NAME, LAST_NAME, Collections.emptySet());
+        verify(credentialsService).generateRandomPassword();
+        verify(credentialsService).encodePassword(PASSWORD);
+        verify(trainingTypeService).getByName(SPECIALIZATION);
         verify(trainerDao).create(any(Trainer.class));
     }
 
     @Test
-    void updateTrainer_whenTrainerExists_mapsDtoUpdatesAndReturnsTrainer() {
+    void updateTrainer_whenTrainerExists_updatesAndReturnsTrainer() {
         when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINER));
-        when(trainerMapper.update(TRAINER, UPDATE_REQUEST)).thenReturn(TRAINER);
-        when(trainerDao.update(TRAINER)).thenReturn(TRAINER);
+        when(trainingTypeService.getByName(SPECIALIZATION)).thenReturn(createTrainingType());
+        when(trainerDao.update(any(Trainer.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Trainer actual = service.updateTrainer(UPDATE_REQUEST);
 
-        assertTrainerFields(actual);
+        assertEquals(UPDATED_FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(UPDATED_LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertTrue(actual.getUser().getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
+
+        ArgumentCaptor<Trainer> captor = ArgumentCaptor.forClass(Trainer.class);
+        verify(trainerDao).update(captor.capture());
+        Trainer updatedTrainer = captor.getValue();
+        assertEquals(UPDATED_FIRST_NAME, updatedTrainer.getUser().getFirstName());
+        assertEquals(UPDATED_LAST_NAME, updatedTrainer.getUser().getLastName());
+        assertEquals(USERNAME, updatedTrainer.getUser().getUsername());
+        assertTrue(updatedTrainer.getUser().getIsActive());
+        assertEquals(SPECIALIZATION, updatedTrainer.getSpecialization().getName());
 
         verify(trainerDao).findByUsername(USERNAME);
-        verify(trainerMapper).update(TRAINER, UPDATE_REQUEST);
-        verify(trainerDao).update(TRAINER);
+        verify(trainingTypeService).getByName(SPECIALIZATION);
+        verify(trainerDao).update(any(Trainer.class));
     }
 
     @Test
@@ -177,7 +210,7 @@ class TrainerServiceImplTest {
 
     private static Trainer createTrainer() {
         return Trainer.builder()
-                .user(createUser(TrainerServiceImplTest.USERNAME))
+                .user(createUser(USERNAME))
                 .specialization(createTrainingType())
                 .build();
     }
@@ -194,7 +227,7 @@ class TrainerServiceImplTest {
 
     private static TrainingType createTrainingType() {
         return TrainingType.builder()
-                .name(TrainerServiceImplTest.SPECIALIZATION)
+                .name(SPECIALIZATION)
                 .build();
     }
 
@@ -218,8 +251,8 @@ class TrainerServiceImplTest {
     private static TrainerUpdateRequestDto createTrainerUpdateRequestDto() {
         TrainerUpdateRequestDto dto = new TrainerUpdateRequestDto();
         dto.setUsername(USERNAME);
-        dto.setFirstName(FIRST_NAME);
-        dto.setLastName(LAST_NAME);
+        dto.setFirstName(UPDATED_FIRST_NAME);
+        dto.setLastName(UPDATED_LAST_NAME);
         dto.setSpecialization(createTrainingType());
         dto.setIsActive(true);
 

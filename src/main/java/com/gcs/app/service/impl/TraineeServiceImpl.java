@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.ofNullable;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -42,16 +44,24 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public Trainee createTrainee(@Valid TraineeCreateRequestDto requestDto) {
         Trainee trainee = traineeMapper.toEntity(requestDto);
-        log.info("Creating trainee: {} {}", trainee.getUser().getFirstName(), trainee.getUser().getLastName());
+        User user = trainee.getUser();
+        log.info("Creating trainee: {} {}", user.getFirstName(), user.getLastName());
+
+        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
+        String password = credentialsService.generateRandomPassword();
+        String encryptedPassword = credentialsService.encodePassword(password);
+
 
         Trainee traineeWithCredentials = trainee.toBuilder()
-                .user(userWithCredentials(trainee.getUser()))
+                .user(userWithCredentials(user, username, encryptedPassword))
                 .build();
 
         Trainee createdTrainee = traineeDao.create(traineeWithCredentials);
         log.debug("Trainee created: {}", createdTrainee);
 
-        return createdTrainee;
+        return createdTrainee.toBuilder()
+                .user(userWithCredentials(user, username, password))
+                .build();
     }
 
     @TransactionalContext
@@ -61,7 +71,7 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee existing = traineeDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
-        Trainee updated = traineeMapper.update(existing, dto);
+        Trainee updated = buildUpdatedTrainee(existing, dto);
 
         return traineeDao.update(updated);
     }
@@ -136,10 +146,7 @@ public class TraineeServiceImpl implements TraineeService {
         return traineeDao.update(trainee);
     }
 
-    private User userWithCredentials(User user) {
-        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
-        String password = credentialsService.generateRandomPassword();
-
+    private User userWithCredentials(User user, String username, String password) {
         return User.builder()
                 .username(username)
                 .password(password)
@@ -147,6 +154,27 @@ public class TraineeServiceImpl implements TraineeService {
                 .lastName(user.getLastName())
                 .isActive(true)
                 .build();
+    }
+
+    private Trainee buildUpdatedTrainee(Trainee trainee, TraineeUpdateRequestDto dto) {
+        User.UserBuilder userBuilder = trainee.getUser().toBuilder();
+        ofNullable(dto.getFirstName())
+                .ifPresent(userBuilder::firstName);
+        ofNullable(dto.getLastName())
+                .ifPresent(userBuilder::lastName);
+        ofNullable(dto.getUsername())
+                .ifPresent(userBuilder::username);
+        ofNullable(dto.getPassword())
+                .ifPresent(userBuilder::password);
+        ofNullable(dto.getIsActive())
+                .ifPresent(userBuilder::isActive);
+
+        Trainee.TraineeBuilder traineeBuilder = trainee.toBuilder()
+                .user(userBuilder.build())
+                .dateOfBirth(dto.getDateOfBirth())
+                .address(dto.getAddress());
+
+        return traineeBuilder.build();
     }
 
     private void addTrainerToTrainee(Trainee trainee, Trainer trainer) {

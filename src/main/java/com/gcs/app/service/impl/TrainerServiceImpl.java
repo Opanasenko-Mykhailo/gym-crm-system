@@ -10,8 +10,10 @@ import com.gcs.app.mapper.TrainerMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
+import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import com.gcs.app.service.TrainerService;
+import com.gcs.app.service.TrainingTypeService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import jakarta.validation.Valid;
@@ -22,6 +24,8 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -30,23 +34,34 @@ public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerDao trainerDao;
     private final UserService userService;
+    private final TrainingTypeService trainingTypeService;
     private final CredentialsService credentialsService;
     private final TrainerMapper trainerMapper;
 
     @TransactionalContext
     @Override
     public Trainer createTrainer(@Valid TrainerCreateRequestDto trainerCreateRequestDto) {
+        TrainingType specialization = getSpecialization(trainerCreateRequestDto.getSpecialization());
+
         Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
-        log.info("Creating trainer: {} {}", trainer.getUser().getFirstName(), trainer.getUser().getLastName());
+        User user = trainer.getUser();
+        log.info("Creating trainer: {} {}", user.getFirstName(), user.getLastName());
+
+        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
+        String password = credentialsService.generateRandomPassword();
+        String encryptedPassword = credentialsService.encodePassword(password);
 
         Trainer trainerWithCredentials = trainer.toBuilder()
-                .user(userWithCredentials(trainer.getUser()))
+                .user(userWithCredentials(user, username, encryptedPassword))
+                .specialization(specialization)
                 .build();
 
         Trainer createdTrainer = trainerDao.create(trainerWithCredentials);
-        log.debug("Trainer created: {}", createdTrainer);
+        log.info("Trainer created: {}", createdTrainer);
 
-        return createdTrainer;
+        return createdTrainer.toBuilder()
+                .user(userWithCredentials(user, username, password))
+                .build();
     }
 
     @TransactionalContext
@@ -56,7 +71,7 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer existing = trainerDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainer with username %s not found", username)));
 
-        Trainer updated = trainerMapper.update(existing, dto);
+        Trainer updated = buildUpdatedTrainer(existing, dto);
 
         return trainerDao.update(updated);
     }
@@ -102,10 +117,7 @@ public class TrainerServiceImpl implements TrainerService {
         return trainerDao.findAllNotAssignedToTrainee(trainee);
     }
 
-    private User userWithCredentials(User user) {
-        String username = credentialsService.generateUsername(user.getFirstName(), user.getLastName(), userService.getAllUsernames());
-        String password = credentialsService.generateRandomPassword();
-
+    private User userWithCredentials(User user, String username, String password) {
         return User.builder()
                 .username(username)
                 .password(password)
@@ -113,5 +125,34 @@ public class TrainerServiceImpl implements TrainerService {
                 .lastName(user.getLastName())
                 .isActive(true)
                 .build();
+    }
+
+    private Trainer buildUpdatedTrainer(Trainer trainer, TrainerUpdateRequestDto dto) {
+        User.UserBuilder userBuilder = trainer.getUser().toBuilder();
+        ofNullable(dto.getFirstName())
+                .ifPresent(userBuilder::firstName);
+        ofNullable(dto.getLastName())
+                .ifPresent(userBuilder::lastName);
+        ofNullable(dto.getUsername())
+                .ifPresent(userBuilder::username);
+        ofNullable(dto.getPassword())
+                .ifPresent(userBuilder::password);
+        ofNullable(dto.getIsActive())
+                .ifPresent(userBuilder::isActive);
+
+        Trainer.TrainerBuilder trainerBuilder = trainer.toBuilder()
+                .user(userBuilder.build());
+        ofNullable(dto.getSpecialization())
+                .ifPresent(specialization -> trainerBuilder.specialization(getSpecialization(specialization)));
+
+        return trainerBuilder.build();
+    }
+
+    private TrainingType getSpecialization(TrainingType specialization) {
+        if (specialization == null || specialization.getName() == null) {
+            throw new ServiceException("Specialization cannot be null");
+        }
+
+        return trainingTypeService.getByName(specialization.getName());
     }
 }

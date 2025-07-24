@@ -88,8 +88,7 @@ class TraineeServiceImplTest {
     @Test
     void updateTrainee_whenTraineeExists_mapsDtoUpdatesAndReturnsTrainee() {
         when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
-        when(traineeMapper.update(TRAINEE, UPDATE_REQUEST)).thenReturn(TRAINEE);
-        when(traineeDao.update(TRAINEE)).thenReturn(TRAINEE);
+        when(traineeDao.update(any(Trainee.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Trainee actual = service.updateTrainee(UPDATE_REQUEST);
 
@@ -100,9 +99,18 @@ class TraineeServiceImplTest {
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
+        ArgumentCaptor<Trainee> captor = ArgumentCaptor.forClass(Trainee.class);
+        verify(traineeDao).update(captor.capture());
+        Trainee updated = captor.getValue();
+        assertEquals(FIRST_NAME, updated.getUser().getFirstName());
+        assertEquals(LAST_NAME, updated.getUser().getLastName());
+        assertEquals(USERNAME, updated.getUser().getUsername());
+        assertTrue(updated.getUser().getIsActive());
+        assertEquals(DATE_OF_BIRTH, updated.getDateOfBirth());
+        assertEquals(ADDRESS, updated.getAddress());
+
         verify(traineeDao).findByUsername(USERNAME);
-        verify(traineeMapper).update(TRAINEE, UPDATE_REQUEST);
-        verify(traineeDao).update(TRAINEE);
+        verify(traineeDao).update(any(Trainee.class));
     }
 
     @Test
@@ -212,9 +220,10 @@ class TraineeServiceImplTest {
 
     @Test
     void updateTraineeTrainers_whenTraineeExists_assignsNewTrainers() {
-        Trainer trainer1 = createTrainer("trainer.one");
-        Trainer trainer2 = createTrainer("trainer.two");
-        Trainer oldTrainer = createTrainer("old.trainer");
+        Trainer trainer1 = createTrainer("trainer.one").toBuilder().id(1L).build();
+        Trainer trainer2 = createTrainer("trainer.two").toBuilder().id(2L).build();
+        Trainer oldTrainer = createTrainer("old.trainer").toBuilder().id(3L).build();
+
         oldTrainer.getTrainees().add(TRAINEE);
         TRAINEE.getTrainers().add(oldTrainer);
         List<String> trainerUsernames = List.of("trainer.one", "trainer.two");
