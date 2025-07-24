@@ -44,7 +44,7 @@ import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
 import com.gcs.app.service.TrainingTypeService;
 import com.gcs.app.service.UserService;
-import com.gcs.app.service.common.AuthService;
+import com.gcs.app.security.AuthService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

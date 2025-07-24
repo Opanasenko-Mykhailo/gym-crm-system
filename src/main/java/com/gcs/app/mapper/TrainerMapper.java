@@ -14,7 +14,6 @@ import com.gcs.app.rest.TrainerUpdateRequest;
 import com.gcs.app.rest.TrainerUpdateResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface TrainerMapper {
@@ -24,8 +23,6 @@ public interface TrainerMapper {
     Trainer toEntity(TrainerCreateRequestDto dto);
 
     TrainerResponseDto toDto(Trainer trainer);
-
-    Trainer update(@MappingTarget Trainer trainer, TrainerUpdateRequestDto dto);
 
     @Mapping(target = "specialization.name", source = "specialization")
     TrainerCreateRequestDto toCreateRequestDto(TrainerCreateRequest request);

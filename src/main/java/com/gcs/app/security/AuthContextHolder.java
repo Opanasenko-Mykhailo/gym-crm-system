@@ -1,4 +1,4 @@
-package com.gcs.app.service.common;
+package com.gcs.app.security;
 
 import com.gcs.app.model.User;
 import jakarta.servlet.http.HttpSession;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 public class AuthContextHolder {
 
     private static final ThreadLocal<User> currentUser = new ThreadLocal<>();
+
     private final HttpSession httpSession;
 
     public void setCurrentUser(User user) {
@@ -20,7 +21,9 @@ public class AuthContextHolder {
     public User getCurrentUser() {
         User user = currentUser.get();
 
-        return (user != null) ? user : restoreFromSession();
+        return user != null
+                ? user
+                : restoreFromSession();
     }
 
     public void clear() {

@@ -1,12 +1,10 @@
-package com.gcs.app.service.impl.common;
+package com.gcs.app.security;
 
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.model.User;
 import com.gcs.app.service.UserService;
-import com.gcs.app.service.common.AuthContextHolder;
-import com.gcs.app.service.common.AuthService;
 import com.gcs.app.service.common.CredentialsService;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
@@ -40,9 +38,6 @@ class AuthServiceTest {
     @Mock
     private CredentialsService credentialsService;
 
-    @Mock
-    private HttpSession httpSession;
-
     @InjectMocks
     private AuthService authService;
 
@@ -66,7 +61,6 @@ class AuthServiceTest {
         assertEquals("Login successful", response.getMessage());
 
         verify(authContextHolder).setCurrentUser(user);
-        verify(httpSession).setAttribute("authenticatedUser", user);
     }
 
     @Test
@@ -80,7 +74,6 @@ class AuthServiceTest {
         ServiceException ex = assertThrows(ServiceException.class, () -> authService.authenticate(dto));
 
         assertEquals("User not found: " + USERNAME, ex.getMessage());
-        verify(httpSession, never()).setAttribute(anyString(), any());
     }
 
     @Test
@@ -100,6 +93,5 @@ class AuthServiceTest {
         ServiceException ex = assertThrows(ServiceException.class, () -> authService.authenticate(dto));
 
         assertEquals("Invalid username or password", ex.getMessage());
-        verify(httpSession, never()).setAttribute(anyString(), any());
     }
 }

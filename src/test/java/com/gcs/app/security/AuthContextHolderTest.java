@@ -1,7 +1,6 @@
-package com.gcs.app.service.impl.common;
+package com.gcs.app.security;
 
 import com.gcs.app.model.User;
-import com.gcs.app.service.common.AuthContextHolder;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

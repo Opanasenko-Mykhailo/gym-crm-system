@@ -11,7 +11,6 @@ import com.gcs.app.rest.TraineeUpdateRequest;
 import com.gcs.app.rest.TraineeUpdateResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring", uses = {TrainerMapper.class})
 public interface TraineeMapper {
@@ -21,8 +20,6 @@ public interface TraineeMapper {
     Trainee toEntity(TraineeCreateRequestDto dto);
 
     TraineeResponseDto toDto(Trainee trainee);
-
-    Trainee update(@MappingTarget Trainee trainee, TraineeUpdateRequestDto dto);
 
     TraineeCreateRequestDto toCreateRequestDto(TraineeCreateRequest request);
 

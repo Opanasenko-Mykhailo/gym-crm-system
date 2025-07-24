@@ -19,9 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -33,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,8 +54,8 @@ class TrainerServiceImplTest {
     @Mock
     private TrainerDao trainerDao;
 
-    @Spy
-    private TrainerMapper trainerMapper = spy(TrainerMapper.class);
+    @Mock
+    private TrainerMapper trainerMapper;
 
     @Mock
     private UserService userService;
@@ -101,44 +98,31 @@ class TrainerServiceImplTest {
     }
 
     @Test
-    void updateTrainer_whenTrainerExists_mapsDtoUpdatesAndReturnsTrainer() {
+    void updateTrainer_whenTrainerExists_updatesAndReturnsTrainer() {
         when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINER));
-        when(trainerMapper.update(TRAINER, UPDATE_REQUEST)).thenReturn(TRAINER);
-        when(trainerDao.update(TRAINER)).thenReturn(TRAINER);
+        when(trainingTypeService.getByName(SPECIALIZATION)).thenReturn(createTrainingType());
+        when(trainerDao.update(any(Trainer.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Trainer actual = service.updateTrainer(UPDATE_REQUEST);
 
-        assertTrainerFields(actual);
-
-        verify(trainerDao).findByUsername(USERNAME);
-        verify(trainerMapper).update(TRAINER, UPDATE_REQUEST);
-        verify(trainerDao).update(TRAINER);
-    }
-
-    void updateTrainer_whenTrainerExists_usingSpyMapper_mapsDtoUpdatesAndReturnsTrainer() {
-        ReflectionTestUtils.setField(service, "trainerMapper", trainerMapper);
-
-        when(trainerDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINER));
-        when(trainerMapper.update(TRAINER, UPDATE_REQUEST)).thenReturn(TRAINER);
-        when(trainerDao.update(TRAINER)).thenReturn(TRAINER);
-
-        Trainer actual = service.updateTrainer(UPDATE_REQUEST);
+        assertEquals(UPDATED_FIRST_NAME, actual.getUser().getFirstName());
+        assertEquals(UPDATED_LAST_NAME, actual.getUser().getLastName());
+        assertEquals(USERNAME, actual.getUser().getUsername());
+        assertTrue(actual.getUser().getIsActive());
+        assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         ArgumentCaptor<Trainer> captor = ArgumentCaptor.forClass(Trainer.class);
         verify(trainerDao).update(captor.capture());
-
         Trainer updatedTrainer = captor.getValue();
-        assertEquals(UPDATE_REQUEST.getFirstName(), updatedTrainer.getUser().getFirstName());
-        assertEquals(UPDATE_REQUEST.getLastName(), updatedTrainer.getUser().getLastName());
-        assertEquals(UPDATE_REQUEST.getUsername(), updatedTrainer.getUser().getUsername());
-        assertEquals(UPDATE_REQUEST.getIsActive(), updatedTrainer.getUser().getIsActive());
-        assertEquals(UPDATE_REQUEST.getSpecialization().getName(), updatedTrainer.getSpecialization().getName());
-
-        assertTrainerFields(actual);
+        assertEquals(UPDATED_FIRST_NAME, updatedTrainer.getUser().getFirstName());
+        assertEquals(UPDATED_LAST_NAME, updatedTrainer.getUser().getLastName());
+        assertEquals(USERNAME, updatedTrainer.getUser().getUsername());
+        assertTrue(updatedTrainer.getUser().getIsActive());
+        assertEquals(SPECIALIZATION, updatedTrainer.getSpecialization().getName());
 
         verify(trainerDao).findByUsername(USERNAME);
-        verify(trainerMapper).update(TRAINER, UPDATE_REQUEST);
-        verify(trainerDao).update(captor.getValue());
+        verify(trainingTypeService).getByName(SPECIALIZATION);
+        verify(trainerDao).update(any(Trainer.class));
     }
 
     @Test

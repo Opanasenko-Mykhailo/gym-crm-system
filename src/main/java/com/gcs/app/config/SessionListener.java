@@ -1,6 +1,6 @@
 package com.gcs.app.config;
 
-import com.gcs.app.service.common.AuthContextHolder;
+import com.gcs.app.security.AuthContextHolder;
 import jakarta.servlet.http.HttpSessionEvent;
 import jakarta.servlet.http.HttpSessionListener;
 import org.springframework.beans.factory.annotation.Autowired;

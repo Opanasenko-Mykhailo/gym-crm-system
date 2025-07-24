@@ -6,7 +6,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.gcs.app.exception.UserNotAuthenticatedException;
 import com.gcs.app.model.User;
-import com.gcs.app.service.common.AuthContextHolder;
+import com.gcs.app.security.AuthContextHolder;
 import lombok.Getter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

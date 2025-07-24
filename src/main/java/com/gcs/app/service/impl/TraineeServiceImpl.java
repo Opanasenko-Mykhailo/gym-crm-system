@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.ofNullable;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -69,7 +71,7 @@ public class TraineeServiceImpl implements TraineeService {
         Trainee existing = traineeDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
-        Trainee updated = traineeMapper.update(existing, dto);
+        Trainee updated = buildUpdatedTrainee(existing, dto);
 
         return traineeDao.update(updated);
     }
@@ -152,6 +154,27 @@ public class TraineeServiceImpl implements TraineeService {
                 .lastName(user.getLastName())
                 .isActive(true)
                 .build();
+    }
+
+    private Trainee buildUpdatedTrainee(Trainee trainee, TraineeUpdateRequestDto dto) {
+        User.UserBuilder userBuilder = trainee.getUser().toBuilder();
+        ofNullable(dto.getFirstName())
+                .ifPresent(userBuilder::firstName);
+        ofNullable(dto.getLastName())
+                .ifPresent(userBuilder::lastName);
+        ofNullable(dto.getUsername())
+                .ifPresent(userBuilder::username);
+        ofNullable(dto.getPassword())
+                .ifPresent(userBuilder::password);
+        ofNullable(dto.getIsActive())
+                .ifPresent(userBuilder::isActive);
+
+        Trainee.TraineeBuilder traineeBuilder = trainee.toBuilder()
+                .user(userBuilder.build())
+                .dateOfBirth(dto.getDateOfBirth())
+                .address(dto.getAddress());
+
+        return traineeBuilder.build();
     }
 
     private void addTrainerToTrainee(Trainee trainee, Trainer trainer) {

@@ -24,6 +24,8 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -39,8 +41,7 @@ public class TrainerServiceImpl implements TrainerService {
     @TransactionalContext
     @Override
     public Trainer createTrainer(@Valid TrainerCreateRequestDto trainerCreateRequestDto) {
-        String specializationName = trainerCreateRequestDto.getSpecialization().getName();
-        TrainingType specialization = trainingTypeService.getByName(specializationName);
+        TrainingType specialization = getSpecialization(trainerCreateRequestDto.getSpecialization());
 
         Trainer trainer = trainerMapper.toEntity(trainerCreateRequestDto);
         User user = trainer.getUser();
@@ -70,7 +71,7 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer existing = trainerDao.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainer with username %s not found", username)));
 
-        Trainer updated = trainerMapper.update(existing, dto);
+        Trainer updated = buildUpdatedTrainer(existing, dto);
 
         return trainerDao.update(updated);
     }
@@ -124,5 +125,33 @@ public class TrainerServiceImpl implements TrainerService {
                 .lastName(user.getLastName())
                 .isActive(true)
                 .build();
+    }
+
+    private Trainer buildUpdatedTrainer(Trainer trainer, TrainerUpdateRequestDto dto) {
+        User.UserBuilder userBuilder = trainer.getUser().toBuilder();
+        ofNullable(dto.getFirstName())
+                .ifPresent(userBuilder::firstName);
+        ofNullable(dto.getLastName())
+                .ifPresent(userBuilder::lastName);
+        ofNullable(dto.getUsername())
+                .ifPresent(userBuilder::username);
+        ofNullable(dto.getPassword())
+                .ifPresent(userBuilder::password);
+        ofNullable(dto.getIsActive())
+                .ifPresent(userBuilder::isActive);
+
+        Trainer.TrainerBuilder trainerBuilder = trainer.toBuilder()
+                .user(userBuilder.build());
+        ofNullable(dto.getSpecialization())
+                .ifPresent(specialization -> trainerBuilder.specialization(getSpecialization(specialization)));
+
+        return trainerBuilder.build();
+    }
+
+    private TrainingType getSpecialization(TrainingType specialization) {
+        if (specialization == null || specialization.getName() == null) {
+            throw new ServiceException("Specialization cannot be null");
+        }
+        return trainingTypeService.getByName(specialization.getName());
     }
 }
