@@ -69,7 +69,7 @@ public class TrainerServiceImpl implements TrainerService {
     public Trainer updateTrainer(@Valid TrainerUpdateRequestDto dto) {
         String username = dto.getUsername();
         Trainer existing = trainerDao.findByUsername(username)
-                .orElseThrow(() -> new ServiceException(String.format("Trainer with username %s not found", username)));
+                .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
 
         Trainer updated = buildUpdatedTrainer(existing, dto);
 

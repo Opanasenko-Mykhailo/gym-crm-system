@@ -1,9 +1,9 @@
 package com.gcs.app.exception;
 
+import com.gcs.app.rest.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,8 +33,9 @@ public class ErrorHandler {
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<ErrorResponse> handleServiceException(ServiceException ex) {
         log.error("ServiceException: {}", ex.getMessage(), ex);
+        ApiError apiError = resolveError(ex);
 
-        return buildErrorResponse(resolveError(ex));
+        return buildErrorResponse(apiError, ex.getMessage());
     }
 
     @ExceptionHandler(DaoException.class)
@@ -72,10 +73,10 @@ public class ErrorHandler {
         return buildErrorResponse(SERVER_ERROR);
     }
 
-    private ResponseEntity<ErrorResponse> buildErrorResponse(ApiError apiError, String message) {
-        String effectiveMessage = StringUtils.defaultIfBlank(message, "");
-        ErrorResponse errorResponse = new ErrorResponse(
-                String.valueOf(apiError.getCode()), apiError.getMessage() + effectiveMessage);
+    private ResponseEntity<ErrorResponse> buildErrorResponse(ApiError apiError, String details) {
+        String baseMessage = apiError.getMessage();
+
+        ErrorResponse errorResponse = new ErrorResponse(apiError.getCode(), baseMessage);
 
         return new ResponseEntity<>(errorResponse, apiError.getHttpStatus());
     }
@@ -85,12 +86,10 @@ public class ErrorHandler {
     }
 
     private ApiError resolveError(ServiceException ex) {
-        String message = StringUtils.defaultIfBlank(ex.getMessage(), "").toLowerCase();
+        String message = ex.getMessage() != null ? ex.getMessage() : "";
+        boolean isBadRequest = BAD_REQUEST_PREFIXES.stream()
+                .anyMatch(prefix -> message.toLowerCase().startsWith(prefix.toLowerCase()));
 
-        return BAD_REQUEST_PREFIXES.stream()
-                .map(String::toLowerCase)
-                .anyMatch(message::startsWith)
-                ? INVALID_REQUEST_ERROR
-                : SERVER_ERROR;
+        return isBadRequest ? INVALID_REQUEST_ERROR : SERVER_ERROR;
     }
 }

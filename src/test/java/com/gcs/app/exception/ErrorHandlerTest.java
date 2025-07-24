@@ -1,5 +1,6 @@
 package com.gcs.app.exception;
 
+import com.gcs.app.rest.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
@@ -8,9 +9,18 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
-import static com.gcs.app.exception.ApiError.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.http.HttpStatus.*;
+import static com.gcs.app.exception.ApiError.AUTHENTICATION_ERROR;
+import static com.gcs.app.exception.ApiError.DATABASE_ERROR;
+import static com.gcs.app.exception.ApiError.INVALID_REQUEST_ERROR;
+import static com.gcs.app.exception.ApiError.NOT_FOUND_ERROR;
+import static com.gcs.app.exception.ApiError.SERVER_ERROR;
+import static com.gcs.app.exception.ApiError.VALIDATION_ERROR;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @ExtendWith(MockitoExtension.class)
 class ErrorHandlerTest {
@@ -34,8 +44,8 @@ class ErrorHandlerTest {
 
         assertNotNull(result.getBody());
         assertEquals(BAD_REQUEST, result.getStatusCode());
-        assertEquals(String.valueOf(INVALID_REQUEST_ERROR.getCode()), result.getBody().errorCode());
-        assertTrue(result.getBody().errorMessage().contains(INVALID_REQUEST_ERROR.getMessage()));
+        assertEquals(INVALID_REQUEST_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(INVALID_REQUEST_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test
@@ -46,8 +56,8 @@ class ErrorHandlerTest {
 
         assertNotNull(result.getBody());
         assertEquals(INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals(String.valueOf(SERVER_ERROR.getCode()), result.getBody().errorCode());
-        assertEquals(SERVER_ERROR.getMessage(), result.getBody().errorMessage());
+        assertEquals(SERVER_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(SERVER_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test
@@ -58,8 +68,8 @@ class ErrorHandlerTest {
 
         assertNotNull(result.getBody());
         assertEquals(INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals(String.valueOf(DATABASE_ERROR.getCode()), result.getBody().errorCode());
-        assertEquals(DATABASE_ERROR.getMessage(), result.getBody().errorMessage());
+        assertEquals(DATABASE_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(DATABASE_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test
@@ -70,9 +80,8 @@ class ErrorHandlerTest {
 
         assertNotNull(result.getBody());
         assertEquals(NOT_FOUND, result.getStatusCode());
-        assertEquals(String.valueOf(NOT_FOUND_ERROR.getCode()), result.getBody().errorCode());
-        assertTrue(result.getBody().errorMessage().contains(NOT_FOUND_ERROR.getMessage()));
-        assertTrue(result.getBody().errorMessage().contains(ENTITY_NOT_FOUND_MSG));
+        assertEquals(NOT_FOUND_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(NOT_FOUND_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test
@@ -83,9 +92,8 @@ class ErrorHandlerTest {
 
         assertNotNull(result.getBody());
         assertEquals(BAD_REQUEST, result.getStatusCode());
-        assertEquals(String.valueOf(VALIDATION_ERROR.getCode()), result.getBody().errorCode());
-        assertTrue(result.getBody().errorMessage().contains(VALIDATION_ERROR.getMessage()));
-        assertTrue(result.getBody().errorMessage().contains(VALIDATION_MSG));
+        assertEquals(VALIDATION_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(VALIDATION_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test
@@ -96,8 +104,8 @@ class ErrorHandlerTest {
 
         assertNotNull(result.getBody());
         assertEquals(UNAUTHORIZED, result.getStatusCode());
-        assertEquals(String.valueOf(AUTHENTICATION_ERROR.getCode()), result.getBody().errorCode());
-        assertEquals(AUTHENTICATION_ERROR.getMessage(), result.getBody().errorMessage());
+        assertEquals(AUTHENTICATION_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(AUTHENTICATION_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test
@@ -108,7 +116,7 @@ class ErrorHandlerTest {
 
         assertNotNull(result.getBody());
         assertEquals(INTERNAL_SERVER_ERROR, result.getStatusCode());
-        assertEquals(String.valueOf(SERVER_ERROR.getCode()), result.getBody().errorCode());
-        assertEquals(SERVER_ERROR.getMessage(), result.getBody().errorMessage());
+        assertEquals(SERVER_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(SERVER_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 }
