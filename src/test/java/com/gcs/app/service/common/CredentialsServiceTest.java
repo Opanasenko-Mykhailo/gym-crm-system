@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CredentialsServiceTest {
 
-    private final com.gcs.app.service.common.CredentialsService service = new com.gcs.app.service.common.CredentialsService();
+    private final CredentialsService service = new CredentialsService();
 
     @Test
     void generateRandomPassword_returnsPasswordOfLength10() {
@@ -43,34 +43,34 @@ class CredentialsServiceTest {
 
     @Test
     void generateUsername_returnsBaseUsernameIfNotExists() {
-        String firstName = "john";
-        String lastName = "doe";
+        String firstName = "James";
+        String lastName = "Wilson";
         Set<String> existing = Set.of("alice.smith");
 
         String username = service.generateUsername(firstName, lastName, existing);
 
-        assertEquals("john.doe", username);
+        assertEquals("james.wilson", username);
     }
 
     @Test
     void generateUsername_appendsSuffixIfExists() {
-        String firstName = "john";
-        String lastName = "doe";
-        Set<String> existing = Set.of("john.doe", "john.doe1", "john.doe2");
+        String firstName = "James";
+        String lastName = "Wilson";
+        Set<String> existing = Set.of("james.wilson", "james.wilson1", "james.wilson2");
 
         String username = service.generateUsername(firstName, lastName, existing);
 
-        assertEquals("john.doe3", username);
+        assertEquals("james.wilson3", username);
     }
 
     @Test
     void generateUsername_caseInsensitiveCheck() {
-        String firstName = "john";
-        String lastName = "doe";
-        Set<String> existing = Set.of("John.Doe", "john.doe1");
+        String firstName = "James";
+        String lastName = "Wilson";
+        Set<String> existing = Set.of("James.Wilson", "james.wilson1");
 
         String username = service.generateUsername(firstName, lastName, existing);
 
-        assertEquals("john.doe2", username);
+        assertEquals("james.wilson2", username);
     }
 }
