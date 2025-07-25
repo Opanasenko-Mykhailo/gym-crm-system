@@ -1,31 +1,41 @@
 package com.gcs.app.service;
 
 import com.gcs.app.config.TestConfig;
+import com.gcs.app.dao.TraineeDao;
+import com.gcs.app.dao.UserDao;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
+import com.gcs.app.model.Trainee;
+import com.gcs.app.model.User;
+import com.gcs.app.service.common.CredentialsService;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestConfig.class)
+@ContextConfiguration(classes = {TestConfig.class, ConstraintValidatorTest.TestContext.class})
 public class ConstraintValidatorTest {
 
     @Autowired
@@ -37,15 +47,30 @@ public class ConstraintValidatorTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private TraineeDao traineeDao;
+
+    @Autowired
+    private UserDao userDao;
+
+    @Autowired
+    private CredentialsService credentialsService;
+
     @Test
     void givenValidPasswordChangeDto_whenChangePassword_thenShouldThrowServiceExceptionButNotValidation() {
         PasswordChangeRequestDto dto = new PasswordChangeRequestDto();
-        dto.setUsername("emma.jackson");
+        dto.setUsername("noah.taylor");
         dto.setOldPassword("OldPass1!");
         dto.setNewPassword("NewPass1!");
 
-        Exception ex = assertThrows(Exception.class, () -> userService.changePassword(dto));
-        assertFalse(ex instanceof ConstraintViolationException);
+        User user = createUser();
+
+        when(userDao.findByUsername("noah.taylor")).thenReturn(Optional.of(user));
+        when(credentialsService.isPasswordCorrect("OldPass1!", "ValidPass1!")).thenReturn(true);
+        when(credentialsService.encodePassword("NewPass1!")).thenReturn("hashedNewPassword");
+        when(userDao.update(any())).thenReturn(user);
+
+        assertDoesNotThrow(() -> userService.changePassword(dto));
     }
 
     @ParameterizedTest
@@ -62,6 +87,10 @@ public class ConstraintValidatorTest {
         dto.setLastName("Wilson");
         dto.setDateOfBirth(LocalDate.of(1990, 1, 1));
         dto.setAddress("123 Main St");
+
+        Trainee savedTrainee = createTrainee();
+
+        when(traineeDao.create(any())).thenReturn(savedTrainee);
 
         assertDoesNotThrow(() -> traineeService.createTrainee(dto));
     }
@@ -111,7 +140,7 @@ public class ConstraintValidatorTest {
     }
 
     @Test
-    void givenValidTraineeUpdateDto_whenUpdateTrainee_thenShouldThrowServiceExceptionButNotValidation() {
+    void givenValidTraineeUpdateDto_whenUpdateTrainee_thenValidationShouldPass() {
         TraineeUpdateRequestDto dto = new TraineeUpdateRequestDto();
         dto.setFirstName("Noah");
         dto.setLastName("Taylor");
@@ -121,9 +150,14 @@ public class ConstraintValidatorTest {
         dto.setDateOfBirth(LocalDate.of(1985, 5, 15));
         dto.setAddress("456 Another St");
 
-        Exception ex = assertThrows(Exception.class, () -> traineeService.updateTrainee(dto));
-        assertFalse(ex instanceof ConstraintViolationException);
+        Trainee existingTrainee = createTrainee();
+
+        when(traineeDao.findByUsername("noah.taylor")).thenReturn(Optional.of(existingTrainee));
+        when(traineeDao.update(any())).thenReturn(existingTrainee);
+
+        assertDoesNotThrow(() -> traineeService.updateTrainee(dto));
     }
+
 
     @ParameterizedTest
     @MethodSource("provideInvalidTraineeUpdateDtos")
@@ -329,5 +363,42 @@ public class ConstraintValidatorTest {
                 Arguments.of(futureDob, "Date of birth must be in the past or today"),
                 Arguments.of(blankAddress, "Address is required")
         );
+    }
+
+    private Trainee createTrainee() {
+        return Trainee.builder()
+                .user(createUser())
+                .dateOfBirth(LocalDate.of(1985, 5, 15))
+                .address("456 Another St")
+                .build();
+    }
+
+    private User createUser() {
+        return User.builder()
+                .username("noah.taylor")
+                .firstName("Noah")
+                .lastName("Taylor")
+                .password("ValidPass1!")
+                .isActive(true)
+                .build();
+    }
+
+    @Configuration
+    static class TestContext {
+
+        @Bean
+        public TraineeDao traineeDao() {
+            return Mockito.mock(TraineeDao.class);
+        }
+
+        @Bean
+        public UserDao userDao() {
+            return Mockito.mock(UserDao.class);
+        }
+
+        @Bean
+        public CredentialsService credentialsService() {
+            return Mockito.mock(CredentialsService.class);
+        }
     }
 }
