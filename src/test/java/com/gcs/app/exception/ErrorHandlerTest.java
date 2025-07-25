@@ -10,8 +10,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static com.gcs.app.exception.ApiError.AUTHENTICATION_ERROR;
@@ -23,6 +29,9 @@ import static com.gcs.app.exception.ApiError.VALIDATION_ERROR;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -93,6 +102,24 @@ class ErrorHandlerTest {
     }
 
     @Test
+    void handleValidationException_whenMethodArgumentNotValid_returnsValidationError() throws NoSuchMethodException {
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(bindingResult.getAllErrors()).thenReturn(List.of(new ObjectError("objectName", VALIDATION_MSG)));
+
+        Method method = this.getClass().getMethod("dummyMethod", String.class);
+        MethodParameter methodParameter = new MethodParameter(method, 0);
+
+        MethodArgumentNotValidException ex = new MethodArgumentNotValidException(methodParameter, bindingResult);
+
+        ResponseEntity<ErrorResponse> result = errorHandler.handleValidationException(ex);
+
+        assertNotNull(result.getBody());
+        assertEquals(BAD_REQUEST, result.getStatusCode());
+        assertEquals(VALIDATION_ERROR.getCode(), result.getBody().getErrorCode());
+        assertTrue(result.getBody().getErrorMessage().contains(VALIDATION_MSG));
+    }
+
+    @Test
     void handleValidationException_whenThrown_returnsValidationErrorWithMessage() {
         ConstraintViolationException ex = new ConstraintViolationException(VALIDATION_MSG, null);
         String expectedMessage = format(VALIDATION_ERROR.getMessage() + VALIDATION_MSG);
@@ -127,6 +154,9 @@ class ErrorHandlerTest {
         assertEquals(INTERNAL_SERVER_ERROR, result.getStatusCode());
         assertEquals(SERVER_ERROR.getCode(), result.getBody().getErrorCode());
         assertEquals(SERVER_ERROR.getMessage(), result.getBody().getErrorMessage());
+    }
+
+    public void dummyMethod(String param) {
     }
 
     private static Stream<Arguments> invalidRequestProvider() {

@@ -135,8 +135,6 @@ public class TrainerServiceImpl implements TrainerService {
                 .ifPresent(userBuilder::lastName);
         ofNullable(dto.getUsername())
                 .ifPresent(userBuilder::username);
-        ofNullable(dto.getPassword())
-                .ifPresent(userBuilder::password);
         ofNullable(dto.getIsActive())
                 .ifPresent(userBuilder::isActive);
 

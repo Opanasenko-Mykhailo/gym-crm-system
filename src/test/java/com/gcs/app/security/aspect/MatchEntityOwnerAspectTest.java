@@ -23,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -76,7 +75,7 @@ class MatchEntityOwnerAspectTest {
         User user = User.builder().username(blankUsername).build();
         when(authContextHolder.getCurrentUser()).thenReturn(user);
 
-        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+        SecurityException ex = assertThrows(SecurityException.class, () ->
                 aspect.checkUsernameMatch(joinPoint, annotation));
 
         assertEquals("User was not authenticated as current session User or his username is missing", ex.getMessage());
@@ -87,7 +86,7 @@ class MatchEntityOwnerAspectTest {
     void shouldThrowExceptionWhenCurrentUserIsNull() {
         when(authContextHolder.getCurrentUser()).thenReturn(null);
 
-        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+        SecurityException ex = assertThrows(SecurityException.class, () ->
                 aspect.checkUsernameMatch(joinPoint, annotation));
 
         assertEquals("User was not authenticated as current session User or his username is missing", ex.getMessage());
@@ -105,7 +104,7 @@ class MatchEntityOwnerAspectTest {
         when(joinPoint.getSignature()).thenReturn(signature);
         when(joinPoint.getArgs()).thenReturn(new Object[]{new CorrectDtoMock("entity.owner")});
 
-        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+        SecurityException ex = assertThrows(SecurityException.class, () ->
                 aspect.checkUsernameMatch(joinPoint, annotation));
 
         assertEquals("User john.doe has not permission for operation regarding entity.owner entity", ex.getMessage());
@@ -122,7 +121,7 @@ class MatchEntityOwnerAspectTest {
         when(joinPoint.getSignature()).thenReturn(signature);
         when(joinPoint.getArgs()).thenReturn(new Object[]{new InvalidDtoMock("address")});
 
-        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+        SecurityException ex = assertThrows(SecurityException.class, () ->
                 aspect.checkUsernameMatch(joinPoint, annotation));
 
         assertEquals("Username parameter is null or missing", ex.getMessage());
@@ -142,7 +141,7 @@ class MatchEntityOwnerAspectTest {
         when(joinPoint.getSignature()).thenReturn(signature);
         when(joinPoint.getArgs()).thenReturn(new Object[]{new CorrectDtoMock(blankOwnerUsername)});
 
-        AccessDeniedException ex = assertThrows(AccessDeniedException.class, () ->
+        SecurityException ex = assertThrows(SecurityException.class, () ->
                 aspect.checkUsernameMatch(joinPoint, annotation));
 
         assertEquals("Username parameter is null or missing", ex.getMessage());
