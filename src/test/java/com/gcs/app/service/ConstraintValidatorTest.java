@@ -1,7 +1,11 @@
 package com.gcs.app.service;
 
 import com.gcs.app.config.TestConfig;
-import com.gcs.app.facade.dto.*;
+import com.gcs.app.facade.dto.PasswordChangeRequestDto;
+import com.gcs.app.facade.dto.TraineeCreateRequestDto;
+import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
+import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
+import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +19,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = TestConfig.class)
