@@ -1,6 +1,5 @@
-package com.gcs.app.service.impl.common;
+package com.gcs.app.service.common;
 
-import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -11,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CredentialsServiceImplTest {
+class CredentialsServiceTest {
 
-    private final CredentialsService service = new CredentialsService();
+    private final com.gcs.app.service.common.CredentialsService service = new com.gcs.app.service.common.CredentialsService();
 
     @Test
     void generateRandomPassword_returnsPasswordOfLength10() {

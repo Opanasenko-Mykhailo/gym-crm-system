@@ -82,7 +82,7 @@ class TrainingServiceImplTest {
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.createTraining(createRequestDto));
 
-        assertEquals("Trainee with username " + TRAINEE_USERNAME + " not found", ex.getMessage());
+        assertEquals(String.format("Trainee with username %s not found", TRAINEE_USERNAME), ex.getMessage());
 
         verify(trainingMapper).toEntity(createRequestDto);
         verify(traineeService).getByUsername(TRAINEE_USERNAME);
@@ -96,7 +96,7 @@ class TrainingServiceImplTest {
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.createTraining(createRequestDto));
 
-        assertEquals("Trainer with id " + TRAINER_USERNAME + " not found", ex.getMessage());
+        assertEquals(String.format("Trainer with id %s not found", TRAINER_USERNAME), ex.getMessage());
 
         verify(trainingMapper).toEntity(createRequestDto);
         verify(traineeService).getByUsername(TRAINEE_USERNAME);

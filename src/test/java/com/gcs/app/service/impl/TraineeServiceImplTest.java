@@ -42,7 +42,7 @@ class TraineeServiceImplTest {
     private static final String LAST_NAME = "Doe";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1990, 1, 1);
     private static final String ADDRESS = "123 Main St";
-    private static final String TRAINEE_NOT_FOUND_MESSAGE = "Trainee with username " + USERNAME + " not found";
+    private static final String TRAINEE_NOT_FOUND_MESSAGE = String.format("Trainee with username %s not found", USERNAME);
 
     private static final Trainee TRAINEE = createTrainee();
     private static final TraineeCreateRequestDto CREATE_REQUEST = createTraineeCreateRequestDto();
@@ -165,7 +165,7 @@ class TraineeServiceImplTest {
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
 
-        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+        assertEquals(String.format("Trainee not found with username: %s", USERNAME), ex.getMessage());
         verify(traineeDao).findByUsername(USERNAME);
     }
 
@@ -191,7 +191,7 @@ class TraineeServiceImplTest {
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> service.setTraineeActivationStatus(USERNAME, true));
 
-        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+        assertEquals(String.format("Trainee not found with username: %s", USERNAME), ex.getMessage());
         verify(traineeDao).findByUsername(USERNAME);
     }
 
@@ -215,7 +215,7 @@ class TraineeServiceImplTest {
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> service.getUnassignedTrainers(USERNAME));
 
-        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+        assertEquals(String.format("Trainee not found with username: %s", USERNAME), ex.getMessage());
     }
 
     @Test
@@ -254,7 +254,7 @@ class TraineeServiceImplTest {
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> service.updateTraineeTrainers(USERNAME, List.of("trainer1")));
 
-        assertEquals("Trainee not found with username: " + USERNAME, ex.getMessage());
+        assertEquals(String.format("Trainee not found with username: %s", USERNAME), ex.getMessage());
     }
 
     private static Trainee createTrainee() {

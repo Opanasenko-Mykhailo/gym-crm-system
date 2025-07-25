@@ -6,14 +6,20 @@ import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
 public interface TrainerService {
-    Trainer createTrainer(TrainerCreateRequestDto trainerCreateRequestDto);
-    Trainer updateTrainer(TrainerUpdateRequestDto trainerUpdateRequestDto);
+    Trainer createTrainer(@Valid TrainerCreateRequestDto trainerCreateRequestDto);
+
+    Trainer updateTrainer(@Valid TrainerUpdateRequestDto trainerUpdateRequestDto);
+
     Trainer getByUsername(String username);
-    List<Training> getTrainerTrainings(TrainerTrainingSearchCriteriaDto criteria);
+
+    List<Training> getTrainerTrainings(@Valid TrainerTrainingSearchCriteriaDto criteria);
+
     void setTrainerActivationStatus(String username, boolean isActive);
+
     List<Trainer> getUnassignedForTrainee(Trainee trainee);
 }
