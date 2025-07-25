@@ -8,6 +8,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -17,6 +18,7 @@ import javax.sql.DataSource;
 @ContextConfiguration(classes = {TestConfig.class})
 @DBRider
 @DBUnit(cacheConnection = true, leakHunter = true, caseSensitiveTableNames = false, schema = "PUBLIC")
+@ActiveProfiles("test")
 public abstract class AbstractRepositoryTest<T> {
 
     @Autowired

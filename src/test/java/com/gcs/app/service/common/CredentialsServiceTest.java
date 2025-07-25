@@ -43,8 +43,8 @@ class CredentialsServiceTest {
 
     @Test
     void generateUsername_returnsBaseUsernameIfNotExists() {
-        String firstName = "James";
-        String lastName = "Wilson";
+        String firstName = "james";
+        String lastName = "wilson";
         Set<String> existing = Set.of("alice.smith");
 
         String username = service.generateUsername(firstName, lastName, existing);
@@ -54,8 +54,8 @@ class CredentialsServiceTest {
 
     @Test
     void generateUsername_appendsSuffixIfExists() {
-        String firstName = "James";
-        String lastName = "Wilson";
+        String firstName = "james";
+        String lastName = "wilson";
         Set<String> existing = Set.of("james.wilson", "james.wilson1", "james.wilson2");
 
         String username = service.generateUsername(firstName, lastName, existing);
@@ -65,9 +65,9 @@ class CredentialsServiceTest {
 
     @Test
     void generateUsername_caseInsensitiveCheck() {
-        String firstName = "James";
-        String lastName = "Wilson";
-        Set<String> existing = Set.of("James.Wilson", "james.wilson1");
+        String firstName = "james";
+        String lastName = "wilson";
+        Set<String> existing = Set.of("james.wilson", "james.wilson1");
 
         String username = service.generateUsername(firstName, lastName, existing);
 

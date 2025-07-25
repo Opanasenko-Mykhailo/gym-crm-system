@@ -3,10 +3,12 @@ package com.gcs.app.config;
 import liquibase.integration.spring.SpringLiquibase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
 
 @Configuration
+@Profile("test")
 public class TestLiquibaseConfig {
 
     @Bean
@@ -14,6 +16,7 @@ public class TestLiquibaseConfig {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
         liquibase.setChangeLog("classpath:/db/changelog/db.changelog-master.xml");
+        liquibase.setDropFirst(true);
 
         return liquibase;
     }
