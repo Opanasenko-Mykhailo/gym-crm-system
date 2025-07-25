@@ -16,6 +16,7 @@ import static com.gcs.app.exception.ApiError.INVALID_REQUEST_ERROR;
 import static com.gcs.app.exception.ApiError.NOT_FOUND_ERROR;
 import static com.gcs.app.exception.ApiError.SERVER_ERROR;
 import static com.gcs.app.exception.ApiError.VALIDATION_ERROR;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @ControllerAdvice
 @Slf4j
@@ -35,7 +36,9 @@ public class ErrorHandler {
         log.error("ServiceException: {}", ex.getMessage(), ex);
         ApiError apiError = resolveError(ex);
 
-        return buildErrorResponse(apiError, ex.getMessage());
+        return apiError == INVALID_REQUEST_ERROR
+                ? buildErrorResponse(apiError, ex.getMessage())
+                : buildErrorResponse(apiError);
     }
 
     @ExceptionHandler(DaoException.class)
@@ -73,23 +76,26 @@ public class ErrorHandler {
         return buildErrorResponse(SERVER_ERROR);
     }
 
-    private ResponseEntity<ErrorResponse> buildErrorResponse(ApiError apiError, String details) {
-        String baseMessage = apiError.getMessage();
-
-        ErrorResponse errorResponse = new ErrorResponse(apiError.getCode(), baseMessage);
-
-        return new ResponseEntity<>(errorResponse, apiError.getHttpStatus());
-    }
-
     private ResponseEntity<ErrorResponse> buildErrorResponse(ApiError apiError) {
         return buildErrorResponse(apiError, null);
     }
 
+    private ResponseEntity<ErrorResponse> buildErrorResponse(ApiError apiError, String details) {
+        String baseMessage = apiError.getMessage();
+        String errorDetails = isNotBlank(details) ? details : "";
+
+        ErrorResponse errorResponse = new ErrorResponse(apiError.getCode(), baseMessage + errorDetails);
+
+        return new ResponseEntity<>(errorResponse, apiError.getHttpStatus());
+    }
+
     private ApiError resolveError(ServiceException ex) {
         String message = ex.getMessage() != null ? ex.getMessage() : "";
-        boolean isBadRequest = BAD_REQUEST_PREFIXES.stream()
-                .anyMatch(prefix -> message.toLowerCase().startsWith(prefix.toLowerCase()));
 
-        return isBadRequest ? INVALID_REQUEST_ERROR : SERVER_ERROR;
+        return BAD_REQUEST_PREFIXES.stream()
+                .filter(prefix -> message.toLowerCase().startsWith(prefix.toLowerCase()))
+                .findFirst()
+                .map(x -> INVALID_REQUEST_ERROR)
+                .orElse(SERVER_ERROR);
     }
 }

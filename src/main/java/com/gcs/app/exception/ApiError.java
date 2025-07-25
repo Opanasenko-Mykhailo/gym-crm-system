@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 enum ApiError {
 
-    INVALID_REQUEST_ERROR(2400, "Invalid or malformed request", HttpStatus.BAD_REQUEST),
+    INVALID_REQUEST_ERROR(2400, "Invalid request: ", HttpStatus.BAD_REQUEST),
     VALIDATION_ERROR(2760, "Validation error: ", HttpStatus.BAD_REQUEST),
     AUTHENTICATION_ERROR(2805, "Authentication fails", HttpStatus.UNAUTHORIZED),
     AUTHORIZATION_ERROR(2806, "User is not authorized for request operation", HttpStatus.UNAUTHORIZED),
