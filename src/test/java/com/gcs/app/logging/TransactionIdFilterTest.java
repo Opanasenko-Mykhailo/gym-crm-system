@@ -26,7 +26,6 @@ class TransactionIdFilterTest {
         filter.doFilter(request, response, chain);
 
         assertNull(MDC.get("transactionId"), "transactionId should be removed from MDC after filter");
-
         verify(chain, times(1)).doFilter(request, response);
     }
 
@@ -34,7 +33,6 @@ class TransactionIdFilterTest {
     void shouldHaveTransactionIdSetDuringChainExecution() throws Exception {
         ServletRequest request = mock(ServletRequest.class);
         ServletResponse response = mock(ServletResponse.class);
-
         FilterChain chain = mock(FilterChain.class);
 
         doAnswer(invocation -> {

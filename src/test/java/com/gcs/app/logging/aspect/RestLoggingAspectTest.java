@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RestLoggingAspectTest {
@@ -87,6 +87,7 @@ class RestLoggingAspectTest {
         appender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         appender.start();
         logger.addAppender(appender);
+
         return appender;
     }
 
