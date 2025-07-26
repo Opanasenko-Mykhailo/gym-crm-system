@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -82,7 +83,7 @@ class TrainingServiceImplTest {
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.createTraining(createRequestDto));
 
-        assertEquals(String.format("Trainee with username %s not found", TRAINEE_USERNAME), ex.getMessage());
+        assertEquals(format("Trainee with username %s not found", TRAINEE_USERNAME), ex.getMessage());
 
         verify(trainingMapper).toEntity(createRequestDto);
         verify(traineeService).getByUsername(TRAINEE_USERNAME);
@@ -96,7 +97,7 @@ class TrainingServiceImplTest {
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.createTraining(createRequestDto));
 
-        assertEquals(String.format("Trainer with id %s not found", TRAINER_USERNAME), ex.getMessage());
+        assertEquals(format("Trainer with id %s not found", TRAINER_USERNAME), ex.getMessage());
 
         verify(trainingMapper).toEntity(createRequestDto);
         verify(traineeService).getByUsername(TRAINEE_USERNAME);
