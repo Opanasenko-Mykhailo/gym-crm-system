@@ -19,15 +19,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -36,11 +35,11 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {TestConfig.class, ConstraintValidatorTest.TestContext.class})
-@ActiveProfiles("test")
 public class ConstraintValidatorTest {
     private static final String USERNAME_REQUIRED = "Username is required";
     private static final String USERNAME_TOO_LONG = "Username must be at most 50 characters";
@@ -187,11 +186,16 @@ public class ConstraintValidatorTest {
 
         @Test
         void givenValidTrainerTrainingDto_whenGetTrainerTrainings_thenShouldNotThrowException() {
+            TrainerService trainerService = mock(TrainerService.class);
+
             TrainerTrainingSearchCriteriaDto dto = new TrainerTrainingSearchCriteriaDto();
             dto.setUsername("liam.thompson");
             dto.setFromDate(LocalDate.now().minusDays(5));
             dto.setToDate(LocalDate.now());
             dto.setTraineeName("Olivia Davis");
+
+            when(trainerService.getTrainerTrainings(any(TrainerTrainingSearchCriteriaDto.class)))
+                    .thenReturn(Collections.emptyList());
 
             assertDoesNotThrow(() -> trainerService.getTrainerTrainings(dto));
         }
@@ -341,17 +345,17 @@ public class ConstraintValidatorTest {
     static class TestContext {
         @Bean
         public TraineeDao traineeDao() {
-            return Mockito.mock(TraineeDao.class);
+            return mock(TraineeDao.class);
         }
 
         @Bean
         public UserDao userDao() {
-            return Mockito.mock(UserDao.class);
+            return mock(UserDao.class);
         }
 
         @Bean
         public CredentialsService credentialsService() {
-            return Mockito.mock(CredentialsService.class);
+            return mock(CredentialsService.class);
         }
     }
 }
