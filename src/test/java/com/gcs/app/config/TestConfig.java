@@ -9,15 +9,25 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 
 import javax.sql.DataSource;
 import java.util.Properties;
 
 @org.springframework.context.annotation.Configuration
-@Import({AppConfig.class, TestLiquibaseConfig.class, TestHttpSessionConfig.class})
+@ComponentScan(
+        basePackages = "com.gcs.app",
+        excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "com\\.gcs\\.app\\.config\\..*")
+)
+@Import({TestLiquibaseConfig.class, TestHttpSessionConfig.class})
+@PropertySource(value = "classpath:application.yml", factory = YamlPropertySourceFactory.class)
 public class TestConfig {
 
     @Value("${database.driver-class-name}")
@@ -43,6 +53,16 @@ public class TestConfig {
 
     @Value("${hibernate.format_sql}")
     private boolean formatSql;
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean
+    public MethodValidationPostProcessor methodValidationPostProcessor() {
+        return new MethodValidationPostProcessor();
+    }
 
     @Bean
     @Primary

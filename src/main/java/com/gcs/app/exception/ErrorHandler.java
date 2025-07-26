@@ -4,7 +4,9 @@ import com.gcs.app.rest.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -55,6 +57,14 @@ public class ErrorHandler {
         return buildErrorResponse(NOT_FOUND_ERROR, ex.getMessage());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        log.error("MethodArgumentNotValidException: {}", ex.getMessage(), ex);
+        String message = extractValidationMessage(ex);
+
+        return buildErrorResponse(VALIDATION_ERROR, message);
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(ConstraintViolationException ex) {
         log.error("ConstraintViolationException: {}", ex.getMessage(), ex);
@@ -97,5 +107,13 @@ public class ErrorHandler {
                 .findFirst()
                 .map(x -> INVALID_REQUEST_ERROR)
                 .orElse(SERVER_ERROR);
+    }
+
+    private String extractValidationMessage(MethodArgumentNotValidException ex) {
+        return ex.getBindingResult().getAllErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .filter(msg -> !msg.isBlank())
+                .findFirst()
+                .orElse("Validation failed");
     }
 }

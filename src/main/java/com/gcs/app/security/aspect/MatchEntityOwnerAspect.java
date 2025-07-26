@@ -1,8 +1,8 @@
 package com.gcs.app.security.aspect;
 
 import com.gcs.app.model.User;
-import com.gcs.app.security.MatchEntityOwner;
 import com.gcs.app.security.AuthContextHolder;
+import com.gcs.app.security.MatchEntityOwner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +13,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
-import java.nio.file.AccessDeniedException;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -32,17 +31,17 @@ public class MatchEntityOwnerAspect {
         User currentUser = authContextHolder.getCurrentUser();
 
         if (currentUser == null || StringUtils.isBlank(currentUser.getUsername())) {
-            throw new AccessDeniedException("User was not authenticated as current session User or his username is missing");
+            throw new SecurityException("User was not authenticated as current session User or his username is missing");
         }
 
         String currentUsername = currentUser.getUsername();
         String usernameParamName = matchEntityOwner.usernameParam();
 
         String entityOwner = extractUsername(joinPoint, usernameParamName)
-                .orElseThrow(() -> new AccessDeniedException("Username parameter is null or missing"));
+                .orElseThrow(() -> new SecurityException("Username parameter is null or missing"));
 
         if (!entityOwner.equalsIgnoreCase(currentUsername)) {
-            throw new AccessDeniedException(format("User %s has not permission for operation regarding %s entity", currentUsername, entityOwner));
+            throw new SecurityException(format("User %s has not permission for operation regarding %s entity", currentUsername, entityOwner));
         }
 
         log.info("User {} has permission to requested operation", currentUsername);

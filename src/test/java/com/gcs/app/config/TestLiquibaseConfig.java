@@ -14,6 +14,7 @@ public class TestLiquibaseConfig {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
         liquibase.setChangeLog("classpath:/db/changelog/db.changelog-master.xml");
+        liquibase.setDropFirst(true);
 
         return liquibase;
     }

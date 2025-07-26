@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface TrainingTypeService {
     List<TrainingTypeResponseDto> getAll();
+
     TrainingType getByName(String trainingTypeName);
 }

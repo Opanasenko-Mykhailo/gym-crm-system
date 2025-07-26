@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,8 +46,7 @@ class TrainerServiceImplTest {
     private static final String PASSWORD = "password123";
     private static final String ENCODED_PASSWORD = "$2a$encodedPass";
     private static final String SPECIALIZATION = "Yoga";
-    private static final String TRAINER_NOT_FOUND_MESSAGE = "Trainer with username " + USERNAME + " not found";
-
+    private static final String TRAINER_NOT_FOUND_MESSAGE = format("Trainer not found with username: %s", USERNAME);
     private static final Trainer TRAINER = createTrainer();
     private static final TrainerCreateRequestDto CREATE_REQUEST = createTrainerCreateRequestDto();
     private static final TrainerUpdateRequestDto UPDATE_REQUEST = createTrainerUpdateRequestDto();
@@ -151,7 +151,7 @@ class TrainerServiceImplTest {
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
 
-        assertEquals("Trainer not found with username: " + USERNAME, ex.getMessage());
+        assertEquals(format("Trainer not found with username: %s", USERNAME), ex.getMessage());
         verify(trainerDao).findByUsername(USERNAME);
     }
 
@@ -177,7 +177,7 @@ class TrainerServiceImplTest {
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> service.setTrainerActivationStatus(USERNAME, true));
 
-        assertEquals("Trainer not found with username: " + USERNAME, ex.getMessage());
+        assertEquals(format("Trainer not found with username: %s", USERNAME), ex.getMessage());
         verify(trainerDao).findByUsername(USERNAME);
     }
 

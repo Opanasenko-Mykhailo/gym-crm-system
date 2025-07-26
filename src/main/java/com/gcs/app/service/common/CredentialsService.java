@@ -4,25 +4,46 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CredentialsService {
 
-    private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String LOWER = "abcdefghijklmnopqrstuvwxyz";
+    private static final String DIGITS = "0123456789";
+    private static final String SPECIAL = "!@#$%^&*()_+-=[]{};':\"\\|,.<>/?";
+    private static final String ALL = UPPER + LOWER + DIGITS + SPECIAL;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public String generateRandomPassword() {
-        Random random = new Random();
-        StringBuilder password = new StringBuilder(10);
+        int desiredLength = 10;
+        SecureRandom random = new SecureRandom();
+        List<Character> passwordChars = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
-            password.append(CHARS.charAt(random.nextInt(CHARS.length())));
+        passwordChars.add(randomCharFrom(UPPER, random));
+        passwordChars.add(randomCharFrom(LOWER, random));
+        passwordChars.add(randomCharFrom(DIGITS, random));
+        passwordChars.add(randomCharFrom(SPECIAL, random));
+
+        for (int i = passwordChars.size(); i < desiredLength; i++) {
+            passwordChars.add(randomCharFrom(ALL, random));
         }
 
-        return password.toString();
+        Collections.shuffle(passwordChars, random);
+
+        return passwordChars.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining());
     }
 
     public String encodePassword(String rawPassword) {
@@ -52,5 +73,9 @@ public class CredentialsService {
 
         return existingUsernames.stream()
                 .anyMatch(existing -> existing.equalsIgnoreCase(username));
+    }
+
+    private char randomCharFrom(String chars, Random random) {
+        return chars.charAt(random.nextInt(chars.length()));
     }
 }

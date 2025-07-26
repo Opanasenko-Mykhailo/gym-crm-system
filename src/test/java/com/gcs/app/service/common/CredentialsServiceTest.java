@@ -1,6 +1,5 @@
-package com.gcs.app.service.impl.common;
+package com.gcs.app.service.common;
 
-import com.gcs.app.service.common.CredentialsService;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -11,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CredentialsServiceImplTest {
+class CredentialsServiceTest {
 
     private final CredentialsService service = new CredentialsService();
 
@@ -44,34 +43,34 @@ class CredentialsServiceImplTest {
 
     @Test
     void generateUsername_returnsBaseUsernameIfNotExists() {
-        String firstName = "john";
-        String lastName = "doe";
+        String firstName = "james";
+        String lastName = "wilson";
         Set<String> existing = Set.of("alice.smith");
 
         String username = service.generateUsername(firstName, lastName, existing);
 
-        assertEquals("john.doe", username);
+        assertEquals("james.wilson", username);
     }
 
     @Test
     void generateUsername_appendsSuffixIfExists() {
-        String firstName = "john";
-        String lastName = "doe";
-        Set<String> existing = Set.of("john.doe", "john.doe1", "john.doe2");
+        String firstName = "james";
+        String lastName = "wilson";
+        Set<String> existing = Set.of("james.wilson", "james.wilson1", "james.wilson2");
 
         String username = service.generateUsername(firstName, lastName, existing);
 
-        assertEquals("john.doe3", username);
+        assertEquals("james.wilson3", username);
     }
 
     @Test
     void generateUsername_caseInsensitiveCheck() {
-        String firstName = "john";
-        String lastName = "doe";
-        Set<String> existing = Set.of("John.Doe", "john.doe1");
+        String firstName = "james";
+        String lastName = "wilson";
+        Set<String> existing = Set.of("james.wilson", "james.wilson1");
 
         String username = service.generateUsername(firstName, lastName, existing);
 
-        assertEquals("john.doe2", username);
+        assertEquals("james.wilson2", username);
     }
 }

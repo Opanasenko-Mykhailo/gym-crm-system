@@ -11,12 +11,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.Set;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Validated
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;

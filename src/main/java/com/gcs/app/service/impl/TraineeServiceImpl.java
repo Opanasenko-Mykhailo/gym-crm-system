@@ -164,8 +164,6 @@ public class TraineeServiceImpl implements TraineeService {
                 .ifPresent(userBuilder::lastName);
         ofNullable(dto.getUsername())
                 .ifPresent(userBuilder::username);
-        ofNullable(dto.getPassword())
-                .ifPresent(userBuilder::password);
         ofNullable(dto.getIsActive())
                 .ifPresent(userBuilder::isActive);
 
