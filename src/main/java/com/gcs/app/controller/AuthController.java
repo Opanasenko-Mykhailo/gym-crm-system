@@ -2,7 +2,14 @@ package com.gcs.app.controller;
 
 import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.ChangePasswordRequest;
+import com.gcs.app.rest.ErrorResponse;
 import com.gcs.app.rest.LoginRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,21 +24,40 @@ import static com.gcs.app.controller.ApiConstant.BASE_PATH;
 @RestController
 @RequestMapping(BASE_PATH)
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Operations related to user authentication")
 public class AuthController {
 
     private final GymFacade gymFacade;
 
+    @Operation(summary = "User login", description = "Authenticates a user (trainee or trainer) with username and password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login successful"),
+            @ApiResponse(responseCode = "401", description = "Invalid username or password",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/login")
     public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request) {
         gymFacade.authenticate(request);
-
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Change user password", description = "Changes the password for a trainee or trainer")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access or invalid old password",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PutMapping("/change-password")
     public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         gymFacade.changePassword(request);
-
         return ResponseEntity.ok().build();
     }
 }

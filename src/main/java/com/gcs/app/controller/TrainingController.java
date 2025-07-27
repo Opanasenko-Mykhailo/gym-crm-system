@@ -1,7 +1,14 @@
 package com.gcs.app.controller;
 
 import com.gcs.app.facade.GymFacade;
+import com.gcs.app.rest.ErrorResponse;
 import com.gcs.app.rest.TrainingCreateRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +22,26 @@ import static com.gcs.app.controller.ApiConstant.BASE_PATH;
 @RestController
 @RequestMapping(BASE_PATH + "/trainings")
 @RequiredArgsConstructor
+@Tag(name = "Training", description = "Operations related to training sessions")
 public class TrainingController {
 
     private final GymFacade gymFacade;
 
+    @Operation(summary = "Add new training", description = "Creates a new training session for a trainee and trainer")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Training created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Trainee or trainer not found",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping
     public ResponseEntity<Void> addTraining(@Valid @RequestBody TrainingCreateRequest request) {
         gymFacade.createTraining(request);
-
         return ResponseEntity.ok().build();
     }
 }
