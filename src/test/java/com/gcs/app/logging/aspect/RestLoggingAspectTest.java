@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +41,7 @@ class RestLoggingAspectTest {
     @DisplayName("Should log REST request with method and args")
     void shouldLogRequest() throws NoSuchMethodException {
         InMemoryLogAppender appender = createAndAttachAppender();
+
         when(request.getMethod()).thenReturn("POST");
         when(request.getRequestURI()).thenReturn("/api/test");
         when(joinPoint.getSignature()).thenReturn(methodSignature);
@@ -49,12 +50,10 @@ class RestLoggingAspectTest {
 
         aspect.logRequest(joinPoint);
 
-        assertTrue(appender.getLogs().stream()
-                .anyMatch(event -> event.getFormattedMessage().contains("REST Request [POST /api/test]")), "Should contain HTTP method and URI");
-        assertTrue(appender.getLogs().stream()
-                .anyMatch(event -> event.getFormattedMessage().contains("logRequest")), "Should log method name");
-        assertTrue(appender.getLogs().stream()
-                .anyMatch(event -> event.getFormattedMessage().contains("[arg1, 123]")), "Should log method arguments");
+        List<ILoggingEvent> events = appender.getLogs();
+        assertThat(events)
+                .extracting(ILoggingEvent::getFormattedMessage)
+                .contains("REST Request [POST /api/test] Method: logRequest, Args: [arg1, 123]");
     }
 
     @Test
@@ -65,8 +64,10 @@ class RestLoggingAspectTest {
 
         aspect.logResponse(response);
 
-        assertTrue(appender.getLogs().stream()
-                .anyMatch(event -> event.getFormattedMessage().contains("REST Response: " + response)), "Should log response");
+        List<ILoggingEvent> events = appender.getLogs();
+        assertThat(events)
+                .extracting(ILoggingEvent::getFormattedMessage)
+                .contains("REST Response: " + response);
     }
 
     @Test
@@ -77,8 +78,9 @@ class RestLoggingAspectTest {
 
         aspect.logException(ex);
 
-        assertTrue(appender.getLogs().stream()
-                .anyMatch(event -> event.getFormattedMessage().contains("REST Error: test exception")), "Should log exception message");
+        ILoggingEvent event = appender.getLogs().iterator().next();
+        assertThat(event.getFormattedMessage())
+                .isEqualTo("REST Error: test exception");
     }
 
     private InMemoryLogAppender createAndAttachAppender() {

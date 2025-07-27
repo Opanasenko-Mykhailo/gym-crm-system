@@ -24,7 +24,10 @@ import java.util.Properties;
 @org.springframework.context.annotation.Configuration
 @ComponentScan(
         basePackages = "com.gcs.app",
-        excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "com\\.gcs\\.app\\.config\\..*")
+        excludeFilters = {
+                @ComponentScan.Filter(type = FilterType.REGEX, pattern = "com\\.gcs\\.app\\.config\\..*"),
+                @ComponentScan.Filter(type = FilterType.REGEX, pattern = "com\\.gcs\\.app\\.logging\\..*")
+        }
 )
 @Import({TestLiquibaseConfig.class, TestHttpSessionConfig.class})
 @PropertySource(value = "classpath:application.yml", factory = YamlPropertySourceFactory.class)
