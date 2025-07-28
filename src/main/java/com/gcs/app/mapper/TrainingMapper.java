@@ -18,8 +18,18 @@ public interface TrainingMapper {
 
     TrainingResponseDto toDto(Training training);
 
+    @Mapping(source = "name", target = "trainingName")
+    @Mapping(source = "date", target = "trainingDate")
+    @Mapping(source = "duration", target = "trainingDuration")
+    @Mapping(source = "type.name", target = "trainingType")
+    @Mapping(source = "trainee.user.username", target = "traineeName")
     TrainerTrainingGetResponse toTrainerTrainingRestModel(Training training);
 
+    @Mapping(source = "name", target = "trainingName")
+    @Mapping(source = "date", target = "trainingDate")
+    @Mapping(source = "duration", target = "trainingDuration")
+    @Mapping(source = "type.name", target = "trainingType")
+    @Mapping(source = "trainer.user.username", target = "trainerName")
     TraineeTrainingGetResponse toTraineeTrainingRestModel(Training training);
 
     @Mapping(source = "trainingName", target = "name")

@@ -25,17 +25,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class RestLoggingAspectTest {
 
-    @Mock
-    private HttpServletRequest request;
+    @Mock private HttpServletRequest request;
+    @Mock private SensitiveDataMasker dataMasker;
+    @Mock private JoinPoint joinPoint;
+    @Mock private MethodSignature methodSignature;
 
-    @Mock
-    private JoinPoint joinPoint;
-
-    @Mock
-    private MethodSignature methodSignature;
-
-    @InjectMocks
-    private RestLoggingAspect aspect;
+    @InjectMocks private RestLoggingAspect aspect;
 
     @Test
     @DisplayName("Should log REST request with method and args")
@@ -47,40 +42,45 @@ class RestLoggingAspectTest {
         when(joinPoint.getSignature()).thenReturn(methodSignature);
         when(methodSignature.getMethod()).thenReturn(RestLoggingAspect.class.getDeclaredMethod("logRequest", JoinPoint.class));
         when(joinPoint.getArgs()).thenReturn(new Object[]{"arg1", 123});
+        when(dataMasker.maskArguments(new Object[]{"arg1", 123})).thenReturn("[arg1, 123]");
 
         aspect.logRequest(joinPoint);
 
-        List<ILoggingEvent> events = appender.getLogs();
-        assertThat(events)
+        assertThat(appender.getLogs())
                 .extracting(ILoggingEvent::getFormattedMessage)
-                .contains("REST Request [POST /api/test] Method: logRequest, Args: [arg1, 123]");
+                .contains("REST Request: [POST /api/test] Method: logRequest, Args: [arg1, 123]");
     }
 
     @Test
     @DisplayName("Should log REST response")
     void shouldLogResponse() {
         InMemoryLogAppender appender = createAndAttachAppender();
-        String response = "responseData";
 
-        aspect.logResponse(response);
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getRequestURI()).thenReturn("/api/test");
+        when(dataMasker.mask("responseData")).thenReturn("maskedResponse");
 
-        List<ILoggingEvent> events = appender.getLogs();
-        assertThat(events)
+        aspect.logResponse(joinPoint, "responseData");
+
+        assertThat(appender.getLogs())
                 .extracting(ILoggingEvent::getFormattedMessage)
-                .contains("REST Response: " + response);
+                .contains("REST Response: [POST /api/test] maskedResponse");
     }
 
     @Test
     @DisplayName("Should log REST error")
     void shouldLogException() {
         InMemoryLogAppender appender = createAndAttachAppender();
+
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getRequestURI()).thenReturn("/api/test");
         Exception ex = new RuntimeException("test exception");
 
-        aspect.logException(ex);
+        aspect.logException(joinPoint, ex);
 
-        ILoggingEvent event = appender.getLogs().iterator().next();
-        assertThat(event.getFormattedMessage())
-                .isEqualTo("REST Error: test exception");
+        assertThat(appender.getLogs())
+                .extracting(ILoggingEvent::getFormattedMessage)
+                .contains("REST Error: [POST /api/test] test exception");
     }
 
     private InMemoryLogAppender createAndAttachAppender() {
@@ -89,14 +89,12 @@ class RestLoggingAspectTest {
         appender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         appender.start();
         logger.addAppender(appender);
-
         return appender;
     }
 
     @Getter
     private static class InMemoryLogAppender extends AppenderBase<ILoggingEvent> {
         private final List<ILoggingEvent> logs = new ArrayList<>();
-
         @Override
         protected void append(ILoggingEvent eventObject) {
             logs.add(eventObject);
