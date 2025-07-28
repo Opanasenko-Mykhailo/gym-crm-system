@@ -57,7 +57,7 @@ public class TraineeServiceImpl implements TraineeService {
                 .build();
 
         Trainee createdTrainee = traineeDao.create(traineeWithCredentials);
-        log.debug("Trainee created: {}", createdTrainee);
+        log.info("Trainee created with username: {}", username);
 
         return createdTrainee.toBuilder()
                 .user(userWithCredentials(user, username, password))

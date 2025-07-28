@@ -1075,6 +1075,7 @@ components:
         - trainingName
         - trainingDate
         - trainingDuration
+        - trainingTypeName
       properties:
         traineeUsername:
           type: string
@@ -1100,6 +1101,10 @@ components:
           description: Duration of training in minutes
           minimum: 1
           example: 60
+        trainingTypeName:
+          type: string
+          description: Training specialization (training type)
+          example: "Yoga"
     TrainingTypeResponse:
       type: object
       required:

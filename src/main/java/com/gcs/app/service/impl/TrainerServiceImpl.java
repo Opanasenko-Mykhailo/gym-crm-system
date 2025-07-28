@@ -57,7 +57,7 @@ public class TrainerServiceImpl implements TrainerService {
                 .build();
 
         Trainer createdTrainer = trainerDao.create(trainerWithCredentials);
-        log.info("Trainer created: {}", createdTrainer);
+        log.info("Trainer created with username: {}", username);
 
         return createdTrainer.toBuilder()
                 .user(userWithCredentials(user, username, password))

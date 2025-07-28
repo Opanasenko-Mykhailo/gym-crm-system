@@ -2,13 +2,14 @@ package com.gcs.app.service.impl;
 
 import com.gcs.app.dao.TrainingDao;
 import com.gcs.app.dao.transaction.TransactionalContext;
-import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Training;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
+import com.gcs.app.service.TrainingTypeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,20 +28,26 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingMapper trainingMapper;
     private final TraineeService traineeService;
     private final TrainerService trainerService;
+    private final TrainingTypeService trainingTypeService;
 
     @TransactionalContext
     @Override
     public Training createTraining(@Valid TrainingCreateRequestDto createRequestDto) {
+        var type = trainingTypeService.getByName(createRequestDto.getType().getName());
+        var trainee = traineeService.getByUsername(createRequestDto.getTraineeUsername());
+        var trainer = trainerService.getByUsername(createRequestDto.getTrainerUsername());
+
         Training training = trainingMapper.toEntity(createRequestDto);
+
+        training = training.toBuilder()
+                .type(type)
+                .trainee(trainee)
+                .trainer(trainer)
+                .build();
+
         log.info("Creating training: {}", training.getName());
 
-        validateTraineeExists(training.getTrainee().getUser().getUsername());
-        validateTrainerExists(training.getTrainer().getUser().getUsername());
-
-        Training createdTraining = trainingDao.create(training);
-        log.debug("Training created: {}", createdTraining);
-
-        return createdTraining;
+        return trainingDao.create(training);
     }
 
     @TransactionalContext(readOnly = true)
@@ -49,7 +56,7 @@ public class TrainingServiceImpl implements TrainingService {
         log.info("Retrieving training with id: {}", id);
 
         Training training = validateTrainingExists(id).orElseThrow(() -> new ServiceException(String.format("Training with id %d not found", id)));
-        log.debug("Training retrieved: {}", training);
+        log.info("Training retrieved: {}", training);
 
         return training;
     }
@@ -62,17 +69,5 @@ public class TrainingServiceImpl implements TrainingService {
         }
 
         return training;
-    }
-
-    private void validateTraineeExists(String username) {
-        if (traineeService.getByUsername(username) == null) {
-            throw new ServiceException(String.format("Trainee with username %s not found", username));
-        }
-    }
-
-    private void validateTrainerExists(String username) {
-        if (trainerService.getByUsername(username) == null) {
-            throw new ServiceException(String.format("Trainer with id %s not found", username));
-        }
     }
 }

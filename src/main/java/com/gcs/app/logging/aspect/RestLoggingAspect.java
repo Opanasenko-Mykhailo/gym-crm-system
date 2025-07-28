@@ -1,5 +1,6 @@
 package com.gcs.app.logging.aspect;
 
+import com.gcs.app.rest.UserCreationResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -40,11 +42,30 @@ public class RestLoggingAspect {
 
     @AfterReturning(pointcut = "restController()", returning = "result")
     public void logResponse(Object result) {
-        log.info("REST Response: {}", result != null ? result.toString() : "OK");
+        if (result == null) {
+            log.info("REST Response: OK");
+            return;
+        }
+
+        log.info("REST Response: {}", maskSensitiveData(result));
     }
 
     @AfterThrowing(pointcut = "restController()", throwing = "ex")
     public void logException(Exception ex) {
         log.error("REST Error: {}", ex.getMessage(), ex);
+    }
+
+    private String maskSensitiveData(Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity) {
+            Object body = responseEntity.getBody();
+            return "ResponseEntity { status: " + responseEntity.getStatusCode() +
+                    ", body: " + maskSensitiveData(body) + " }";
+        }
+
+        if (result instanceof UserCreationResponse response) {
+            return String.format("UserCreationResponse { username: %s, password: **** }", response.getUsername());
+        }
+
+        return result.toString();
     }
 }
