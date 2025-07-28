@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static com.gcs.app.controller.ApiConstant.BASE_PATH;
@@ -24,7 +25,7 @@ public class SwaggerController {
             return ResponseEntity.notFound().build();
         }
 
-        try (var inputStream = yamlFile.getInputStream()) {
+        try (InputStream inputStream = yamlFile.getInputStream()) {
             String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
             return ResponseEntity.ok()
