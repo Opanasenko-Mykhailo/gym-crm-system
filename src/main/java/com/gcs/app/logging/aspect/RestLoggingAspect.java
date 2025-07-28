@@ -11,6 +11,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -54,11 +55,17 @@ public class RestLoggingAspect {
         log.error("REST Error: {}", ex.getMessage(), ex);
     }
 
-    private Object maskSensitiveData(Object result) {
+    private String maskSensitiveData(Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity) {
+            Object body = responseEntity.getBody();
+            return "ResponseEntity { status: " + responseEntity.getStatusCode() +
+                    ", body: " + maskSensitiveData(body) + " }";
+        }
+
         if (result instanceof UserCreationResponse response) {
             return String.format("UserCreationResponse { username: %s, password: **** }", response.getUsername());
         }
 
-        return result;
+        return result.toString();
     }
 }
