@@ -27,4 +27,18 @@ Swagger UI is available at:
 
 It provides interactive documentation for all available API endpoints.
 
+
+## Postman Collection
+
+To quickly test the available API endpoints, you can import the provided Postman collection:
+
+1. Open **Postman**.
+2. Click on the **"Import"** button (top left).
+3. Select the **"File"** tab.
+4. Navigate to the file:  
+   `src/main/resources/postman/GCA-API-Collection.json`
+5. Click **"Open"** to import the collection.
+
+The collection includes predefined requests for authentication, trainers, trainees, and training operations.  
+You can modify the environment variables or headers as needed for your local setup.
 ---
