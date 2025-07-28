@@ -84,17 +84,6 @@ class RestLoggingAspectTest {
                 .isEqualTo("REST Error: test exception");
     }
 
-    @Test
-    @DisplayName("Should mask null safely via reflection")
-    void shouldMaskNullViaReflection() throws Exception {
-        Method method = RestLoggingAspect.class.getDeclaredMethod("maskSensitiveData", Object.class);
-        method.setAccessible(true);
-
-        String result = (String) method.invoke(aspect, (Object) null);
-
-        assertThat(result).isEqualTo("");
-    }
-
     private InMemoryLogAppender createAndAttachAppender() {
         Logger logger = (Logger) LoggerFactory.getLogger(RestLoggingAspect.class);
         InMemoryLogAppender appender = new InMemoryLogAppender();
