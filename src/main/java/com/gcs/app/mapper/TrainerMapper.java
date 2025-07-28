@@ -44,6 +44,10 @@ public interface TrainerMapper {
     @Mapping(source = "specialization.name", target = "specialization")
     TrainerUpdateResponse toUpdateRestModel(Trainer trainer);
 
+    @Mapping(source = "user.firstName", target = "firstName")
+    @Mapping(source = "user.lastName", target = "lastName")
+    @Mapping(source = "user.username", target = "username")
+    @Mapping(source = "user.isActive", target = "isActive")
     @Mapping(source = "specialization.name", target = "specialization")
     AvailableTrainerGetResponse toAvailableTrainerRestModel(Trainer trainer);
 

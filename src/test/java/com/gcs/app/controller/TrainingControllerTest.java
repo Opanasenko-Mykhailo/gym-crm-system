@@ -28,6 +28,7 @@ class TrainingControllerTest {
     private static final String TRAINEE_USERNAME = "oleksandr.kovalenko";
     private static final String TRAINER_USERNAME = "sofia.melnyk";
     private static final String TRAINING_NAME_YOGA = "Yoga";
+    private static final String TRAINING_TYPE_NAME_YOGA = "YOGA";
     private static final LocalDate TRAINING_DATE = LocalDate.ofEpochDay(2025 - 7 - 22);
     private static final int TRAINING_DURATION = 60;
 
@@ -62,6 +63,7 @@ class TrainingControllerTest {
     private TrainingCreateRequest createTrainingCreateRequest() {
         TrainingCreateRequest request = new TrainingCreateRequest();
         request.setTrainingName(TRAINING_NAME_YOGA);
+        request.setTrainingTypeName(TRAINING_TYPE_NAME_YOGA);
         request.setTraineeUsername(TRAINEE_USERNAME);
         request.setTrainerUsername(TRAINER_USERNAME);
         request.setTrainingDate(TRAINING_DATE);

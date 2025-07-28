@@ -11,6 +11,7 @@ import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
+import com.gcs.app.service.TrainingTypeService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -36,32 +36,46 @@ class TrainingServiceImplTest {
     private static final LocalDate DATE = LocalDate.of(2025, 6, 30);
     private static final Long DURATION = 60L;
 
-    private final Training expected = createTraining();
-    private final TrainingCreateRequestDto createRequestDto = createTrainingCreateRequestDto();
-
     @Mock
     private TrainingDao trainingDao;
-
     @Mock
     private TrainingMapper trainingMapper;
-
     @Mock
     private TraineeService traineeService;
-
     @Mock
     private TrainerService trainerService;
+    @Mock
+    private TrainingTypeService trainingTypeService;
 
     @InjectMocks
     private TrainingServiceImpl service;
 
     @Test
     void createTraining_mapsDtoAndCreatesTraining_returnsTraining() {
-        when(trainingMapper.toEntity(createRequestDto)).thenReturn(expected);
-        when(traineeService.getByUsername(TRAINEE_USERNAME)).thenReturn(createTrainee());
-        when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(createTrainer());
+        var requestDto = createTrainingCreateRequestDto();
+        var trainee = createTrainee();
+        var trainer = createTrainer();
+        var type = createTrainingType();
+
+        var mapped = Training.builder()
+                .name(NAME)
+                .date(DATE)
+                .duration(DURATION)
+                .build();
+
+        var expected = mapped.toBuilder()
+                .trainee(trainee)
+                .trainer(trainer)
+                .type(type)
+                .build();
+
+        when(trainingTypeService.getByName(TYPE)).thenReturn(type);
+        when(trainingMapper.toEntity(requestDto)).thenReturn(mapped);
+        when(traineeService.getByUsername(TRAINEE_USERNAME)).thenReturn(trainee);
+        when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(trainer);
         when(trainingDao.create(expected)).thenReturn(expected);
 
-        Training actual = service.createTraining(createRequestDto);
+        Training actual = service.createTraining(requestDto);
 
         assertEquals(TRAINEE_USERNAME, actual.getTrainee().getUser().getUsername());
         assertEquals(TRAINER_USERNAME, actual.getTrainer().getUser().getUsername());
@@ -70,42 +84,17 @@ class TrainingServiceImplTest {
         assertEquals(DATE, actual.getDate());
         assertEquals(DURATION, actual.getDuration());
 
-        verify(trainingMapper).toEntity(createRequestDto);
+        verify(trainingTypeService).getByName(TYPE);
+        verify(trainingMapper).toEntity(requestDto);
         verify(traineeService).getByUsername(TRAINEE_USERNAME);
         verify(trainerService).getByUsername(TRAINER_USERNAME);
         verify(trainingDao).create(expected);
     }
 
     @Test
-    void createTraining_whenTraineeDoesNotExist_throwsServiceException() {
-        when(trainingMapper.toEntity(createRequestDto)).thenReturn(expected);
-        when(traineeService.getByUsername(TRAINEE_USERNAME)).thenReturn(null);
-
-        ServiceException ex = assertThrows(ServiceException.class, () -> service.createTraining(createRequestDto));
-
-        assertEquals(format("Trainee with username %s not found", TRAINEE_USERNAME), ex.getMessage());
-
-        verify(trainingMapper).toEntity(createRequestDto);
-        verify(traineeService).getByUsername(TRAINEE_USERNAME);
-    }
-
-    @Test
-    void createTraining_whenTrainerDoesNotExist_throwsServiceException() {
-        when(trainingMapper.toEntity(createRequestDto)).thenReturn(expected);
-        when(traineeService.getByUsername(TRAINEE_USERNAME)).thenReturn(createTrainee());
-        when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(null);
-
-        ServiceException ex = assertThrows(ServiceException.class, () -> service.createTraining(createRequestDto));
-
-        assertEquals(format("Trainer with id %s not found", TRAINER_USERNAME), ex.getMessage());
-
-        verify(trainingMapper).toEntity(createRequestDto);
-        verify(traineeService).getByUsername(TRAINEE_USERNAME);
-        verify(trainerService).getByUsername(TRAINER_USERNAME);
-    }
-
-    @Test
     void getTraining_whenTrainingExists_returnsTraining() {
+        var expected = createTraining();
+
         when(trainingDao.get(1L)).thenReturn(Optional.of(expected));
 
         Training actual = service.getTraining(1L);
