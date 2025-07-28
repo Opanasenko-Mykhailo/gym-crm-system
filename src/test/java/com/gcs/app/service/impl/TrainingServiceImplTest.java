@@ -62,7 +62,6 @@ class TrainingServiceImplTest {
                 .date(DATE)
                 .duration(DURATION)
                 .build();
-
         var expected = mapped.toBuilder()
                 .trainee(trainee)
                 .trainer(trainer)
