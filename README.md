@@ -41,4 +41,3 @@ To quickly test the available API endpoints, you can import the provided Postman
 
 The collection includes predefined requests for authentication, trainers, trainees, and training operations.  
 You can modify the environment variables or headers as needed for your local setup.
----
