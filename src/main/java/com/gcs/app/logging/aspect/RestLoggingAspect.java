@@ -1,5 +1,6 @@
 package com.gcs.app.logging.aspect;
 
+import com.gcs.app.rest.UserCreationResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +41,24 @@ public class RestLoggingAspect {
 
     @AfterReturning(pointcut = "restController()", returning = "result")
     public void logResponse(Object result) {
-        log.info("REST Response: {}", result != null ? result.toString() : "OK");
+        if (result == null) {
+            log.info("REST Response: OK");
+            return;
+        }
+
+        log.info("REST Response: {}", maskSensitiveData(result));
     }
 
     @AfterThrowing(pointcut = "restController()", throwing = "ex")
     public void logException(Exception ex) {
         log.error("REST Error: {}", ex.getMessage(), ex);
+    }
+
+    private Object maskSensitiveData(Object result) {
+        if (result instanceof UserCreationResponse response) {
+            return String.format("UserCreationResponse { username: %s, password: **** }", response.getUsername());
+        }
+
+        return result;
     }
 }
