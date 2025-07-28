@@ -21,12 +21,13 @@ GRANT ALL PRIVILEGES ON DATABASE "gym_db" TO gcs;
 
 ## API Documentation
 
-Swagger UI is available at:
+- Swagger UI (auto-generated from controllers):  
+  [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
-👉 [http://localhost:8080/gym-crm/swagger-ui/index.html](http://localhost:8080/gym-crm/swagger-ui/index.html)
+- Swagger UI (generated from `gym.yml` file):  
+  [http://localhost:8080/gym-docs.html](http://localhost:8080/gym-docs.html)
 
-It provides interactive documentation for all available API endpoints.
-
+Use these to explore and test the API endpoints interactively.
 
 ## Postman Collection
 
