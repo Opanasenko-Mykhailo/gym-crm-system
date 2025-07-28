@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,9 @@ class RestLoggingAspectTest {
     private HttpServletRequest request;
 
     @Mock
+    private SensitiveDataMasker dataMasker;
+
+    @Mock
     private JoinPoint joinPoint;
 
     @Mock
@@ -38,50 +42,66 @@ class RestLoggingAspectTest {
     @InjectMocks
     private RestLoggingAspect aspect;
 
+    private InMemoryLogAppender appender;
+
+    @BeforeEach
+    void setup() {
+        appender = createAndAttachAppender();
+    }
+
     @Test
     @DisplayName("Should log REST request with method and args")
     void shouldLogRequest() throws NoSuchMethodException {
-        InMemoryLogAppender appender = createAndAttachAppender();
-
         when(request.getMethod()).thenReturn("POST");
         when(request.getRequestURI()).thenReturn("/api/test");
         when(joinPoint.getSignature()).thenReturn(methodSignature);
-        when(methodSignature.getMethod()).thenReturn(RestLoggingAspect.class.getDeclaredMethod("logRequest", JoinPoint.class));
+        Method method = RestLoggingAspect.class.getDeclaredMethod("logRequest", JoinPoint.class);
+        when(methodSignature.getMethod()).thenReturn(method);
         when(joinPoint.getArgs()).thenReturn(new Object[]{"arg1", 123});
+        when(dataMasker.maskArguments(new Object[]{"arg1", 123})).thenReturn("[arg1, 123]");
 
         aspect.logRequest(joinPoint);
 
         List<ILoggingEvent> events = appender.getLogs();
         assertThat(events)
                 .extracting(ILoggingEvent::getFormattedMessage)
-                .contains("REST Request [POST /api/test] Method: logRequest, Args: [arg1, 123]");
+                .anySatisfy(msg ->
+                        assertThat(msg).contains("REST Request: [POST /api/test] Method: logRequest, Args: [arg1, 123]")
+                );
     }
 
     @Test
     @DisplayName("Should log REST response")
     void shouldLogResponse() {
-        InMemoryLogAppender appender = createAndAttachAppender();
-        String response = "responseData";
+        when(request.getMethod()).thenReturn("GET");
+        when(request.getRequestURI()).thenReturn("/api/test");
+        when(dataMasker.mask("responseData")).thenReturn("maskedResponse");
 
-        aspect.logResponse(response);
+        aspect.logResponse(joinPoint, "responseData");
 
         List<ILoggingEvent> events = appender.getLogs();
         assertThat(events)
                 .extracting(ILoggingEvent::getFormattedMessage)
-                .contains("REST Response: " + response);
+                .anySatisfy(msg ->
+                        assertThat(msg).contains("REST Response: [GET /api/test] maskedResponse")
+                );
     }
 
     @Test
     @DisplayName("Should log REST error")
     void shouldLogException() {
-        InMemoryLogAppender appender = createAndAttachAppender();
+        when(request.getMethod()).thenReturn("DELETE");
+        when(request.getRequestURI()).thenReturn("/api/error");
         Exception ex = new RuntimeException("test exception");
 
-        aspect.logException(ex);
+        aspect.logException(joinPoint, ex);
 
-        ILoggingEvent event = appender.getLogs().iterator().next();
-        assertThat(event.getFormattedMessage())
-                .isEqualTo("REST Error: test exception");
+        List<ILoggingEvent> events = appender.getLogs();
+        assertThat(events)
+                .extracting(ILoggingEvent::getFormattedMessage)
+                .anySatisfy(msg ->
+                        assertThat(msg).contains("REST Error: [DELETE /api/error] test exception")
+                );
     }
 
     private InMemoryLogAppender createAndAttachAppender() {
