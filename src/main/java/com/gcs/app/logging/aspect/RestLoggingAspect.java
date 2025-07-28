@@ -56,6 +56,10 @@ public class RestLoggingAspect {
     }
 
     private String maskSensitiveData(Object result) {
+        if (result == null) {
+            return "null";
+        }
+
         if (result instanceof ResponseEntity<?> responseEntity) {
             Object body = responseEntity.getBody();
             return "ResponseEntity { status: " + responseEntity.getStatusCode() +
