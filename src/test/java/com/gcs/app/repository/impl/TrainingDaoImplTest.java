@@ -1,6 +1,6 @@
-package com.gcs.app.dao.impl;
+package com.gcs.app.repository.impl;
 
-import com.gcs.app.dao.AbstractRepositoryTest;
+import com.gcs.app.repository.AbstractRepositoryTest;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;

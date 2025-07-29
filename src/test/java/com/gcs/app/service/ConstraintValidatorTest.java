@@ -1,8 +1,6 @@
 package com.gcs.app.service;
 
 import com.gcs.app.config.TestConfig;
-import com.gcs.app.dao.TraineeDao;
-import com.gcs.app.dao.UserDao;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;

@@ -1,6 +1,6 @@
-package com.gcs.app.dao.transaction.aspect;
+package com.gcs.app.repository.transaction.aspect;
 
-import com.gcs.app.dao.transaction.TransactionalContext;
+import com.gcs.app.repository.transaction.TransactionalContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

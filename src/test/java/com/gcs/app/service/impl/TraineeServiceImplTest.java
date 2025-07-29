@@ -1,6 +1,5 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.TraineeDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;

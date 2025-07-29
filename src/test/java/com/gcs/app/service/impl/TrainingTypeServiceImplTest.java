@@ -1,6 +1,5 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.TrainingTypeDao;
 import com.gcs.app.facade.dto.TrainingTypeResponseDto;
 import com.gcs.app.mapper.TrainingTypeMapper;
 import com.gcs.app.model.TrainingType;

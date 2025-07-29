@@ -1,6 +1,5 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.UserDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.model.User;

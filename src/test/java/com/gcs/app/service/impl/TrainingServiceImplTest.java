@@ -1,6 +1,5 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.TrainingDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.mapper.TrainingMapper;

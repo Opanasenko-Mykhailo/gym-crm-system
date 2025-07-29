@@ -1,4 +1,4 @@
-package com.gcs.app.dao;
+package com.gcs.app.repository;
 
 import com.gcs.app.config.TestConfig;
 import com.github.database.rider.core.api.configuration.DBUnit;

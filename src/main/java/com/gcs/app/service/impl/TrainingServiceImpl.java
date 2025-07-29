@@ -1,11 +1,10 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.TrainingDao;
-import com.gcs.app.dao.transaction.TransactionalContext;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.mapper.TrainingMapper;
 import com.gcs.app.model.Training;
+import com.gcs.app.repository.TrainingRepository;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
@@ -14,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Optional;
@@ -24,13 +24,13 @@ import java.util.Optional;
 @Validated
 public class TrainingServiceImpl implements TrainingService {
 
-    private final TrainingDao trainingDao;
+    private final TrainingRepository trainingRepository;
     private final TrainingMapper trainingMapper;
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingTypeService trainingTypeService;
 
-    @TransactionalContext
+    @Transactional
     @Override
     public Training createTraining(@Valid TrainingCreateRequestDto createRequestDto) {
         var type = trainingTypeService.getByName(createRequestDto.getType().getName());
@@ -47,10 +47,10 @@ public class TrainingServiceImpl implements TrainingService {
 
         log.info("Creating training: {}", training.getName());
 
-        return trainingDao.create(training);
+        return trainingRepository.save(training);
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public Training getTraining(Long id) {
         log.info("Retrieving training with id: {}", id);
@@ -62,7 +62,7 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     private Optional<Training> validateTrainingExists(Long id) {
-        Optional<Training> training = trainingDao.get(id);
+        Optional<Training> training = trainingRepository.findById(id);
 
         if (training.isEmpty()) {
             throw new ServiceException(String.format("Training with id %d not found", id));
