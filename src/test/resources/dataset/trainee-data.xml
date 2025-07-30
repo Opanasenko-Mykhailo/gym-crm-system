@@ -2,7 +2,7 @@
 <dataset>
     <training_types id="1" training_type_name="Yoga"/>
 
-    <users id="1" first_name="John" last_name="Doe" username="john.doe" password="test123" is_active="true"/>
+    <users id="1" first_name="Lionel" last_name="Venture" username="lionel.venture" password="test123" is_active="true"/>
     <users id="2" first_name="Ghost" last_name="User" username="ghost.user" password="password" is_active="true"/>
     <users id="3" first_name="Trainer" last_name="One" username="trainer.one" password="trainerpass" is_active="true"/>
 

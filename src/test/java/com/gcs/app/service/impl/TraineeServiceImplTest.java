@@ -7,6 +7,7 @@ import com.gcs.app.mapper.TraineeMapper;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.User;
+import com.gcs.app.repository.TraineeRepository;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
@@ -36,10 +37,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TraineeServiceImplTest {
 
-    private static final String USERNAME = "john.doe";
+    private static final String USERNAME = "soren.halvorsen";
     private static final String PASSWORD = "password123";
-    private static final String FIRST_NAME = "John";
-    private static final String LAST_NAME = "Doe";
+    private static final String FIRST_NAME = "Soren";
+    private static final String LAST_NAME = "Halvorsen";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1990, 1, 1);
     private static final String ADDRESS = "123 Main St";
     private static final String TRAINEE_NOT_FOUND_MESSAGE = format("Trainee with username %s not found", USERNAME);
@@ -49,17 +50,13 @@ class TraineeServiceImplTest {
     private static final TraineeUpdateRequestDto UPDATE_REQUEST = createTraineeUpdateRequestDto();
 
     @Mock
-    private TraineeDao traineeDao;
-
+    private TraineeRepository traineeRepository;
     @Mock
     private TraineeMapper traineeMapper;
-
     @Mock
     private UserService userService;
-
     @Mock
     private TrainerService trainerService;
-
     @Mock
     private CredentialsService credentialsService;
 
@@ -70,7 +67,10 @@ class TraineeServiceImplTest {
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {
         when(traineeMapper.toEntity(CREATE_REQUEST)).thenReturn(TRAINEE);
         when(userService.getAllUsernames()).thenReturn(Collections.emptySet());
-        when(traineeDao.create(any(Trainee.class))).thenReturn(TRAINEE);
+        when(credentialsService.generateUsername(any(), any(), any())).thenReturn(USERNAME);
+        when(credentialsService.generateRandomPassword()).thenReturn(PASSWORD);
+        when(credentialsService.encodePassword(PASSWORD)).thenReturn("encodedPass");
+        when(traineeRepository.save(any(Trainee.class))).thenReturn(TRAINEE);
 
         Trainee actual = service.createTrainee(CREATE_REQUEST);
 
@@ -82,13 +82,13 @@ class TraineeServiceImplTest {
 
         verify(traineeMapper).toEntity(CREATE_REQUEST);
         verify(userService).getAllUsernames();
-        verify(traineeDao).create(any(Trainee.class));
+        verify(traineeRepository).save(any(Trainee.class));
     }
 
     @Test
     void updateTrainee_whenTraineeExists_mapsDtoUpdatesAndReturnsTrainee() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
-        when(traineeDao.update(any(Trainee.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
+        when(traineeRepository.save(any(Trainee.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Trainee actual = service.updateTrainee(UPDATE_REQUEST);
 
@@ -100,8 +100,9 @@ class TraineeServiceImplTest {
         assertEquals(ADDRESS, actual.getAddress());
 
         ArgumentCaptor<Trainee> captor = ArgumentCaptor.forClass(Trainee.class);
-        verify(traineeDao).update(captor.capture());
+        verify(traineeRepository).save(captor.capture());
         Trainee updated = captor.getValue();
+
         assertEquals(FIRST_NAME, updated.getUser().getFirstName());
         assertEquals(LAST_NAME, updated.getUser().getLastName());
         assertEquals(USERNAME, updated.getUser().getUsername());
@@ -109,43 +110,42 @@ class TraineeServiceImplTest {
         assertEquals(DATE_OF_BIRTH, updated.getDateOfBirth());
         assertEquals(ADDRESS, updated.getAddress());
 
-        verify(traineeDao).findByUsername(USERNAME);
-        verify(traineeDao).update(any(Trainee.class));
+        verify(traineeRepository).findByUsername(USERNAME);
     }
 
     @Test
     void updateTrainee_whenTraineeDoesNotExist_throwsServiceException() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.updateTrainee(UPDATE_REQUEST));
 
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
-        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeRepository).findByUsername(USERNAME);
     }
 
     @Test
     void deleteTraineeByUsername_whenTraineeExists_deletesTrainee() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
 
         service.deleteTraineeByUsername(USERNAME);
 
-        verify(traineeDao).findByUsername(USERNAME);
-        verify(traineeDao).deleteByUsername(USERNAME);
+        verify(traineeRepository).findByUsername(USERNAME);
+        verify(traineeRepository).deleteByUser_Username(USERNAME);
     }
 
     @Test
     void deleteTraineeByUsername_whenTraineeDoesNotExist_throwsServiceException() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.deleteTraineeByUsername(USERNAME));
 
         assertEquals(TRAINEE_NOT_FOUND_MESSAGE, ex.getMessage());
-        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeRepository).findByUsername(USERNAME);
     }
 
     @Test
     void getByUsername_whenTraineeExists_returnsTrainee() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
 
         Trainee actual = service.getByUsername(USERNAME);
 
@@ -156,50 +156,50 @@ class TraineeServiceImplTest {
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
-        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeRepository).findByUsername(USERNAME);
     }
 
     @Test
     void getByUsername_whenTraineeDoesNotExist_throwsServiceException() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getByUsername(USERNAME));
 
         assertEquals(format("Trainee not found with username: %s", USERNAME), ex.getMessage());
-        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeRepository).findByUsername(USERNAME);
     }
 
     @Test
     void setTraineeActive_whenTraineeExists_updatesIsActiveAndReturnsTrainee() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
 
         service.setTraineeActivationStatus(USERNAME, false);
 
         ArgumentCaptor<Trainee> captor = ArgumentCaptor.forClass(Trainee.class);
-        verify(traineeDao).update(captor.capture());
+        verify(traineeRepository).save(captor.capture());
 
         Trainee updated = captor.getValue();
         assertFalse(updated.getUser().getIsActive());
         assertEquals(USERNAME, updated.getUser().getUsername());
-        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeRepository).findByUsername(USERNAME);
     }
 
     @Test
     void setTraineeActive_whenTraineeNotFound_throwsServiceException() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> service.setTraineeActivationStatus(USERNAME, true));
 
         assertEquals(format("Trainee not found with username: %s", USERNAME), ex.getMessage());
-        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeRepository).findByUsername(USERNAME);
     }
 
     @Test
     void getUnassignedTrainers_whenTraineeExists_returnsTrainerList() {
         List<Trainer> expected = List.of(createTrainer("trainer.mock"));
 
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
         when(trainerService.getUnassignedForTrainee(TRAINEE)).thenReturn(expected);
 
         List<Trainer> result = service.getUnassignedTrainers(USERNAME);
@@ -210,7 +210,7 @@ class TraineeServiceImplTest {
 
     @Test
     void getUnassignedTrainers_whenTraineeNotFound_throwsServiceException() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> service.getUnassignedTrainers(USERNAME));
@@ -228,10 +228,10 @@ class TraineeServiceImplTest {
         TRAINEE.getTrainers().add(oldTrainer);
         List<String> trainerUsernames = List.of("trainer.one", "trainer.two");
 
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.of(TRAINEE));
         when(trainerService.getByUsername("trainer.one")).thenReturn(trainer1);
         when(trainerService.getByUsername("trainer.two")).thenReturn(trainer2);
-        when(traineeDao.update(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(traineeRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         Trainee actual = service.updateTraineeTrainers(USERNAME, trainerUsernames);
 
@@ -241,15 +241,15 @@ class TraineeServiceImplTest {
         assertTrue(updatedTrainers.contains(trainer1));
         assertTrue(updatedTrainers.contains(trainer2));
 
-        verify(traineeDao).findByUsername(USERNAME);
+        verify(traineeRepository).findByUsername(USERNAME);
         verify(trainerService).getByUsername("trainer.one");
         verify(trainerService).getByUsername("trainer.two");
-        verify(traineeDao).update(any());
+        verify(traineeRepository).save(any());
     }
 
     @Test
     void updateTraineeTrainers_whenTraineeNotFound_throwsServiceException() {
-        when(traineeDao.findByUsername(USERNAME)).thenReturn(Optional.empty());
+        when(traineeRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> service.updateTraineeTrainers(USERNAME, List.of("trainer1")));
@@ -262,6 +262,7 @@ class TraineeServiceImplTest {
                 .user(createUser())
                 .dateOfBirth(DATE_OF_BIRTH)
                 .address(ADDRESS)
+                .trainers(new HashSet<>())
                 .build();
     }
 
@@ -310,5 +311,4 @@ class TraineeServiceImplTest {
                 .trainees(new HashSet<>())
                 .build();
     }
-
 }
