@@ -23,7 +23,6 @@
                trainee_id="1"
                trainer_id="1"
                type_id="1"/>
-
     <trainings id="2"
                training_name="Evening Pilates"
                training_date="2026-05-20"
@@ -31,7 +30,6 @@
                trainee_id="1"
                trainer_id="1"
                type_id="1"/>
-
     <trainings id="3"
                training_name="CrossFit Blast"
                training_date="2025-03-15"
@@ -39,7 +37,6 @@
                trainee_id="2"
                trainer_id="2"
                type_id="2"/>
-
     <trainings id="4"
                training_name="Yoga Relax"
                training_date="2024-12-10"

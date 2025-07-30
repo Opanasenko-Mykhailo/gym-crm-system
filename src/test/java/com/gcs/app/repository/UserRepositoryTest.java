@@ -1,12 +1,9 @@
 package com.gcs.app.repository;
 
 import com.gcs.app.model.User;
-import com.github.database.rider.core.api.configuration.DBUnit;
 import com.github.database.rider.core.api.dataset.DataSet;
-import com.github.database.rider.spring.api.DBRider;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.Optional;
 import java.util.Set;
@@ -16,10 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@DBRider
-@DBUnit(cacheConnection = true, leakHunter = true, caseSensitiveTableNames = false, schema = "PUBLIC")
-@DataJpaTest
-class UserRepositoryTest {
+class UserRepositoryTest extends AbstractRepositoryTest {
 
     private static final String USERNAME_EXISTING = "sofia.melnyk";
     private static final String USERNAME_NEW = "alex.ivanov";

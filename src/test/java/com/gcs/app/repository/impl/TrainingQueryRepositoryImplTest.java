@@ -3,12 +3,10 @@ package com.gcs.app.repository.impl;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.model.Training;
-import com.github.database.rider.core.api.configuration.DBUnit;
+import com.gcs.app.repository.AbstractRepositoryTest;
 import com.github.database.rider.core.api.dataset.DataSet;
-import com.github.database.rider.spring.api.DBRider;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;
@@ -18,11 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-@DataJpaTest
-@DBRider
-@DBUnit(cacheConnection = true, leakHunter = true, caseSensitiveTableNames = false, schema = "PUBLIC")
 @Import(TrainingQueryRepositoryImpl.class)
-class TrainingQueryRepositoryImplTest {
+class TrainingQueryRepositoryImplTest extends AbstractRepositoryTest {
 
     @Autowired
     private TrainingQueryRepositoryImpl trainingQueryRepository;
@@ -31,11 +26,11 @@ class TrainingQueryRepositoryImplTest {
     @DataSet(value = "dataset/trainee-data-criteria.xml", cleanBefore = true, cleanAfter = true)
     void findTrainingsForTrainee_whenCriteriaMatch_returnsTrainings() {
         TraineeTrainingSearchCriteriaDto criteria = new TraineeTrainingSearchCriteriaDto();
-        criteria.setUsername("sophia.martinez");  // username з нового файлу
+        criteria.setUsername("sophia.martinez");
         criteria.setFromDate(LocalDate.of(2020, 1, 1));
         criteria.setToDate(LocalDate.of(2030, 1, 1));
-        criteria.setTrainerName("Coach Smith");  // тренер зі нового файлу
-        criteria.setTrainingTypeName("Pilates"); // тип тренування зі нового файлу
+        criteria.setTrainerName("Coach Smith");
+        criteria.setTrainingTypeName("Pilates");
 
         List<Training> trainings = trainingQueryRepository.findTrainingsForTrainee(criteria);
 
