@@ -1,9 +1,9 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.TrainingTypeDao;
 import com.gcs.app.facade.dto.TrainingTypeResponseDto;
 import com.gcs.app.mapper.TrainingTypeMapper;
 import com.gcs.app.model.TrainingType;
+import com.gcs.app.repository.TrainingTypeRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,7 +25,7 @@ class TrainingTypeServiceImplTest {
     private static final String TRAINING_NAME_PILATES = "Pilates";
 
     @Mock
-    private TrainingTypeDao trainingTypeDao;
+    private TrainingTypeRepository trainingTypeRepository;
 
     @Mock
     private TrainingTypeMapper trainingTypeMapper;
@@ -45,15 +45,15 @@ class TrainingTypeServiceImplTest {
                 new TrainingTypeResponseDto(2L, TRAINING_NAME_PILATES)
         );
 
-        when(trainingTypeDao.findAll()).thenReturn(trainingTypes);
+        when(trainingTypeRepository.findAll()).thenReturn(trainingTypes);
         when(trainingTypeMapper.toDtoList(trainingTypes)).thenReturn(expected);
 
         List<TrainingTypeResponseDto> actual = service.getAll();
 
         assertEquals(expected, actual);
 
-        verify(trainingTypeDao).findAll();
+        verify(trainingTypeRepository).findAll();
         verify(trainingTypeMapper).toDtoList(trainingTypes);
-        verifyNoMoreInteractions(trainingTypeDao, trainingTypeMapper);
+        verifyNoMoreInteractions(trainingTypeRepository, trainingTypeMapper);
     }
 }

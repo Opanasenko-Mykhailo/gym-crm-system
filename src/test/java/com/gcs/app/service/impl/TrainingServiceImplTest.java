@@ -1,6 +1,5 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.TrainingDao;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainingCreateRequestDto;
 import com.gcs.app.mapper.TrainingMapper;
@@ -9,6 +8,7 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
+import com.gcs.app.repository.TrainingRepository;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingTypeService;
@@ -37,7 +37,7 @@ class TrainingServiceImplTest {
     private static final Long DURATION = 60L;
 
     @Mock
-    private TrainingDao trainingDao;
+    private TrainingRepository trainingRepository;
     @Mock
     private TrainingMapper trainingMapper;
     @Mock
@@ -72,7 +72,7 @@ class TrainingServiceImplTest {
         when(trainingMapper.toEntity(requestDto)).thenReturn(mapped);
         when(traineeService.getByUsername(TRAINEE_USERNAME)).thenReturn(trainee);
         when(trainerService.getByUsername(TRAINER_USERNAME)).thenReturn(trainer);
-        when(trainingDao.create(expected)).thenReturn(expected);
+        when(trainingRepository.save(expected)).thenReturn(expected);
 
         Training actual = service.createTraining(requestDto);
 
@@ -87,14 +87,14 @@ class TrainingServiceImplTest {
         verify(trainingMapper).toEntity(requestDto);
         verify(traineeService).getByUsername(TRAINEE_USERNAME);
         verify(trainerService).getByUsername(TRAINER_USERNAME);
-        verify(trainingDao).create(expected);
+        verify(trainingRepository).save(expected);
     }
 
     @Test
     void getTraining_whenTrainingExists_returnsTraining() {
         var expected = createTraining();
 
-        when(trainingDao.get(1L)).thenReturn(Optional.of(expected));
+        when(trainingRepository.findById(1L)).thenReturn(Optional.of(expected));
 
         Training actual = service.getTraining(1L);
 
@@ -105,18 +105,18 @@ class TrainingServiceImplTest {
         assertEquals(DATE, actual.getDate());
         assertEquals(DURATION, actual.getDuration());
 
-        verify(trainingDao).get(1L);
+        verify(trainingRepository).findById(1L);
     }
 
     @Test
     void getTraining_whenTrainingDoesNotExist_throwsServiceException() {
-        when(trainingDao.get(1L)).thenReturn(Optional.empty());
+        when(trainingRepository.findById(1L)).thenReturn(Optional.empty());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.getTraining(1L));
 
         assertEquals("Training with id 1 not found", ex.getMessage());
 
-        verify(trainingDao).get(1L);
+        verify(trainingRepository).findById(1L);
     }
 
     private Training createTraining() {

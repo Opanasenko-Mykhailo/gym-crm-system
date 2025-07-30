@@ -1,8 +1,5 @@
 package com.gcs.app.service;
 
-import com.gcs.app.config.TestConfig;
-import com.gcs.app.dao.TraineeDao;
-import com.gcs.app.dao.UserDao;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
@@ -10,20 +7,19 @@ import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
+import com.gcs.app.repository.TraineeRepository;
+import com.gcs.app.repository.UserRepository;
 import com.gcs.app.service.common.CredentialsService;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -38,8 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfig.class, ConstraintValidatorTest.TestContext.class})
+@SpringBootTest
 public class ConstraintValidatorTest {
     private static final String USERNAME_REQUIRED = "Username is required";
     private static final String USERNAME_TOO_LONG = "Username must be at most 50 characters";
@@ -52,7 +47,6 @@ public class ConstraintValidatorTest {
     private static final String DATE_OF_BIRTH_INVALID = "Date of birth must be in the past or today";
     private static final String ADDRESS_REQUIRED = "Address is required";
     private static final String ADDRESS_TOO_SHORT = "Address must be between 5 and 255 characters";
-    private static final String ACTIVE_REQUIRED = "Active status is required";
     private static final String FROM_DATE_INVALID = "From date must be in the past or present";
     private static final String TO_DATE_INVALID = "To date must be in the past or present";
     private static final String TRAINER_NAME_TOO_LONG = "Trainer name must be at most 100 characters";
@@ -68,13 +62,13 @@ public class ConstraintValidatorTest {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private TraineeDao traineeDao;
+    @MockitoBean
+    private UserRepository userRepository;
 
-    @Autowired
-    private UserDao userDao;
+    @MockitoBean
+    private TraineeRepository traineeRepository;
 
-    @Autowired
+    @MockitoBean
     private CredentialsService credentialsService;
 
     @Nested
@@ -90,10 +84,10 @@ public class ConstraintValidatorTest {
 
             User user = createUser();
 
-            when(userDao.findByUsername("noah.taylor")).thenReturn(Optional.of(user));
+            when(userRepository.findByUsername("noah.taylor")).thenReturn(Optional.of(user));
             when(credentialsService.isPasswordCorrect("OldPass1!", "ValidPass1!")).thenReturn(true);
             when(credentialsService.encodePassword("NewPass1!")).thenReturn("hashedNewPassword");
-            when(userDao.update(any())).thenReturn(user);
+            when(userRepository.save(any())).thenReturn(user);
 
             assertDoesNotThrow(() -> userService.changePassword(dto));
         }
@@ -120,7 +114,7 @@ public class ConstraintValidatorTest {
             dto.setAddress("123 Main St");
 
             Trainee savedTrainee = createTrainee();
-            when(traineeDao.create(any())).thenReturn(savedTrainee);
+            when(traineeRepository.save(any())).thenReturn(savedTrainee);
 
             assertDoesNotThrow(() -> traineeService.createTrainee(dto));
         }
@@ -165,8 +159,8 @@ public class ConstraintValidatorTest {
 
             Trainee existingTrainee = createTrainee();
 
-            when(traineeDao.findByUsername("noah.taylor")).thenReturn(Optional.of(existingTrainee));
-            when(traineeDao.update(any())).thenReturn(existingTrainee);
+            when(traineeRepository.findByUsername("noah.taylor")).thenReturn(Optional.of(existingTrainee));
+            when(traineeRepository.save(any())).thenReturn(existingTrainee);
 
             assertDoesNotThrow(() -> traineeService.updateTrainee(dto));
         }
@@ -339,23 +333,5 @@ public class ConstraintValidatorTest {
                 .password("ValidPass1!")
                 .isActive(true)
                 .build();
-    }
-
-    @Configuration
-    static class TestContext {
-        @Bean
-        public TraineeDao traineeDao() {
-            return mock(TraineeDao.class);
-        }
-
-        @Bean
-        public UserDao userDao() {
-            return mock(UserDao.class);
-        }
-
-        @Bean
-        public CredentialsService credentialsService() {
-            return mock(CredentialsService.class);
-        }
     }
 }

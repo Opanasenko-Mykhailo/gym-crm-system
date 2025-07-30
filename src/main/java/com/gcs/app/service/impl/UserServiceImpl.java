@@ -1,16 +1,16 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.UserDao;
-import com.gcs.app.dao.transaction.TransactionalContext;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
 import com.gcs.app.model.User;
+import com.gcs.app.repository.UserRepository;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.Set;
@@ -21,23 +21,23 @@ import java.util.Set;
 @Validated
 public class UserServiceImpl implements UserService {
 
-    private final UserDao userDao;
+    private final UserRepository userRepository;
     private final CredentialsService credentialsService;
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public User getByUsername(String username) {
-        return userDao.findByUsername(username)
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ServiceException("User not found: " + username));
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public Set<String> getAllUsernames() {
-        return userDao.findAllUsernames();
+        return userRepository.findAllUsernames();
     }
 
-    @TransactionalContext
+    @Transactional
     @Override
     public void changePassword(@Valid PasswordChangeRequestDto dto) {
         log.info("Changing password for username: {}", dto.getUsername());
@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
                 .password(encodedNewPassword)
                 .build();
 
-        userDao.update(updatedUser);
+        userRepository.save(updatedUser);
         log.info("Password changed successfully for username: {}", dto.getUsername());
     }
 }

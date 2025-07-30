@@ -1,7 +1,5 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.TrainerDao;
-import com.gcs.app.dao.transaction.TransactionalContext;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
@@ -12,6 +10,8 @@ import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
+import com.gcs.app.repository.TrainerRepository;
+import com.gcs.app.repository.TrainingQueryRepository;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingTypeService;
 import com.gcs.app.service.UserService;
@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -32,13 +33,14 @@ import static java.util.Optional.ofNullable;
 @Validated
 public class TrainerServiceImpl implements TrainerService {
 
-    private final TrainerDao trainerDao;
+    private final TrainerRepository trainerRepository;
+    private final TrainingQueryRepository trainingQueryRepository;
     private final UserService userService;
     private final TrainingTypeService trainingTypeService;
     private final CredentialsService credentialsService;
     private final TrainerMapper trainerMapper;
 
-    @TransactionalContext
+    @Transactional
     @Override
     public Trainer createTrainer(@Valid TrainerCreateRequestDto trainerCreateRequestDto) {
         TrainingType specialization = getSpecialization(trainerCreateRequestDto.getSpecialization());
@@ -56,7 +58,7 @@ public class TrainerServiceImpl implements TrainerService {
                 .specialization(specialization)
                 .build();
 
-        Trainer createdTrainer = trainerDao.create(trainerWithCredentials);
+        Trainer createdTrainer = trainerRepository.save(trainerWithCredentials);
         log.info("Trainer created with username: {}", username);
 
         return createdTrainer.toBuilder()
@@ -64,39 +66,39 @@ public class TrainerServiceImpl implements TrainerService {
                 .build();
     }
 
-    @TransactionalContext
+    @Transactional
     @Override
     public Trainer updateTrainer(@Valid TrainerUpdateRequestDto dto) {
         String username = dto.getUsername();
-        Trainer existing = trainerDao.findByUsername(username)
+        Trainer existing = trainerRepository.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
 
         Trainer updated = buildUpdatedTrainer(existing, dto);
 
-        return trainerDao.update(updated);
+        return trainerRepository.save(updated);
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public Trainer getByUsername(String username) {
         log.info("Getting trainer by username: {}", username);
 
-        return trainerDao.findByUsername(username)
+        return trainerRepository.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Training> getTrainerTrainings(@Valid TrainerTrainingSearchCriteriaDto criteria) {
         log.info("Searching trainings with criteria: {}", criteria);
 
-        return trainerDao.findByTrainerCriteria(criteria);
+        return trainingQueryRepository.findTrainingsForTrainer(criteria);
     }
 
-    @TransactionalContext
+    @Transactional
     @Override
     public void setTrainerActivationStatus(String username, boolean isActive) {
-        Trainer trainer = trainerDao.findByUsername(username)
+        Trainer trainer = trainerRepository.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
 
         User updatedUser = trainer.getUser().toBuilder()
@@ -106,15 +108,15 @@ public class TrainerServiceImpl implements TrainerService {
                 .user(updatedUser)
                 .build();
 
-        trainerDao.update(updatedTrainer);
+        trainerRepository.save(updatedTrainer);
 
         log.info("Trainer {} set to {}", username, isActive ? "active" : "inactive");
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Trainer> getUnassignedForTrainee(Trainee trainee) {
-        return trainerDao.findAllNotAssignedToTrainee(trainee);
+        return trainerRepository.findAllNotAssignedToTrainee(trainee);
     }
 
     private User userWithCredentials(User user, String username, String password) {

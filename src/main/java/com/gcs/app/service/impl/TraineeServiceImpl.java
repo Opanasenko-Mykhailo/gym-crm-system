@@ -1,7 +1,5 @@
 package com.gcs.app.service.impl;
 
-import com.gcs.app.dao.TraineeDao;
-import com.gcs.app.dao.transaction.TransactionalContext;
 import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
@@ -11,6 +9,8 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.User;
+import com.gcs.app.repository.TraineeRepository;
+import com.gcs.app.repository.TrainingQueryRepository;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
@@ -19,6 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.HashSet;
@@ -34,13 +35,14 @@ import static java.util.Optional.ofNullable;
 @Validated
 public class TraineeServiceImpl implements TraineeService {
 
-    private final TraineeDao traineeDao;
+    private final TraineeRepository traineeRepository;
+    private final TrainingQueryRepository trainingQueryRepository;
     private final UserService userService;
     private final TrainerService trainerService;
     private final CredentialsService credentialsService;
     private final TraineeMapper traineeMapper;
 
-    @TransactionalContext
+    @Transactional
     @Override
     public Trainee createTrainee(@Valid TraineeCreateRequestDto requestDto) {
         Trainee trainee = traineeMapper.toEntity(requestDto);
@@ -56,7 +58,7 @@ public class TraineeServiceImpl implements TraineeService {
                 .user(userWithCredentials(user, username, encryptedPassword))
                 .build();
 
-        Trainee createdTrainee = traineeDao.create(traineeWithCredentials);
+        Trainee createdTrainee = traineeRepository.save(traineeWithCredentials);
         log.info("Trainee created with username: {}", username);
 
         return createdTrainee.toBuilder()
@@ -64,51 +66,51 @@ public class TraineeServiceImpl implements TraineeService {
                 .build();
     }
 
-    @TransactionalContext
+    @Transactional
     @Override
     public Trainee updateTrainee(@Valid TraineeUpdateRequestDto dto) {
         String username = dto.getUsername();
-        Trainee existing = traineeDao.findByUsername(username)
+        Trainee existing = traineeRepository.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
         Trainee updated = buildUpdatedTrainee(existing, dto);
 
-        return traineeDao.update(updated);
+        return traineeRepository.save(updated);
     }
 
-    @TransactionalContext
+    @Transactional
     @Override
     public void deleteTraineeByUsername(String username) {
         log.info("Deleting trainee with username: {}", username);
 
-        traineeDao.findByUsername(username)
+        traineeRepository.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
 
-        traineeDao.deleteByUsername(username);
+        traineeRepository.deleteByUser_Username(username);
         log.debug("Trainee with username {} deleted", username);
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public Trainee getByUsername(String username) {
         log.info("Getting trainee by username: {}", username);
 
-        return traineeDao.findByUsername(username)
+        return traineeRepository.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Training> getTraineeTrainings(@Valid TraineeTrainingSearchCriteriaDto criteria) {
         log.info("Searching trainings with criteria: {}", criteria);
 
-        return traineeDao.findByTraineeCriteria(criteria);
+        return trainingQueryRepository.findTrainingsForTrainee(criteria);
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public void setTraineeActivationStatus(String username, boolean isActive) {
-        Trainee trainee = traineeDao.findByUsername(username)
+        Trainee trainee = traineeRepository.findByUsername(username)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
 
         User updatedUser = trainee.getUser().toBuilder()
@@ -118,23 +120,23 @@ public class TraineeServiceImpl implements TraineeService {
                 .user(updatedUser)
                 .build();
 
-        traineeDao.update(updatedTrainee);
+        traineeRepository.save(updatedTrainee);
         log.info("Trainee {} set to {}", username, isActive ? "active" : "inactive");
     }
 
-    @TransactionalContext(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<Trainer> getUnassignedTrainers(String traineeUsername) {
-        Trainee trainee = traineeDao.findByUsername(traineeUsername)
+        Trainee trainee = traineeRepository.findByUsername(traineeUsername)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", traineeUsername)));
 
         return trainerService.getUnassignedForTrainee(trainee);
     }
 
-    @TransactionalContext
+    @Transactional
     @Override
     public Trainee updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames) {
-        Trainee trainee = traineeDao.findByUsername(traineeUsername)
+        Trainee trainee = traineeRepository.findByUsername(traineeUsername)
                 .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", traineeUsername)));
 
         Set<Trainer> newTrainers = trainerUsernames.stream()
@@ -143,7 +145,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         setTraineeTrainers(trainee, newTrainers);
 
-        return traineeDao.update(trainee);
+        return traineeRepository.save(trainee);
     }
 
     private User userWithCredentials(User user, String username, String password) {
