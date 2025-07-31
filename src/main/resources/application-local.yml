@@ -9,6 +9,6 @@ spring:
 
 logging:
   level:
-    root: INFO
-    org.springframework: INFO
-    com.gcs.app: INFO
+    root: DEBUG
+    org.springframework: DEBUG
+    com.gcs.app: DEBUG
