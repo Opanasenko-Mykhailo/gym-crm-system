@@ -1,0 +1,14 @@
+spring:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: false
+
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    com.gcs.app: INFO

@@ -6,8 +6,9 @@ To run this application, you should have the following installed:
 
 - **Java Development Kit (JDK) 17**
 - **Maven**
-- **Apache Tomcat 9+**
 - **Git**
+
+> **Note:** This application uses **Spring Boot 3.5.4** with an embedded Tomcat server, so you do **not** need to install Apache Tomcat separately.
 
 ## Setup Instructions
 
