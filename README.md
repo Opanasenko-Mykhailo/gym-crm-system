@@ -6,8 +6,10 @@ To run this application, you should have the following installed:
 
 - **Java Development Kit (JDK) 17**
 - **Maven**
-- **Apache Tomcat 9+**
+- **PostgreSQL** 13+
 - **Git**
+
+---
 
 ## Setup Instructions
 
@@ -19,6 +21,43 @@ CREATE USER gcs WITH PASSWORD 'gcs';
 GRANT ALL PRIVILEGES ON DATABASE "gym_db" TO gcs;
 ```
 
+---
+
+## Clone & Build
+
+```bash
+git clone https://github.com/Opanasenko-Mykhailo/gym-crm-system.git
+cd gym-crm-system
+mvn clean install
+```
+
+---
+
+## Running the Application
+
+Use the following command to run the application with the **local** profile:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+---
+
+## Profiles
+
+The application supports the following Spring profiles:
+
+| Profile | Purpose           | Description                                 |
+|---------|-------------------|---------------------------------------------|
+| local   | Developer machine | Uses test credentials and full SQL logging  |
+| dev     | Development env   | Less verbose logging                        |
+| stg     | Staging           | Simulates prod logging                      |
+| prod    | Production        | Minimal logging, safe defaults              |
+
+> All profiles use the **same PostgreSQL database**: `gym_db` with user `gcs`.
+
+---
+
 ## API Documentation
 
 - Swagger UI (auto-generated from controllers):  
@@ -27,18 +66,18 @@ GRANT ALL PRIVILEGES ON DATABASE "gym_db" TO gcs;
 - Swagger UI (generated from `gym.yml` file):  
   [http://localhost:8080/gym-docs.html](http://localhost:8080/gym-docs.html)
 
-Use these to explore and test the API endpoints interactively.
+---
 
 ## Postman Collection
 
-To quickly test the available API endpoints, you can import the provided Postman collection:
+To quickly test the available API endpoints:
 
 1. Open **Postman**.
 2. Click on the **"Import"** button (top left).
 3. Select the **"File"** tab.
-4. Navigate to the file:  
+4. Choose the file:  
    `src/main/resources/postman/GCA-API-Collection.json`
-5. Click **"Open"** to import the collection.
+5. Click **"Open"** to import.
 
 The collection includes predefined requests for authentication, trainers, trainees, and training operations.  
 You can modify the environment variables or headers as needed for your local setup.
