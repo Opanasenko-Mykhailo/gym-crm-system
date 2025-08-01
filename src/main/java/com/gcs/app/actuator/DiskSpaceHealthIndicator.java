@@ -16,8 +16,8 @@ public class DiskSpaceHealthIndicator implements HealthIndicator {
 
         if (freeSpace > 100) {
             return Health.up().withDetail("freeDiskSpaceMB", freeSpace).build();
-        } else {
-            return Health.down().withDetail("freeDiskSpaceMB", freeSpace).build();
         }
+
+        return Health.down().withDetail("freeDiskSpaceMB", freeSpace).build();
     }
 }

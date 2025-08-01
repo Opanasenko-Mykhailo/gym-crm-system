@@ -20,15 +20,13 @@ public class DatabaseHealthIndicator implements HealthIndicator {
             int totalConnections = hikariDataSource.getHikariPoolMXBean().getTotalConnections();
 
             return isRunning
-                    ? Health.up()
-                    .withDetail("database", "Available")
+                    ? Health.up().withDetail("database", "Available")
                     .withDetail("activeConnections", activeConnections)
                     .withDetail("totalConnections", totalConnections)
                     .build()
                     : Health.down()
                     .withDetail("database", "HikariPool not running")
                     .build();
-
         } catch (Exception e) {
             return Health.down(e).withDetail("database", "Unavailable").build();
         }
