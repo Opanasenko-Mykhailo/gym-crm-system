@@ -1,6 +1,7 @@
 package com.gcs.app.security;
 
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.exception.UserNotAuthorizedException;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.model.User;
@@ -86,7 +87,7 @@ class AuthServiceTest {
         when(userService.getByUsername(USERNAME)).thenReturn(user);
         when(credentialsService.isPasswordCorrect("wrongPassword", ENCODED_PASSWORD)).thenReturn(false);
 
-        ServiceException ex = assertThrows(ServiceException.class, () -> authService.authenticate(dto));
+        UserNotAuthorizedException ex = assertThrows(UserNotAuthorizedException.class, () -> authService.authenticate(dto));
 
         assertEquals("Invalid username or password", ex.getMessage());
     }

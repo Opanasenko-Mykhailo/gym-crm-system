@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.gcs.app.exception.ApiError.AUTHENTICATION_ERROR;
+import static com.gcs.app.exception.ApiError.AUTHORIZATION_ERROR;
 import static com.gcs.app.exception.ApiError.DATABASE_ERROR;
 import static com.gcs.app.exception.ApiError.INVALID_REQUEST_ERROR;
 import static com.gcs.app.exception.ApiError.NOT_FOUND_ERROR;
@@ -142,6 +143,18 @@ class ErrorHandlerTest {
         assertEquals(UNAUTHORIZED, result.getStatusCode());
         assertEquals(AUTHENTICATION_ERROR.getCode(), result.getBody().getErrorCode());
         assertEquals(AUTHENTICATION_ERROR.getMessage(), result.getBody().getErrorMessage());
+    }
+
+    @Test
+    void handleUserNotAuthenticatedException_whenThrown_returnsAuthorizedError() {
+        UserNotAuthorizedException ex = new UserNotAuthorizedException(AUTH_ERROR_MSG);
+
+        ResponseEntity<ErrorResponse> result = errorHandler.handleUserNotAuthorizedException(ex);
+
+        assertNotNull(result.getBody());
+        assertEquals(UNAUTHORIZED, result.getStatusCode());
+        assertEquals(AUTHORIZATION_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(AUTHORIZATION_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test

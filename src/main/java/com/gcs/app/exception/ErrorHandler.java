@@ -79,6 +79,13 @@ public class ErrorHandler {
         return buildErrorResponse(AUTHENTICATION_ERROR);
     }
 
+    @ExceptionHandler(UserNotAuthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotAuthorizedException(UserNotAuthorizedException ex) {
+        log.error("UserNotAuthorizedException: {}", ex.getMessage(), ex);
+
+        return buildErrorResponse(ApiError.AUTHORIZATION_ERROR);
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleUnhandledException(RuntimeException ex) {
         log.error("Unhandled RuntimeException: {}", ex.getMessage(), ex);
