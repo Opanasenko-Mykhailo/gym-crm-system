@@ -1,10 +1,9 @@
 package com.gcs.app.security;
 
-import com.gcs.app.exception.ServiceException;
+import com.gcs.app.exception.UserNotAuthorizedException;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.model.User;
-import com.gcs.app.security.AuthContextHolder;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
 import jakarta.validation.Valid;
@@ -27,7 +26,7 @@ public class AuthService {
         User user = userService.getByUsername(dto.getUsername());
 
         if (!credentialsService.isPasswordCorrect(dto.getPassword(), user.getPassword())) {
-            throw new ServiceException("Invalid username or password");
+            throw new UserNotAuthorizedException("Invalid username or password");
         }
 
         authContextHolder.setCurrentUser(user);
