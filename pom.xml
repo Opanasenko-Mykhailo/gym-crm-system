@@ -28,7 +28,7 @@
         <database-rider.version>1.44.0</database-rider.version>
         <openapi-generator.version>7.14.0</openapi-generator.version>
         <sonar.projectKey>gym-crm-system</sonar.projectKey>
-        <sonar.organization>opanasenko-mykhailo</sonar.organization>
+        <sonar.organization>Mykhailo</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
