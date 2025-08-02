@@ -27,7 +27,7 @@
         <junit.platform.version>1.13.3</junit.platform.version>
         <database-rider.version>1.44.0</database-rider.version>
         <openapi-generator.version>7.14.0</openapi-generator.version>
-        <sonar.projectKey>gym-crm-system</sonar.projectKey>
+        <sonar.projectKey>Opanasenko-Mykhailo_gym-crm-system</sonar.projectKey>
         <sonar.organization>Mykhailo</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
