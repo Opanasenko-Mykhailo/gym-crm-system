@@ -62,8 +62,11 @@ The application supports the following Spring profiles:
 
 The application exposes monitoring endpoints via Spring Boot Actuator:
 
-- Health check: `http://localhost:8080/actuator/health`
-- Prometheus metrics: `http://localhost:8080/actuator/prometheus`
+- Health check:
+  [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+
+- Prometheus metrics:
+  [http://localhost:8080/actuator/prometheus](http://localhost:8080/actuator/prometheus)
 
 You can use these endpoints for health monitoring and integrating with Prometheus.
 
