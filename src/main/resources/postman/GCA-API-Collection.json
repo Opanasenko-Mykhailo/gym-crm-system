@@ -25,8 +25,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/trainees/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainees", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainees",
+                "register"
+              ]
             },
             "description": "Registers a new trainee with basic information and generates username/password"
           },
@@ -47,8 +52,13 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/trainees/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainees", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainees",
+                    "register"
+                  ]
                 }
               },
               "status": "OK",
@@ -64,16 +74,29 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/trainees/John.Smith",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainees", "John.Smith"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainees",
+                "John.Smith"
+              ]
             },
             "description": "Retrieves detailed information about a trainee including assigned trainers"
           },
@@ -85,8 +108,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/trainees/John.Smith",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainees", "John.Smith"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainees",
+                    "John.Smith"
+                  ]
                 }
               },
               "status": "OK",
@@ -102,8 +130,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PUT",
@@ -119,8 +155,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/trainees/John.Smith",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainees", "John.Smith"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainees",
+                "John.Smith"
+              ]
             },
             "description": "Updates trainee's personal information and activation status"
           },
@@ -141,8 +182,13 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/trainees/John.Smith",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainees", "John.Smith"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainees",
+                    "John.Smith"
+                  ]
                 }
               },
               "status": "OK",
@@ -158,16 +204,29 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/trainees/John.Smith",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainees", "John.Smith"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainees",
+                "John.Smith"
+              ]
             },
             "description": "Hard delete trainee profile with cascade deletion of related trainings"
           },
@@ -179,8 +238,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/trainees/John.Smith",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainees", "John.Smith"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainees",
+                    "John.Smith"
+                  ]
                 }
               },
               "status": "OK",
@@ -196,8 +260,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PATCH",
@@ -213,8 +285,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/trainees/John.Smith/change-activation-status",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainees", "John.Smith", "change-activation-status"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainees",
+                "John.Smith",
+                "change-activation-status"
+              ]
             },
             "description": "Activates or deactivates a trainee profile"
           },
@@ -235,8 +313,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/trainees/John.Smith/change-activation-status",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainees", "John.Smith", "change-activation-status"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainees",
+                    "John.Smith",
+                    "change-activation-status"
+                  ]
                 }
               },
               "status": "OK",
@@ -252,16 +336,30 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/trainees/John.Smith/available-trainers",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainees", "John.Smith", "available-trainers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainees",
+                "John.Smith",
+                "available-trainers"
+              ]
             },
             "description": "Retrieves list of active trainers not yet assigned to the trainee"
           },
@@ -273,8 +371,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/trainees/John.Smith/available-trainers",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainees", "John.Smith", "available-trainers"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainees",
+                    "John.Smith",
+                    "available-trainers"
+                  ]
                 }
               },
               "status": "OK",
@@ -290,8 +394,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PUT",
@@ -307,8 +419,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/trainees/John.Smith/trainers",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainees", "John.Smith", "trainers"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainees",
+                "John.Smith",
+                "trainers"
+              ]
             },
             "description": "Updates the list of trainers assigned to a trainee"
           },
@@ -329,8 +447,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/trainees/John.Smith/trainers",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainees", "John.Smith", "trainers"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainees",
+                    "John.Smith",
+                    "trainers"
+                  ]
                 }
               },
               "status": "OK",
@@ -346,20 +470,43 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/trainees/John.Smith1/trainings?fromDate=2025-10-01&toDate=2025-10-31&trainerName=Jane",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainees", "John.Smith1", "trainings"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainees",
+                "John.Smith1",
+                "trainings"
+              ],
               "query": [
-                { "key": "fromDate", "value": "2025-10-01" },
-                { "key": "toDate", "value": "2025-10-31" },
-                { "key": "trainerName", "value": "Jane" }
+                {
+                  "key": "fromDate",
+                  "value": "2025-10-01"
+                },
+                {
+                  "key": "toDate",
+                  "value": "2025-10-31"
+                },
+                {
+                  "key": "trainerName",
+                  "value": "Jane"
+                }
               ]
             },
             "description": "Retrieves trainee's training schedule with optional filtering by date range and trainer name"
@@ -372,12 +519,27 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/trainees/John.Smith1/trainings?fromDate=2025-10-01&toDate=2025-10-31&trainerName=Jane",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainees", "John.Smith1", "trainings"],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainees",
+                    "John.Smith1",
+                    "trainings"
+                  ],
                   "query": [
-                    { "key": "fromDate", "value": "2025-10-01" },
-                    { "key": "toDate", "value": "2025-10-31" },
-                    { "key": "trainerName", "value": "Jane" }
+                    {
+                      "key": "fromDate",
+                      "value": "2025-10-01"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "2025-10-31"
+                    },
+                    {
+                      "key": "trainerName",
+                      "value": "Jane"
+                    }
                   ]
                 }
               },
@@ -409,8 +571,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/trainers/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainers", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainers",
+                "register"
+              ]
             },
             "description": "Registers a new trainer with basic information and generates username/password"
           },
@@ -431,8 +598,13 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/trainers/register",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainers", "register"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainers",
+                    "register"
+                  ]
                 }
               },
               "status": "OK",
@@ -448,16 +620,29 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/trainers/Jane.Doe",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainers", "Jane.Doe"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainers",
+                "Jane.Doe"
+              ]
             },
             "description": "Retrieves detailed information about a trainer including assigned trainees"
           },
@@ -469,8 +654,13 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/trainers/Jane.Doe",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainers", "Jane.Doe"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainers",
+                    "Jane.Doe"
+                  ]
                 }
               },
               "status": "OK",
@@ -486,8 +676,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PUT",
@@ -503,8 +701,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/trainers/Jane.Doe",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainers", "Jane.Doe"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainers",
+                "Jane.Doe"
+              ]
             },
             "description": "Updates trainer's personal information and activation status"
           },
@@ -525,8 +728,13 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/trainers/Jane.Doe",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainers", "Jane.Doe"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainers",
+                    "Jane.Doe"
+                  ]
                 }
               },
               "status": "OK",
@@ -542,8 +750,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PATCH",
@@ -559,8 +775,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/trainers/Jane.Doe/change-activation-status",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainers", "Jane.Doe", "change-activation-status"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainers",
+                "Jane.Doe",
+                "change-activation-status"
+              ]
             },
             "description": "Activates or deactivates a trainer profile"
           },
@@ -581,8 +803,14 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/trainers/Jane.Doe/change-activation-status",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainers", "Jane.Doe", "change-activation-status"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainers",
+                    "Jane.Doe",
+                    "change-activation-status"
+                  ]
                 }
               },
               "status": "OK",
@@ -598,20 +826,43 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "GET",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/trainers/Jane.Doe/trainings?fromDate=2025-10-01&toDate=2025-10-31&traineeName=John",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainers", "Jane.Doe", "trainings"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainers",
+                "Jane.Doe",
+                "trainings"
+              ],
               "query": [
-                { "key": "fromDate", "value": "2025-10-01" },
-                { "key": "toDate", "value": "2025-10-31" },
-                { "key": "traineeName", "value": "John" }
+                {
+                  "key": "fromDate",
+                  "value": "2025-10-01"
+                },
+                {
+                  "key": "toDate",
+                  "value": "2025-10-31"
+                },
+                {
+                  "key": "traineeName",
+                  "value": "John"
+                }
               ]
             },
             "description": "Retrieves trainer's training schedule with optional filtering by date range and trainee name"
@@ -624,12 +875,27 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/trainers/Jane.Doe/trainings?fromDate=2025-10-01&toDate=2025-10-31&traineeName=John",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainers", "Jane.Doe", "trainings"],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainers",
+                    "Jane.Doe",
+                    "trainings"
+                  ],
                   "query": [
-                    { "key": "fromDate", "value": "2025-10-01" },
-                    { "key": "toDate", "value": "2025-10-31" },
-                    { "key": "traineeName", "value": "John" }
+                    {
+                      "key": "fromDate",
+                      "value": "2025-10-01"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "2025-10-31"
+                    },
+                    {
+                      "key": "traineeName",
+                      "value": "John"
+                    }
                   ]
                 }
               },
@@ -661,8 +927,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "login"
+              ]
             },
             "description": "Authenticates a user (trainee or trainer) with username and password"
           },
@@ -683,8 +953,12 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/login",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["login"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "login"
+                  ]
                 }
               },
               "status": "OK",
@@ -700,8 +974,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "PUT",
@@ -717,8 +999,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/change-password",
-              "host": ["{{baseUrl}}"],
-              "path": ["change-password"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "change-password"
+              ]
             },
             "description": "Changes the password for a trainee or trainer"
           },
@@ -739,8 +1025,12 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/change-password",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["change-password"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "change-password"
+                  ]
                 }
               },
               "status": "OK",
@@ -761,8 +1051,16 @@
             "auth": {
               "type": "basic",
               "basic": [
-                { "key": "username", "value": "{{username}}", "type": "string" },
-                { "key": "password", "value": "{{password}}", "type": "string" }
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "string"
+                }
               ]
             },
             "method": "POST",
@@ -778,8 +1076,12 @@
             },
             "url": {
               "raw": "{{baseUrl}}/trainings",
-              "host": ["{{baseUrl}}"],
-              "path": ["trainings"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "trainings"
+              ]
             },
             "description": "Creates a new training session for a trainee and trainer"
           },
@@ -800,8 +1102,12 @@
                 },
                 "url": {
                   "raw": "{{baseUrl}}/trainings",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["trainings"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "trainings"
+                  ]
                 }
               },
               "status": "OK",
@@ -818,8 +1124,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/training-types",
-              "host": ["{{baseUrl}}"],
-              "path": ["training-types"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "training-types"
+              ]
             },
             "description": "Retrieves the list of available training types"
           },
@@ -831,14 +1141,110 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/training-types",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["training-types"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "training-types"
+                  ]
                 }
               },
               "status": "OK",
               "code": 200,
               "header": [],
               "body": "[\n  {\n    \"trainingType\": \"YOGA\",\n    \"trainingTypeId\": 1\n  },\n  {\n    \"trainingType\": \"CARDIO\",\n    \"trainingTypeId\": 2\n  },\n  {\n    \"trainingType\": \"STRENGTH\",\n    \"trainingTypeId\": 3\n  }\n]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Actuator",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{actuatorUrl}}/actuator/health",
+              "host": [
+                "{{actuatorUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            },
+            "description": "Checks the health status of the application"
+          },
+          "response": [
+            {
+              "name": "Health check successful",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{actuatorUrl}}/actuator/health",
+                  "host": [
+                    "{{actuatorUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"status\": \"UP\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{actuatorUrl}}/actuator/prometheus",
+              "host": [
+                "{{actuatorUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "prometheus"
+              ]
+            },
+            "description": "Retrieves Prometheus metrics for the application"
+          },
+          "response": [
+            {
+              "name": "Prometheus metrics retrieved successfully",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{actuatorUrl}}/actuator/prometheus",
+                  "host": [
+                    "{{actuatorUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "prometheus"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain; version=0.0.4; charset=utf-8"
+                }
+              ],
+              "body": "# HELP jvm_memory_used_bytes Used memory in bytes\n# TYPE jvm_memory_used_bytes gauge\njvm_memory_used_bytes{area=\"heap\",id=\"PS Survivor Space\",} 123456.0\njvm_memory_used_bytes{area=\"heap\",id=\"PS Old Gen\",} 654321.0\n# HELP http_server_requests_seconds Duration of HTTP server requests\n# TYPE http_server_requests_seconds summary\nhttp_server_requests_seconds_count{uri=\"/actuator/health\",method=\"GET\",status=\"200\",} 10.0\nhttp_server_requests_seconds_sum{uri=\"/actuator/health\",method=\"GET\",status=\"200\",} 0.5\n"
             }
           ]
         }
@@ -850,13 +1256,26 @@
       "key": "baseUrl",
       "value": "http://localhost:8080/gym-crm-core/api/v1",
       "description": "Base URL for the GCA API"
+    },
+    {
+      "key": "actuatorUrl",
+      "value": "http://localhost:8080",
+      "description": "Base URL for Actuator endpoints"
     }
   ],
   "auth": {
     "type": "basic",
     "basic": [
-      { "key": "username", "value": "{{username}}", "type": "string" },
-      { "key": "password", "value": "{{password}}", "type": "string" }
+      {
+        "key": "username",
+        "value": "{{username}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{password}}",
+        "type": "string"
+      }
     ]
   }
 }
