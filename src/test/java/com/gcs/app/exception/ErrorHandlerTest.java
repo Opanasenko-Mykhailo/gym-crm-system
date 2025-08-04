@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -47,6 +48,7 @@ class ErrorHandlerTest {
     private static final String DAO_ERROR_MSG = "Failed to execute database query for trainee entity";
     private static final String AUTH_ERROR_MSG = "Authentication token is missing or invalid";
     private static final String UNHANDLED_ERROR_MSG = "Unhandled exception occurred while processing request";
+    private static final String TYPE_MISMATCH_MSG = "Failed to convert value 'abc' to required type 'java.time.LocalDate'";
 
     @InjectMocks
     private ErrorHandler errorHandler;
@@ -167,6 +169,22 @@ class ErrorHandlerTest {
         assertEquals(INTERNAL_SERVER_ERROR, result.getStatusCode());
         assertEquals(SERVER_ERROR.getCode(), result.getBody().getErrorCode());
         assertEquals(SERVER_ERROR.getMessage(), result.getBody().getErrorMessage());
+    }
+
+    @Test
+    void handleTypeMismatchException_whenThrown_returnsInvalidRequestError() {
+        MethodArgumentTypeMismatchException ex = new MethodArgumentTypeMismatchException("abc", java.time.LocalDate.class, "periodFrom", null, new IllegalArgumentException(TYPE_MISMATCH_MSG));
+
+        ResponseEntity<ErrorResponse> result = errorHandler.handleTypeMismatchException(ex);
+
+        assertNotNull(result.getBody());
+        assertEquals(INVALID_REQUEST_ERROR.getHttpStatus(), result.getStatusCode());
+        assertEquals(INVALID_REQUEST_ERROR.getCode(), result.getBody().getErrorCode());
+
+        String actualMessage = result.getBody().getErrorMessage();
+        assertTrue(actualMessage.contains(INVALID_REQUEST_ERROR.getMessage()));
+        assertTrue(actualMessage.contains("periodFrom"));
+        assertTrue(actualMessage.contains(TYPE_MISMATCH_MSG));
     }
 
     public void dummyMethod(String param) {

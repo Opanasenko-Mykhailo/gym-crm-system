@@ -4,6 +4,8 @@ server:
 app:
   api:
     base-path: /gym-crm-core/api/v1
+  swagger:
+    file-name: gym.yml
 
 spring:
   datasource:

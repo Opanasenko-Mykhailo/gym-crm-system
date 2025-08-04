@@ -1,28 +1,26 @@
 package com.gcs.app.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.TrainingCreateRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDate;
 
-import static com.gcs.app.controller.ApiConstant.BASE_PATH;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(controllers = TrainingController.class)
+@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "metrics.enabled=false"})
 class TrainingControllerTest {
 
     private static final String TRAINEE_USERNAME = "oleksandr.kovalenko";
@@ -34,25 +32,21 @@ class TrainingControllerTest {
 
     private final TrainingCreateRequest trainingCreateRequest = createTrainingCreateRequest();
 
-    private ObjectMapper objectMapper;
-
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private GymFacade gymFacade;
 
-    @InjectMocks
-    private TrainingController trainingController;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        mockMvc = MockMvcBuilders.standaloneSetup(trainingController).build();
-    }
+    @Value("${app.api.base-path}")
+    private String basePath;
 
     @Test
     void testAddTrainingSuccess() throws Exception {
-        mockMvc.perform(post(BASE_PATH + "/trainings")
+        mockMvc.perform(post(basePath + "/trainings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(trainingCreateRequest)))
                 .andExpect(status().isOk());
