@@ -1,4 +1,9 @@
 # Gym CRM System
+![Build](https://github.com/Opanasenko-Mykhailo/gym-crm-system/actions/workflows/ci.yml/badge.svg?branch=dev)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Opanasenko-Mykhailo_gym-crm-system&metric=coverage)](https://sonarcloud.io/summary/overall?id=Opanasenko-Mykhailo_gym-crm-system)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Opanasenko-Mykhailo_gym-crm-system&metric=alert_status)](https://sonarcloud.io/summary/overall?id=Opanasenko-Mykhailo_gym-crm-system)
+![Java](https://img.shields.io/badge/java-17-blue.svg)
+![Last Commit](https://img.shields.io/github/last-commit/Opanasenko-Mykhailo/gym-crm-system)
 
 ## Prerequisites
 
