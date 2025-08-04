@@ -1,5 +1,6 @@
 package com.gcs.app.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,15 +12,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static com.gcs.app.controller.ApiConstant.BASE_PATH;
-
 @Controller
-@RequestMapping(BASE_PATH)
+@RequestMapping("${app.api.base-path}")
 public class SwaggerController {
+
+    @Value("${app.swagger.file-name:gym.yml}")
+    private String swaggerFileName;
 
     @GetMapping(value = "/openapi", produces = "application/x-yaml")
     public ResponseEntity<String> getSwaggerYaml() throws IOException {
-        ClassPathResource yamlFile = new ClassPathResource("gym.yml");
+        ClassPathResource yamlFile = new ClassPathResource(swaggerFileName);
 
         if (!yamlFile.exists()) {
             return ResponseEntity.notFound().build();

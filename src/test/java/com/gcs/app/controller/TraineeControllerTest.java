@@ -2,7 +2,6 @@ package com.gcs.app.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.ActivationStatusRequest;
 import com.gcs.app.rest.AvailableTrainerGetResponse;
@@ -16,19 +15,17 @@ import com.gcs.app.rest.TraineeUpdateRequest;
 import com.gcs.app.rest.TraineeUpdateResponse;
 import com.gcs.app.rest.UserCreationResponse;
 import com.gcs.app.util.JsonReaderUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
-import static com.gcs.app.controller.ApiConstant.BASE_PATH;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -41,7 +38,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(controllers = TraineeController.class)
+@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "metrics.enabled=false"})
 class TraineeControllerTest {
 
     private static final String TRAINEE_USERNAME = "oleksandr.kovalenko";
@@ -63,21 +61,17 @@ class TraineeControllerTest {
     private static final int TRAINING_DURATION_YOGA = 60;
     private static final int TRAINING_DURATION_PILATES = 45;
 
-    private ObjectMapper objectMapper;
-
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private GymFacade gymFacade;
 
-    @InjectMocks
-    private TraineeController traineeController;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        mockMvc = MockMvcBuilders.standaloneSetup(traineeController).build();
-    }
+    @Value("${app.api.base-path}")
+    private String basePath;
 
     @Test
     void testRegisterTraineeSuccess() throws Exception {
@@ -93,7 +87,7 @@ class TraineeControllerTest {
 
         when(gymFacade.createTrainee(any())).thenReturn(response);
 
-        var result = mockMvc.perform(post(BASE_PATH + "/trainees/register")
+        var result = mockMvc.perform(post(basePath + "/trainees/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -113,7 +107,7 @@ class TraineeControllerTest {
 
         when(gymFacade.getTraineeByUsername(TRAINEE_USERNAME)).thenReturn(profile);
 
-        var result = mockMvc.perform(get(BASE_PATH + "/trainees/" + TRAINEE_USERNAME));
+        var result = mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME));
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value(TRAINEE_USERNAME))
@@ -138,7 +132,7 @@ class TraineeControllerTest {
 
         when(gymFacade.updateTrainee(any(), eq(TRAINEE_USERNAME))).thenReturn(response);
 
-        var result = mockMvc.perform(put(BASE_PATH + "/trainees/" + TRAINEE_USERNAME)
+        var result = mockMvc.perform(put(basePath + "/trainees/" + TRAINEE_USERNAME)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -153,7 +147,7 @@ class TraineeControllerTest {
 
     @Test
     void testDeleteTraineeProfileSuccess() throws Exception {
-        var result = mockMvc.perform(delete(BASE_PATH + "/trainees/" + TRAINEE_USERNAME));
+        var result = mockMvc.perform(delete(basePath + "/trainees/" + TRAINEE_USERNAME));
 
         result.andExpect(status().isOk());
 
@@ -165,7 +159,7 @@ class TraineeControllerTest {
         ActivationStatusRequest request = new ActivationStatusRequest();
         request.setIsActive(false);
 
-        var result = mockMvc.perform(patch(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/change-activation-status")
+        var result = mockMvc.perform(patch(basePath + "/trainees/" + TRAINEE_USERNAME + "/change-activation-status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -184,7 +178,7 @@ class TraineeControllerTest {
 
         when(gymFacade.getUnassignedTrainers(TRAINEE_USERNAME)).thenReturn(trainers);
 
-        var result = mockMvc.perform(get(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/available-trainers"));
+        var result = mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME + "/available-trainers"));
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].username").value(TRAINER_1_USERNAME))
@@ -219,7 +213,7 @@ class TraineeControllerTest {
 
         when(gymFacade.updateTraineeTrainers(eq(TRAINEE_USERNAME), any())).thenReturn(response);
 
-        var result = mockMvc.perform(put(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/trainers")
+        var result = mockMvc.perform(put(basePath + "/trainees/" + TRAINEE_USERNAME + "/trainers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -246,22 +240,18 @@ class TraineeControllerTest {
 
         when(gymFacade.getTraineeTrainings(any())).thenReturn(trainings);
 
-        var result = mockMvc.perform(get(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/trainings")
+        var result = mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME + "/trainings")
                 .param("periodFrom", "2025-07-01")
                 .param("periodTo", "2025-07-31")
                 .param("trainerName", TRAINER_1_FIRST_NAME));
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].trainingName").value(TRAINING_NAME_YOGA))
-                .andExpect(jsonPath("$[0].trainingDate[0]").value(2025))
-                .andExpect(jsonPath("$[0].trainingDate[1]").value(7))
-                .andExpect(jsonPath("$[0].trainingDate[2]").value(15))
+                .andExpect(jsonPath("$[0].trainingDate").value("2025-07-15"))
                 .andExpect(jsonPath("$[0].trainerName").value(TRAINER_1_FIRST_NAME))
                 .andExpect(jsonPath("$[0].trainingDuration").value(TRAINING_DURATION_YOGA))
                 .andExpect(jsonPath("$[1].trainingName").value(TRAINING_NAME_PILATES))
-                .andExpect(jsonPath("$[1].trainingDate[0]").value(2025))
-                .andExpect(jsonPath("$[1].trainingDate[1]").value(7))
-                .andExpect(jsonPath("$[1].trainingDate[2]").value(20))
+                .andExpect(jsonPath("$[1].trainingDate").value("2025-07-20"))
                 .andExpect(jsonPath("$[1].trainerName").value(TRAINER_2_FIRST_NAME))
                 .andExpect(jsonPath("$[1].trainingDuration").value(TRAINING_DURATION_PILATES));
 
@@ -270,7 +260,7 @@ class TraineeControllerTest {
 
     @Test
     void testGetTraineeTrainingsInvalidDate() throws Exception {
-        var result = mockMvc.perform(get(BASE_PATH + "/trainees/" + TRAINEE_USERNAME + "/trainings")
+        var result = mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME + "/trainings")
                 .param("periodFrom", "invalid-date"));
 
         result.andExpect(status().isBadRequest());

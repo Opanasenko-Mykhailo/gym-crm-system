@@ -1,3 +1,9 @@
+app:
+  api:
+    base-path: /gym-crm-core/api/v1
+  swagger:
+    file-name: gym.yml
+
 database:
   url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;
   driver-class-name: org.h2.Driver

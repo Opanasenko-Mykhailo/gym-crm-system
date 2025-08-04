@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Set;
 
@@ -91,6 +92,13 @@ public class ErrorHandler {
         log.error("Unhandled RuntimeException: {}", ex.getMessage(), ex);
 
         return buildErrorResponse(SERVER_ERROR);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        log.error("MethodArgumentTypeMismatchException: {}", ex.getMessage(), ex);
+
+        return buildErrorResponse(INVALID_REQUEST_ERROR, ex.getMessage());
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(ApiError apiError) {

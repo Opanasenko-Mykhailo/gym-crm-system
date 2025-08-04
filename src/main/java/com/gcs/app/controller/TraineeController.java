@@ -30,10 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.gcs.app.controller.ApiConstant.BASE_PATH;
-
 @RestController
-@RequestMapping(BASE_PATH + "/trainees")
+@RequestMapping("${app.api.base-path}/trainees")
 @RequiredArgsConstructor
 public class TraineeController {
 
