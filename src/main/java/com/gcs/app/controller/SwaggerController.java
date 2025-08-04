@@ -11,10 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static com.gcs.app.controller.ApiConstant.BASE_PATH;
-
 @Controller
-@RequestMapping(BASE_PATH)
+@RequestMapping("${app.api.base-path}")
 public class SwaggerController {
 
     @GetMapping(value = "/openapi", produces = "application/x-yaml")

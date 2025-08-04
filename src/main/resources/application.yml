@@ -1,6 +1,10 @@
 server:
   port: 8080
 
+app:
+  api:
+    base-path: /gym-crm-core/api/v1
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/gym_db

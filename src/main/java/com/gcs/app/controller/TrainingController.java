@@ -17,10 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.gcs.app.controller.ApiConstant.BASE_PATH;
-
 @RestController
-@RequestMapping(BASE_PATH + "/trainings")
+@RequestMapping("${app.api.base-path}/trainings")
 @RequiredArgsConstructor
 @Tag(name = "Training", description = "Operations related to training sessions")
 public class TrainingController {
