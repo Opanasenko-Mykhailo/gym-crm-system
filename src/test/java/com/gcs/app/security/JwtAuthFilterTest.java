@@ -36,6 +36,9 @@ class JwtAuthFilterTest {
     private CustomUserDetailsService userDetailsService;
 
     @Mock
+    private UserDetails userDetails;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -48,7 +51,7 @@ class JwtAuthFilterTest {
     private SecurityContext securityContext;
 
     @InjectMocks
-    private JwtAuthFilter jwtAuthFilter;
+    private JwtAuthFilter filter;
 
     @BeforeEach
     void setup() {
@@ -59,7 +62,7 @@ class JwtAuthFilterTest {
     void doFilterInternal_noAuthorizationHeader_callsFilterChain() throws Exception {
         when(request.getHeader("Authorization")).thenReturn(null);
 
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
 
         verify(filterChain).doFilter(request, response);
         verifyNoInteractions(jwtUtil, userDetailsService, securityContext);
@@ -69,7 +72,7 @@ class JwtAuthFilterTest {
     void doFilterInternal_authHeaderNotBearer_callsFilterChain() throws Exception {
         when(request.getHeader("Authorization")).thenReturn("Basic some-token");
 
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
 
         verify(filterChain).doFilter(request, response);
         verifyNoInteractions(jwtUtil, userDetailsService, securityContext);
@@ -84,13 +87,12 @@ class JwtAuthFilterTest {
         when(jwtUtil.extractUsername(token)).thenReturn(username);
         when(securityContext.getAuthentication()).thenReturn(null);
 
-        UserDetails userDetails = mock(UserDetails.class);
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
         when(userDetails.isEnabled()).thenReturn(true);
         when(jwtUtil.validateToken(token, username)).thenReturn(true);
         when(userDetails.getAuthorities()).thenReturn(Collections.emptyList());
 
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
 
         ArgumentCaptor<UsernamePasswordAuthenticationToken> authCaptor = ArgumentCaptor.forClass(UsernamePasswordAuthenticationToken.class);
         verify(securityContext).setAuthentication(authCaptor.capture());
@@ -99,7 +101,6 @@ class JwtAuthFilterTest {
         assertEquals(userDetails, auth.getPrincipal());
         assertNull(auth.getCredentials());
         assertEquals(userDetails.getAuthorities(), auth.getAuthorities());
-
         verify(filterChain).doFilter(request, response);
     }
 
@@ -112,12 +113,11 @@ class JwtAuthFilterTest {
         when(jwtUtil.extractUsername(token)).thenReturn(username);
         when(securityContext.getAuthentication()).thenReturn(null);
 
-        UserDetails userDetails = mock(UserDetails.class);
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
         when(userDetails.isEnabled()).thenReturn(true);
         when(jwtUtil.validateToken(token, username)).thenReturn(false);
 
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+        filter.doFilterInternal(request, response, filterChain);
 
         verify(securityContext, never()).setAuthentication(any());
         verify(filterChain).doFilter(request, response);

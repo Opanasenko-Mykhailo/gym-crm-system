@@ -8,22 +8,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RoleRepositoryTest extends AbstractRepositoryTest {
 
     @Autowired
-    private RoleRepository roleRepository;
+    private RoleRepository repository;
 
     @Test
     @DataSet(value = "dataset/role-data.xml", cleanBefore = true, cleanAfter = true)
     void findByRoleType_existingRole_returnsRole() {
         RoleType roleType = RoleType.ROLE_TRAINEE;
 
-        Optional<Role> result = roleRepository.findByRoleType(roleType);
+        Optional<Role> actual = repository.findByRoleType(roleType);
 
-        assertTrue(result.isPresent());
-        assertEquals(roleType, result.get().getRoleType());
+        assertTrue(actual.isPresent());
+        assertEquals(roleType, actual.get().getRoleType());
     }
 
     @Test
@@ -31,8 +33,8 @@ class RoleRepositoryTest extends AbstractRepositoryTest {
     void findByRoleType_absentInDb_returnsEmptyOptional() {
         RoleType roleType = RoleType.ROLE_TRAINER;
 
-        Optional<Role> result = roleRepository.findByRoleType(roleType);
+        Optional<Role> actual = repository.findByRoleType(roleType);
 
-        assertFalse(result.isPresent());
+        assertFalse(actual.isPresent());
     }
 }

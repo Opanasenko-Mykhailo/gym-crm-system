@@ -15,7 +15,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,7 +27,7 @@ class CustomUserDetailsServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private CustomUserDetailsService userDetailsService;
+    private CustomUserDetailsService service;
 
     @Test
     void loadUserByUsername_whenUserExists_returnsUserDetails() {
@@ -34,7 +36,7 @@ class CustomUserDetailsServiceTest {
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UserDetails userDetails = service.loadUserByUsername(username);
 
         assertEquals(username, userDetails.getUsername());
         assertEquals("encoded-password", userDetails.getPassword());
@@ -44,14 +46,14 @@ class CustomUserDetailsServiceTest {
     }
 
     @Test
-    void loadUserByUsername_whenUserNotFound_throwsUsernameNotFoundException() {
+    void loadUserByUsername_whenUserNotFound_shouldThrowUsernameNotFoundException() {
         String username = "missing.user";
         when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         UsernameNotFoundException exception = assertThrows(
                 UsernameNotFoundException.class,
-                () -> userDetailsService.loadUserByUsername(username)
-        );
+                () -> service.loadUserByUsername(username));
+
         assertEquals("User not found: " + username, exception.getMessage());
     }
 

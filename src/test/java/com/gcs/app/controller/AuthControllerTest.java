@@ -5,7 +5,6 @@ import com.gcs.app.rest.LoginRequest;
 import com.gcs.app.rest.LoginResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -23,7 +22,6 @@ class AuthControllerTest extends AbstractControllerTest {
     private static final String NEW_PASSWORD = "newPassword!456";
 
     @Test
-    @WithAnonymousUser
     void testLoginSuccess() throws Exception {
         LoginRequest request = new LoginRequest();
         request.setUsername(USERNAME);
@@ -43,7 +41,6 @@ class AuthControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithAnonymousUser
     void testChangePasswordSuccess() throws Exception {
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setUsername(USERNAME);

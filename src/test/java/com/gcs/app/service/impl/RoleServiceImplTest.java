@@ -28,12 +28,12 @@ class RoleServiceImplTest {
     @Test
     void getByType_whenRoleExists_returnsRole() {
         RoleType roleType = RoleType.ROLE_TRAINEE;
-        Role expectedRole = new Role(1L, roleType);
-        when(roleRepository.findByRoleType(roleType)).thenReturn(Optional.of(expectedRole));
+        Role expected = new Role(1L, roleType);
+        when(roleRepository.findByRoleType(roleType)).thenReturn(Optional.of(expected));
 
-        Role actualRole = roleService.getByType(roleType);
+        Role actual = roleService.getByType(roleType);
 
-        assertEquals(expectedRole, actualRole);
+        assertEquals(expected, actual);
     }
 
     @Test
