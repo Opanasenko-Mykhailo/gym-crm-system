@@ -1,17 +1,17 @@
-package com.gcs.app.controller;
+package com.gcs.app.controller.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gcs.app.facade.GymFacade;
-import com.gcs.app.security.JwtAuthFilter;
-import com.gcs.app.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "metrics.enabled=false"})
-public abstract class AbstractControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+public abstract class AbstractSecurityControllerTest {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -21,12 +21,6 @@ public abstract class AbstractControllerTest {
 
     @MockitoBean
     protected GymFacade gymFacade;
-
-    @MockitoBean
-    protected JwtUtil jwtUtil;
-
-    @MockitoBean
-    protected JwtAuthFilter jwtAuthFilter;
 
     @Value("${app.api.base-path}")
     protected String basePath;

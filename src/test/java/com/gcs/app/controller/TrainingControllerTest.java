@@ -2,8 +2,9 @@ package com.gcs.app.controller;
 
 import com.gcs.app.rest.TrainingCreateRequest;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 
 import java.time.LocalDate;
 
@@ -13,6 +14,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(controllers = TrainingController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class TrainingControllerTest extends AbstractControllerTest {
 
     private static final String TRAINEE_USERNAME = "oleksandr.kovalenko";
@@ -25,7 +28,6 @@ class TrainingControllerTest extends AbstractControllerTest {
     private final TrainingCreateRequest trainingCreateRequest = createTrainingCreateRequest();
 
     @Test
-    @WithMockUser
     void testAddTrainingSuccess() throws Exception {
         mockMvc.perform(post(basePath + "/trainings")
                         .with(csrf())

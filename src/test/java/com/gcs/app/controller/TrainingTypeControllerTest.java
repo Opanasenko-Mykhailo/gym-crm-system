@@ -2,7 +2,8 @@ package com.gcs.app.controller;
 
 import com.gcs.app.rest.TrainingTypeResponse;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import java.util.List;
 
@@ -11,13 +12,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(controllers = TrainingTypeController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class TrainingTypeControllerTest extends AbstractControllerTest {
 
     private static final String TRAINING_NAME_YOGA = "Yoga";
     private static final String TRAINING_NAME_PILATES = "Pilates";
 
     @Test
-    @WithMockUser
     void testGetTrainingTypes_returnsListOfTrainingTypes() throws Exception {
         List<TrainingTypeResponse> trainingTypes = List.of(
                 new TrainingTypeResponse(TRAINING_NAME_YOGA, 1),

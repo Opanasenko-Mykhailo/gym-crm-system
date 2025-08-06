@@ -10,9 +10,9 @@ import com.gcs.app.rest.TrainerUpdateResponse;
 import com.gcs.app.rest.UserCreationResponse;
 import com.gcs.app.util.JsonReaderUtil;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.List;
 
@@ -28,10 +28,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(controllers = TrainerController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class TrainerControllerTest extends AbstractControllerTest {
 
     @Test
-    @WithAnonymousUser
     void testRegisterTrainerSuccess() throws Exception {
         TrainerCreateRequest request = new TrainerCreateRequest();
         request.setFirstName("Rowan");
@@ -55,7 +56,6 @@ class TrainerControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser
     void testGetTrainerProfileSuccess() throws Exception {
         TrainerGetResponse profile = new TrainerGetResponse();
         profile.setUsername("rowan.atkinson");
@@ -73,7 +73,6 @@ class TrainerControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser
     void testUpdateTrainerProfileSuccess() throws Exception {
         TrainerUpdateRequest request = JsonReaderUtil.readFromJson(
                 "json/trainer-update-request.json",
@@ -100,7 +99,6 @@ class TrainerControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser
     void testChangeActivationStatusSuccess() throws Exception {
         ActivationStatusRequest request = new ActivationStatusRequest();
         request.setIsActive(false);
@@ -115,7 +113,6 @@ class TrainerControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser
     void testGetTrainerTrainingsSuccess() throws Exception {
         List<TrainerTrainingGetResponse> trainings = JsonReaderUtil.readFromJson("json/get-trainer-trainings-response.json",
                 new TypeReference<List<TrainerTrainingGetResponse>>() {
@@ -142,7 +139,6 @@ class TrainerControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser
     void testGetTrainerTrainingsInvalidDate() throws Exception {
         var result = mockMvc.perform(get(basePath + "/trainers/rowan.atkinson/trainings")
                 .param("periodFrom", "invalid-date"));
