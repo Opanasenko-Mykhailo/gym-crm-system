@@ -20,3 +20,7 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     enabled: true
     drop-first: true
+
+jwt:
+  secret: gym-crm-testing-key-1234567890XXABCD
+  expiration: 86400000

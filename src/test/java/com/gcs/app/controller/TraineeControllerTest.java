@@ -1,8 +1,6 @@
 package com.gcs.app.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.ActivationStatusRequest;
 import com.gcs.app.rest.AvailableTrainerGetResponse;
 import com.gcs.app.rest.TraineeAssignedTrainersUpdateRequest;
@@ -16,13 +14,9 @@ import com.gcs.app.rest.TraineeUpdateResponse;
 import com.gcs.app.rest.UserCreationResponse;
 import com.gcs.app.util.JsonReaderUtil;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.List;
 
@@ -38,9 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = TraineeController.class)
-@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "metrics.enabled=false"})
-class TraineeControllerTest {
+class TraineeControllerTest extends AbstractControllerTest {
 
     private static final String TRAINEE_USERNAME = "oleksandr.kovalenko";
     private static final String TRAINEE_FIRST_NAME = "Oleksandr";
@@ -61,19 +53,8 @@ class TraineeControllerTest {
     private static final int TRAINING_DURATION_YOGA = 60;
     private static final int TRAINING_DURATION_PILATES = 45;
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private GymFacade gymFacade;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Value("${app.api.base-path}")
-    private String basePath;
-
     @Test
+    @WithAnonymousUser
     void testRegisterTraineeSuccess() throws Exception {
         TraineeCreateRequest request = new TraineeCreateRequest();
         request.setFirstName(TRAINEE_FIRST_NAME);
@@ -99,6 +80,7 @@ class TraineeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testGetTraineeProfileSuccess() throws Exception {
         TraineeGetResponse profile = new TraineeGetResponse();
         profile.setUsername(TRAINEE_USERNAME);
@@ -118,6 +100,7 @@ class TraineeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testUpdateTraineeProfileSuccess() throws Exception {
         TraineeUpdateRequest request = JsonReaderUtil.readFromJson(
                 "json/trainee-update-request.json",
@@ -146,6 +129,7 @@ class TraineeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testDeleteTraineeProfileSuccess() throws Exception {
         var result = mockMvc.perform(delete(basePath + "/trainees/" + TRAINEE_USERNAME));
 
@@ -155,6 +139,7 @@ class TraineeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testChangeActivationStatusSuccess() throws Exception {
         ActivationStatusRequest request = new ActivationStatusRequest();
         request.setIsActive(false);
@@ -169,6 +154,7 @@ class TraineeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testGetAvailableTrainersSuccess() throws Exception {
         List<AvailableTrainerGetResponse> trainers = JsonReaderUtil.readFromJson(
                 "json/available-trainers-response.json",
@@ -194,6 +180,7 @@ class TraineeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testUpdateTraineeTrainersSuccess() throws Exception {
         TraineeAssignedTrainersUpdateRequest request = new TraineeAssignedTrainersUpdateRequest();
         request.setTrainerUsernames(List.of(TRAINER_1_USERNAME, TRAINER_2_USERNAME));
@@ -231,6 +218,7 @@ class TraineeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testGetTraineeTrainingsSuccess() throws Exception {
         List<TraineeTrainingGetResponse> trainings = JsonReaderUtil.readFromJson(
                 "json/get-trainee-trainings-response.json",
@@ -259,6 +247,7 @@ class TraineeControllerTest {
     }
 
     @Test
+    @WithMockUser
     void testGetTraineeTrainingsInvalidDate() throws Exception {
         var result = mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME + "/trainings")
                 .param("periodFrom", "invalid-date"));

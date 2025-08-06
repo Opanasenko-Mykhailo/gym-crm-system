@@ -5,6 +5,7 @@ import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
+import com.gcs.app.model.Role;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
@@ -12,6 +13,7 @@ import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import com.gcs.app.repository.TrainerRepository;
 import com.gcs.app.repository.TrainingQueryRepository;
+import com.gcs.app.service.RoleService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingTypeService;
 import com.gcs.app.service.UserService;
@@ -24,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
+import java.util.Set;
 
+import static com.gcs.app.model.enums.RoleType.ROLE_TRAINER;
 import static java.util.Optional.ofNullable;
 
 @Service
@@ -38,6 +42,7 @@ public class TrainerServiceImpl implements TrainerService {
     private final UserService userService;
     private final TrainingTypeService trainingTypeService;
     private final CredentialsService credentialsService;
+    private final RoleService roleService;
     private final TrainerMapper trainerMapper;
 
     @Transactional
@@ -120,12 +125,15 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     private User userWithCredentials(User user, String username, String password) {
+        Role trainerRole = roleService.getByType(ROLE_TRAINER);
+
         return User.builder()
                 .username(username)
                 .password(password)
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .isActive(true)
+                .roles(Set.of(trainerRole))
                 .build();
     }
 

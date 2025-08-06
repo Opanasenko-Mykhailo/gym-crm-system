@@ -1,14 +1,8 @@
 package com.gcs.app.controller;
 
-import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.TrainingTypeResponse;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.util.List;
 
@@ -17,23 +11,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = TrainingTypeController.class)
-@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "metrics.enabled=false"})
-class TrainingTypeControllerTest {
+class TrainingTypeControllerTest extends AbstractControllerTest {
 
     private static final String TRAINING_NAME_YOGA = "Yoga";
     private static final String TRAINING_NAME_PILATES = "Pilates";
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private GymFacade gymFacade;
-
-    @Value("${app.api.base-path}")
-    private String basePath;
-
     @Test
+    @WithMockUser
     void testGetTrainingTypes_returnsListOfTrainingTypes() throws Exception {
         List<TrainingTypeResponse> trainingTypes = List.of(
                 new TrainingTypeResponse(TRAINING_NAME_YOGA, 1),
