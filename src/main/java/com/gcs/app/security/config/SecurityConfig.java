@@ -1,5 +1,6 @@
-package com.gcs.app.security;
+package com.gcs.app.security.config;
 
+import com.gcs.app.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
