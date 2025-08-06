@@ -1,46 +1,29 @@
 package com.gcs.app.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gcs.app.facade.GymFacade;
-import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.rest.ChangePasswordRequest;
 import com.gcs.app.rest.LoginRequest;
+import com.gcs.app.rest.LoginResponse;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = AuthController.class)
-@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "metrics.enabled=false"})
-class AuthControllerTest {
+@AutoConfigureMockMvc(addFilters = false)
+class AuthControllerTest extends AbstractControllerTest {
 
     private static final String USERNAME = "ivan.ivanov";
-    private static final String PASSWORD = "password123";
-    private static final String NEW_PASSWORD = "newPassword456";
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockitoBean
-    private GymFacade gymFacade;
-
-    @Value("${app.api.base-path}")
-    private String basePath;
+    private static final String PASSWORD = "Password!123";
+    private static final String NEW_PASSWORD = "newPassword!456";
 
     @Test
     void testLoginSuccess() throws Exception {
@@ -49,9 +32,10 @@ class AuthControllerTest {
         request.setPassword(PASSWORD);
 
         when(gymFacade.authenticate(any(LoginRequest.class)))
-                .thenReturn(new AuthResponseDto());
+                .thenReturn(new LoginResponse());
 
         var result = mockMvc.perform(post(basePath + "/login")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -70,6 +54,7 @@ class AuthControllerTest {
         doNothing().when(gymFacade).changePassword(any(ChangePasswordRequest.class));
 
         var result = mockMvc.perform(put(basePath + "/change-password")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 

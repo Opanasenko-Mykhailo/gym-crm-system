@@ -1,8 +1,6 @@
 package com.gcs.app.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.ActivationStatusRequest;
 import com.gcs.app.rest.AvailableTrainerGetResponse;
 import com.gcs.app.rest.TraineeAssignedTrainersUpdateRequest;
@@ -16,13 +14,9 @@ import com.gcs.app.rest.TraineeUpdateResponse;
 import com.gcs.app.rest.UserCreationResponse;
 import com.gcs.app.util.JsonReaderUtil;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
@@ -39,8 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TraineeController.class)
-@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "metrics.enabled=false"})
-class TraineeControllerTest {
+@AutoConfigureMockMvc(addFilters = false)
+class TraineeControllerTest extends AbstractControllerTest {
 
     private static final String TRAINEE_USERNAME = "oleksandr.kovalenko";
     private static final String TRAINEE_FIRST_NAME = "Oleksandr";
@@ -60,18 +54,6 @@ class TraineeControllerTest {
     private static final String TRAINING_NAME_PILATES = "Pilates";
     private static final int TRAINING_DURATION_YOGA = 60;
     private static final int TRAINING_DURATION_PILATES = 45;
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private GymFacade gymFacade;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Value("${app.api.base-path}")
-    private String basePath;
 
     @Test
     void testRegisterTraineeSuccess() throws Exception {

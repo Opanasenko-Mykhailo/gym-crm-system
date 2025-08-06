@@ -5,6 +5,7 @@ import com.gcs.app.facade.dto.TrainerCreateRequestDto;
 import com.gcs.app.facade.dto.TrainerTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TrainerUpdateRequestDto;
 import com.gcs.app.mapper.TrainerMapper;
+import com.gcs.app.model.Role;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
@@ -12,6 +13,7 @@ import com.gcs.app.model.TrainingType;
 import com.gcs.app.model.User;
 import com.gcs.app.repository.TrainerRepository;
 import com.gcs.app.repository.TrainingQueryRepository;
+import com.gcs.app.service.RoleService;
 import com.gcs.app.service.TrainingTypeService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
@@ -26,7 +28,9 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import static com.gcs.app.model.enums.RoleType.ROLE_TRAINER;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -70,11 +74,15 @@ class TrainerServiceImplTest {
     @Mock
     private CredentialsService credentialsService;
 
+    @Mock
+    private RoleService roleService;
+
     @InjectMocks
     private TrainerServiceImpl service;
 
     @Test
     void createTrainer_mapsDtoAndCreatesTrainer_returnsTrainer() {
+        when(roleService.getByType(ROLE_TRAINER)).thenReturn(new Role(1L, ROLE_TRAINER));
         when(trainerMapper.toEntity(CREATE_REQUEST)).thenReturn(TRAINER);
         when(userService.getAllUsernames()).thenReturn(Collections.emptySet());
         when(credentialsService.generateUsername(FIRST_NAME, LAST_NAME, Collections.emptySet())).thenReturn(USERNAME);
@@ -226,6 +234,7 @@ class TrainerServiceImplTest {
                 .isActive(true)
                 .firstName(FIRST_NAME)
                 .lastName(LAST_NAME)
+                .roles(Set.of(new Role(1L, ROLE_TRAINER)))
                 .build();
     }
 

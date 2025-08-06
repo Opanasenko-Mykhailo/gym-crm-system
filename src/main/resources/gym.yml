@@ -556,7 +556,7 @@ paths:
       tags:
         - Authentication
       summary: User login
-      description: Authenticates a user (trainee or trainer) with username and password
+      description: Authenticates a user (trainee or trainer) with username and password and returns JWT access token
       operationId: login
       requestBody:
         required: true
@@ -566,7 +566,11 @@ paths:
               $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: Login successful
+          description: Login successful, returns JWT access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Invalid username or password
           content:
@@ -1134,6 +1138,18 @@ components:
           type: string
           description: Password of the user
           example: "secure-password"
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      required:
+        - success
+        - accessToken
     ChangePasswordRequest:
       type: object
       required:

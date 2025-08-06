@@ -5,12 +5,14 @@ import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
+import com.gcs.app.model.Role;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.Training;
 import com.gcs.app.model.User;
 import com.gcs.app.repository.TraineeRepository;
 import com.gcs.app.repository.TrainingQueryRepository;
+import com.gcs.app.service.RoleService;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.gcs.app.model.enums.RoleType.ROLE_TRAINEE;
 import static java.util.Optional.ofNullable;
 
 @Service
@@ -39,6 +42,7 @@ public class TraineeServiceImpl implements TraineeService {
     private final TrainingQueryRepository trainingQueryRepository;
     private final UserService userService;
     private final TrainerService trainerService;
+    private final RoleService roleService;
     private final CredentialsService credentialsService;
     private final TraineeMapper traineeMapper;
 
@@ -149,12 +153,15 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     private User userWithCredentials(User user, String username, String password) {
+        Role traineeRole = roleService.getByType(ROLE_TRAINEE);
+
         return User.builder()
                 .username(username)
                 .password(password)
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .isActive(true)
+                .roles(Set.of(traineeRole))
                 .build();
     }
 

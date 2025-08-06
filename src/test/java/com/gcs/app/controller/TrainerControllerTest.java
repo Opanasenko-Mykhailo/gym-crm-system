@@ -1,8 +1,6 @@
 package com.gcs.app.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gcs.app.facade.GymFacade;
 import com.gcs.app.rest.ActivationStatusRequest;
 import com.gcs.app.rest.TrainerCreateRequest;
 import com.gcs.app.rest.TrainerGetResponse;
@@ -12,13 +10,9 @@ import com.gcs.app.rest.TrainerUpdateResponse;
 import com.gcs.app.rest.UserCreationResponse;
 import com.gcs.app.util.JsonReaderUtil;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
@@ -26,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,20 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = TrainerController.class)
-@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "metrics.enabled=false"})
-class TrainerControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private GymFacade gymFacade;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Value("${app.api.base-path}")
-    private String basePath;
+@AutoConfigureMockMvc(addFilters = false)
+class TrainerControllerTest extends AbstractControllerTest {
 
     @Test
     void testRegisterTrainerSuccess() throws Exception {
@@ -63,6 +46,7 @@ class TrainerControllerTest {
         when(gymFacade.createTrainer(any())).thenReturn(response);
 
         var result = mockMvc.perform(post(basePath + "/trainers/register")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -104,6 +88,7 @@ class TrainerControllerTest {
         when(gymFacade.updateTrainer(any(), eq("rowan.atkinson"))).thenReturn(response);
 
         var result = mockMvc.perform(put(basePath + "/trainers/rowan.atkinson")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -119,6 +104,7 @@ class TrainerControllerTest {
         request.setIsActive(false);
 
         var result = mockMvc.perform(patch(basePath + "/trainers/rowan.atkinson/change-activation-status")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 

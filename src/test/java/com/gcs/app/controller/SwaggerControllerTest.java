@@ -1,12 +1,10 @@
 package com.gcs.app.controller;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.charset.StandardCharsets;
 
@@ -15,18 +13,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(SwaggerController.class)
-@TestPropertySource(properties = {"app.api.base-path=/gym-crm-core/api/v1", "app.swagger.file-name=gym.yml", "metrics.enabled=false"})
-class SwaggerControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private SwaggerController swaggerController;
-
-    @Value("${app.api.base-path}")
-    private String basePath;
+@WebMvcTest(controllers = SwaggerController.class)
+@AutoConfigureMockMvc(addFilters = false)
+class SwaggerControllerTest extends AbstractControllerTest {
 
     @Value("${app.swagger.file-name}")
     private String swaggerFileName;

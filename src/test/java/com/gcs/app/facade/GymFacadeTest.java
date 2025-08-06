@@ -25,6 +25,7 @@ import com.gcs.app.model.User;
 import com.gcs.app.rest.AvailableTrainerGetResponse;
 import com.gcs.app.rest.ChangePasswordRequest;
 import com.gcs.app.rest.LoginRequest;
+import com.gcs.app.rest.LoginResponse;
 import com.gcs.app.rest.TraineeAssignedTrainersUpdateResponse;
 import com.gcs.app.rest.TraineeCreateRequest;
 import com.gcs.app.rest.TraineeGetResponse;
@@ -39,12 +40,12 @@ import com.gcs.app.rest.TrainerUpdateResponse;
 import com.gcs.app.rest.TrainingCreateRequest;
 import com.gcs.app.rest.TrainingTypeResponse;
 import com.gcs.app.rest.UserCreationResponse;
+import com.gcs.app.security.AuthService;
 import com.gcs.app.service.TraineeService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.TrainingService;
 import com.gcs.app.service.TrainingTypeService;
 import com.gcs.app.service.UserService;
-import com.gcs.app.security.AuthService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -375,19 +376,25 @@ class GymFacadeTest {
 
     @Test
     void authenticate_callsService_returnsResponseDto() {
-        AuthResponseDto expected = new AuthResponseDto();
-        expected.setSuccess(true);
-        expected.setMessage("Login successful");
+        AuthResponseDto authResponseDto = new AuthResponseDto();
+        authResponseDto.setSuccess(true);
+        authResponseDto.setAccessToken("dummy.jwt.token");
+
+        LoginResponse expectedLoginResponse = new LoginResponse();
+        expectedLoginResponse.setSuccess(true);
+        expectedLoginResponse.setAccessToken("dummy.jwt.token");
 
         when(userMapper.toAuthRequestDto(loginRequest)).thenReturn(authRequestDto);
-        when(authService.authenticate(authRequestDto)).thenReturn(expected);
+        when(authService.authenticate(authRequestDto)).thenReturn(authResponseDto);
+        when(userMapper.toLoginResponse(authResponseDto)).thenReturn(expectedLoginResponse);
 
-        AuthResponseDto actual = facade.authenticate(loginRequest);
+        LoginResponse actual = facade.authenticate(loginRequest);
 
-        assertTrue(actual.getSuccess());
-        assertEquals("Login successful", actual.getMessage());
+        assertTrue(actual.getSuccess(), "LoginResponse success should be true");
+        assertEquals("dummy.jwt.token", actual.getAccessToken(), "Access token should match");
         verify(userMapper).toAuthRequestDto(loginRequest);
         verify(authService).authenticate(authRequestDto);
+        verify(userMapper).toLoginResponse(authResponseDto);
     }
 
     @Test

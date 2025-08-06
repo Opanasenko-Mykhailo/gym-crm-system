@@ -4,10 +4,12 @@ import com.gcs.app.exception.ServiceException;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
 import com.gcs.app.mapper.TraineeMapper;
+import com.gcs.app.model.Role;
 import com.gcs.app.model.Trainee;
 import com.gcs.app.model.Trainer;
 import com.gcs.app.model.User;
 import com.gcs.app.repository.TraineeRepository;
+import com.gcs.app.service.RoleService;
 import com.gcs.app.service.TrainerService;
 import com.gcs.app.service.UserService;
 import com.gcs.app.service.common.CredentialsService;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.gcs.app.model.enums.RoleType.ROLE_TRAINEE;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -51,20 +54,28 @@ class TraineeServiceImplTest {
 
     @Mock
     private TraineeRepository traineeRepository;
+
     @Mock
     private TraineeMapper traineeMapper;
+
     @Mock
     private UserService userService;
+
     @Mock
     private TrainerService trainerService;
+
     @Mock
     private CredentialsService credentialsService;
+
+    @Mock
+    private RoleService roleService;
 
     @InjectMocks
     private TraineeServiceImpl service;
 
     @Test
     void createTrainee_mapsDtoAndCreatesTrainee_returnsTrainee() {
+        when(roleService.getByType(ROLE_TRAINEE)).thenReturn(new Role(1L, ROLE_TRAINEE));
         when(traineeMapper.toEntity(CREATE_REQUEST)).thenReturn(TRAINEE);
         when(userService.getAllUsernames()).thenReturn(Collections.emptySet());
         when(credentialsService.generateUsername(any(), any(), any())).thenReturn(USERNAME);
@@ -273,6 +284,7 @@ class TraineeServiceImplTest {
                 .isActive(true)
                 .firstName(FIRST_NAME)
                 .lastName(LAST_NAME)
+                .roles(Set.of(new Role(1L, ROLE_TRAINEE)))
                 .build();
     }
 

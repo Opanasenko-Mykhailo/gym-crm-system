@@ -72,16 +72,11 @@
           "name": "Get trainee profile",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -128,16 +123,11 @@
           "name": "Update trainee profile",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -202,16 +192,11 @@
           "name": "Delete trainee profile",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -258,16 +243,11 @@
           "name": "Change trainee activation status",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -334,16 +314,11 @@
           "name": "Get available trainers",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -392,16 +367,11 @@
           "name": "Update trainee's trainer list",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -468,16 +438,11 @@
           "name": "Get trainee's training schedule",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -618,16 +583,11 @@
           "name": "Get trainer profile",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -674,16 +634,11 @@
           "name": "Update trainer profile",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -748,16 +703,11 @@
           "name": "Change trainer activation status",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -807,7 +757,7 @@
                     "{{baseUrl}}"
                   ],
                   "path": [
-                    "trainers",
+                    "trainees",
                     "Jane.Doe",
                     "change-activation-status"
                   ]
@@ -824,16 +774,11 @@
           "name": "Get trainer's training schedule",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -934,7 +879,7 @@
                 "login"
               ]
             },
-            "description": "Authenticates a user (trainee or trainer) with username and password"
+            "description": "Authenticates a user (trainee or trainer) with username and password and returns JWT access token"
           },
           "response": [
             {
@@ -964,7 +909,7 @@
               "status": "OK",
               "code": 200,
               "header": [],
-              "body": ""
+              "body": "{\n  \"success\": true,\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
             }
           ]
         },
@@ -972,16 +917,11 @@
           "name": "Change user password",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -1016,7 +956,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"username\": \"John.Smith\",\n  \"oldPassword\": \"Password!123\",\n  \"newPassword\": \"Newpassword!456\"\n}",
+                  "raw": "{\n  \"username\": \"John.Smith\",\n  \"oldPassword\": \"password123\",\n  \"newPassword\": \"newpassword456\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1049,16 +989,11 @@
           "name": "Add new training",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{password}}",
+                  "key": "token",
+                  "value": "{{token}}",
                   "type": "string"
                 }
               ]
@@ -1261,19 +1196,29 @@
       "key": "actuatorUrl",
       "value": "http://localhost:8080",
       "description": "Base URL for Actuator endpoints"
+    },
+    {
+      "key": "username",
+      "value": "John.Smith",
+      "description": "Username for authentication"
+    },
+    {
+      "key": "password",
+      "value": "password123",
+      "description": "Password for authentication"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT token for authentication"
     }
   ],
   "auth": {
-    "type": "basic",
-    "basic": [
+    "type": "bearer",
+    "bearer": [
       {
-        "key": "username",
-        "value": "{{username}}",
-        "type": "string"
-      },
-      {
-        "key": "password",
-        "value": "{{password}}",
+        "key": "token",
+        "value": "{{token}}",
         "type": "string"
       }
     ]

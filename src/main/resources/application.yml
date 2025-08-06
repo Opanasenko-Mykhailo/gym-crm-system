@@ -28,6 +28,10 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
 
+jwt:
+  secret: gym-crm-secret-key-1234567890XXABCD
+  expiration: 86400000
+
 logging:
   level:
     org.springframework: INFO
