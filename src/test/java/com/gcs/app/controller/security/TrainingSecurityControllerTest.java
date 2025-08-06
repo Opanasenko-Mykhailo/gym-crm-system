@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TrainingSecurityControllerTest extends AbstractSecurityControllerTest {
 
     private static final String TEST_DATA_PATH = "json/security/training-test-data.json";
+
     private static JsonNode testData;
 
     @BeforeAll

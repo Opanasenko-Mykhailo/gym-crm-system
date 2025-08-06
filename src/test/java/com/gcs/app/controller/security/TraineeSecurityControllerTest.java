@@ -18,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TraineeSecurityControllerTest extends AbstractSecurityControllerTest {
 
     private static final String TRAINEE_USERNAME = "oleksandr.kovalenko";
-
     private static final String TEST_DATA_PATH = "json/security/trainee-test-data.json";
 
     private static JsonNode testData;
