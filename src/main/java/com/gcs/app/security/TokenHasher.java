@@ -14,8 +14,8 @@ public class TokenHasher {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashedBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hashedBytes);
 
+            return Base64.getEncoder().encodeToString(hashedBytes);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Failed to hash token", e);
         }
