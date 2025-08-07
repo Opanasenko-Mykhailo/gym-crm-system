@@ -31,19 +31,13 @@ public class AuthService {
     public AuthResponseDto authenticate(@Valid AuthRequestDto dto) {
         User user = userService.getByUsername(dto.getUsername());
 
-        if (!user.getIsActive()) {
-            throw new UserNotAuthorizedException("User is inactive");
-        }
+        validateUserIsActive(user);
 
         if (!credentialsService.isPasswordCorrect(dto.getPassword(), user.getPassword())) {
             throw new UserNotAuthorizedException("Invalid username or password");
         }
 
-        Set<String> roles = user.getRoles().stream()
-                .map(role -> role.getRoleType().name())
-                .collect(Collectors.toSet());
-
-        String accessToken = jwtUtil.generateToken(user.getUsername(), roles);
+        String accessToken = jwtUtil.generateToken(user.getUsername(), extractRoleNames(user));
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
         refreshTokenService.saveToken(refreshToken, user.getUsername());
 
@@ -54,30 +48,12 @@ public class AuthService {
 
     public AuthResponseDto refreshToken(@Valid RefreshTokenRequestDto request) {
         String refreshToken = request.getRefreshToken();
-        if (!jwtUtil.isTokenValid(refreshToken)) {
-            throw new UserNotAuthorizedException("Invalid or expired refresh token");
-        }
 
-        String username = refreshTokenService.getUsername(refreshToken);
-        if (username == null) {
-            throw new UserNotAuthorizedException("Invalid refresh token");
-        }
-
-        String tokenUsername = jwtUtil.extractUsername(refreshToken);
-        if (!tokenUsername.equals(username)) {
-            throw new UserNotAuthorizedException("Invalid refresh token");
-        }
-
+        String username = resolveAndValidateUsernameFromToken(refreshToken);
         User user = userService.getByUsername(username);
-        if (!user.getIsActive()) {
-            throw new UserNotAuthorizedException("User is inactive");
-        }
+        validateUserIsActive(user);
 
-        Set<String> roles = user.getRoles().stream()
-                .map(role -> role.getRoleType().name())
-                .collect(Collectors.toSet());
-
-        String newAccessToken = jwtUtil.generateToken(user.getUsername(), roles);
+        String newAccessToken = jwtUtil.generateToken(user.getUsername(), extractRoleNames(user));
         log.info("New access token generated for user {}", username);
 
         return new AuthResponseDto(true, newAccessToken, refreshToken);
@@ -85,16 +61,44 @@ public class AuthService {
 
     public void logout(@Valid LogoutRequestDto request) {
         String refreshToken = request.getRefreshToken();
-        if (!jwtUtil.isTokenValid(refreshToken)) {
-            throw new UserNotAuthorizedException("Invalid or expired refresh token");
-        }
 
-        String username = refreshTokenService.getUsername(refreshToken);
-        if (username == null) {
+        String username = resolveAndValidateUsernameFromToken(refreshToken);
+        refreshTokenService.invalidateToken(refreshToken);
+
+        log.info("User {} logged out successfully", username);
+    }
+
+    private String resolveAndValidateUsernameFromToken(String refreshToken) {
+        isValidRefreshTokenOrThrow(refreshToken);
+
+        String dbUsername = refreshTokenService.getUsername(refreshToken);
+        if (dbUsername == null) {
             throw new UserNotAuthorizedException("Invalid refresh token");
         }
 
-        refreshTokenService.invalidateToken(refreshToken);
-        log.info("User {} logged out successfully", username);
+        String tokenUsername = jwtUtil.extractUsername(refreshToken);
+        if (!tokenUsername.equals(dbUsername)) {
+            throw new UserNotAuthorizedException("Invalid refresh token");
+        }
+
+        return dbUsername;
+    }
+
+    private void isValidRefreshTokenOrThrow(String token) {
+        if (!jwtUtil.isTokenValid(token)) {
+            throw new UserNotAuthorizedException("Invalid or expired refresh token");
+        }
+    }
+
+    private void validateUserIsActive(User user) {
+        if (!user.getIsActive()) {
+            throw new UserNotAuthorizedException("User is inactive");
+        }
+    }
+
+    private Set<String> extractRoleNames(User user) {
+        return user.getRoles().stream()
+                .map(role -> role.getRoleType().name())
+                .collect(Collectors.toSet());
     }
 }

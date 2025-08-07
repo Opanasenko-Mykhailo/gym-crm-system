@@ -16,7 +16,7 @@ public class RefreshTokenCleanupTask {
 
     private final RefreshTokenRepository repository;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(fixedRateString = "${refresh-token.cleanup.every-milliseconds:3600000}")
     @Transactional
     public void deleteExpiredTokens() {
         int deletedCount = repository.deleteAllByExpiryDateBefore(Instant.now());

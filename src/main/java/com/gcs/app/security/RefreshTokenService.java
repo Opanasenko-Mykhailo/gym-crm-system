@@ -4,30 +4,27 @@ import com.gcs.app.exception.RefreshTokenNotFoundException;
 import com.gcs.app.model.RefreshTokenEntity;
 import com.gcs.app.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.Instant;
-import java.util.Base64;
 
-@Component
 @RequiredArgsConstructor
+@Component
 public class RefreshTokenService {
 
     private final RefreshTokenRepository repository;
+    private final TokenHasher tokenHasher;
 
     @Value("${jwt.refresh-expiration}")
     private Long refreshExpirationTime;
 
     @Transactional
     public void saveToken(String token, String username) {
+        String hashed = tokenHasher.hash(token);
         Instant expiry = Instant.now().plusMillis(refreshExpirationTime);
 
-        String hashed = hash(token);
         RefreshTokenEntity entity = RefreshTokenEntity.builder()
                 .token(hashed)
                 .username(username)
@@ -39,7 +36,7 @@ public class RefreshTokenService {
 
     @Transactional(readOnly = true)
     public String getUsername(String token) {
-        String hashed = hash(token);
+        String hashed = tokenHasher.hash(token);
 
         return repository.findByToken(hashed)
                 .map(RefreshTokenEntity::getUsername)
@@ -48,15 +45,7 @@ public class RefreshTokenService {
 
     @Transactional
     public void invalidateToken(String token) {
-        String hashed = hash(token);
+        String hashed = tokenHasher.hash(token);
         repository.deleteByToken(hashed);
-    }
-
-    @SneakyThrows
-    private String hash(String token) {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        byte[] hashedBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-
-        return Base64.getEncoder().encodeToString(hashedBytes);
     }
 }

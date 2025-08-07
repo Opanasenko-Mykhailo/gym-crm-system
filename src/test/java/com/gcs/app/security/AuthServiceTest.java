@@ -167,7 +167,6 @@ class AuthServiceTest {
                 () -> service.refreshToken(request));
 
         assertEquals("Invalid or expired refresh token", ex.getMessage());
-
         verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
         verifyNoMoreInteractions(refreshTokenService, userService, jwtUtil);
     }
@@ -185,7 +184,6 @@ class AuthServiceTest {
                 () -> service.refreshToken(request));
 
         assertEquals("Invalid refresh token", ex.getMessage());
-
         verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
         verify(refreshTokenService).getUsername(DUMMY_REFRESH_TOKEN);
         verify(jwtUtil).extractUsername(DUMMY_REFRESH_TOKEN);
@@ -199,11 +197,13 @@ class AuthServiceTest {
 
         when(jwtUtil.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(true);
         when(refreshTokenService.getUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
+        when(jwtUtil.extractUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
 
         service.logout(request);
 
         verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
         verify(refreshTokenService).getUsername(DUMMY_REFRESH_TOKEN);
+        verify(jwtUtil).extractUsername(DUMMY_REFRESH_TOKEN);
         verify(refreshTokenService).invalidateToken(DUMMY_REFRESH_TOKEN);
     }
 
@@ -218,7 +218,6 @@ class AuthServiceTest {
                 () -> service.logout(request));
 
         assertEquals("Invalid or expired refresh token", ex.getMessage());
-
         verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
         verifyNoMoreInteractions(refreshTokenService);
     }
