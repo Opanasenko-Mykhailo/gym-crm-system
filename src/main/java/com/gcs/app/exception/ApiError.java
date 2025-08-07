@@ -10,6 +10,7 @@ enum ApiError {
     VALIDATION_ERROR(2760, "Validation error: ", HttpStatus.BAD_REQUEST),
     AUTHENTICATION_ERROR(2805, "Authentication fails", HttpStatus.UNAUTHORIZED),
     AUTHORIZATION_ERROR(2806, "User is not authorized for request operation", HttpStatus.UNAUTHORIZED),
+    TOKEN_INVALID(2807, "Refresh token is invalid or expired", HttpStatus.UNAUTHORIZED),
     NOT_FOUND_ERROR(2835, "Requested data was not found: ", HttpStatus.NOT_FOUND),
     SERVER_ERROR(3200, "Internal processing error", HttpStatus.INTERNAL_SERVER_ERROR),
     DATABASE_ERROR(3358, "Unexpected database access failure", HttpStatus.INTERNAL_SERVER_ERROR);

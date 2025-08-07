@@ -1,15 +1,16 @@
 package com.gcs.app.security;
 
+import com.gcs.app.exception.RefreshTokenNotFoundException;
 import com.gcs.app.model.RefreshTokenEntity;
 import com.gcs.app.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
 
@@ -42,7 +43,7 @@ public class RefreshTokenService {
 
         return repository.findByToken(hashed)
                 .map(RefreshTokenEntity::getUsername)
-                .orElseThrow(() -> new RuntimeException("Token not found"));
+                .orElseThrow(() -> new RefreshTokenNotFoundException("Token not found"));
     }
 
     @Transactional
@@ -51,14 +52,11 @@ public class RefreshTokenService {
         repository.deleteByToken(hashed);
     }
 
+    @SneakyThrows
     private String hash(String token) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashedBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashedBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
 
-            return Base64.getEncoder().encodeToString(hashedBytes);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
-        }
+        return Base64.getEncoder().encodeToString(hashedBytes);
     }
 }

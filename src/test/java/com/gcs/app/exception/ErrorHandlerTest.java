@@ -27,6 +27,7 @@ import static com.gcs.app.exception.ApiError.DATABASE_ERROR;
 import static com.gcs.app.exception.ApiError.INVALID_REQUEST_ERROR;
 import static com.gcs.app.exception.ApiError.NOT_FOUND_ERROR;
 import static com.gcs.app.exception.ApiError.SERVER_ERROR;
+import static com.gcs.app.exception.ApiError.TOKEN_INVALID;
 import static com.gcs.app.exception.ApiError.VALIDATION_ERROR;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,6 +50,7 @@ class ErrorHandlerTest {
     private static final String AUTH_ERROR_MSG = "Authentication token is missing or invalid";
     private static final String UNHANDLED_ERROR_MSG = "Unhandled exception occurred while processing request";
     private static final String TYPE_MISMATCH_MSG = "Failed to convert value 'abc' to required type 'java.time.LocalDate'";
+    private static final String REFRESH_TOKEN_ERROR_MSG = "Refresh token is invalid or expired";
 
     @InjectMocks
     private ErrorHandler errorHandler;
@@ -169,6 +171,18 @@ class ErrorHandlerTest {
         assertEquals(INTERNAL_SERVER_ERROR, result.getStatusCode());
         assertEquals(SERVER_ERROR.getCode(), result.getBody().getErrorCode());
         assertEquals(SERVER_ERROR.getMessage(), result.getBody().getErrorMessage());
+    }
+
+    @Test
+    void handleRefreshTokenNotFoundException_whenThrown_returnsTokenInvalidError() {
+        RefreshTokenNotFoundException ex = new RefreshTokenNotFoundException(REFRESH_TOKEN_ERROR_MSG);
+
+        ResponseEntity<ErrorResponse> result = errorHandler.handleRefreshTokenNotFoundException(ex);
+
+        assertNotNull(result.getBody());
+        assertEquals(UNAUTHORIZED, result.getStatusCode());
+        assertEquals(TOKEN_INVALID.getCode(), result.getBody().getErrorCode());
+        assertEquals(TOKEN_INVALID.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test
