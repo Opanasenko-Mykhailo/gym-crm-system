@@ -34,12 +34,22 @@ class TrainingSecurityControllerTest extends AbstractSecurityControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void createTraining_shouldBeAccessibleWithAuth() throws Exception {
+    @WithMockUser(username = "trainer.user", roles = {"TRAINER"})
+    void createTraining_shouldBeAccessibleForTrainer() throws Exception {
         mockMvc.perform(post(basePath + "/trainings")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(testData.get("trainingCreateRequest").toString()))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "trainee.user", roles = {"TRAINEE"})
+    void createTraining_shouldBeForbiddenForTrainee() throws Exception {
+        mockMvc.perform(post(basePath + "/trainings")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(testData.get("trainingCreateRequest").toString()))
+                .andExpect(status().isForbidden());
     }
 }

@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -45,6 +46,7 @@ public class TraineeController {
     }
 
     @GetMapping("/{username}")
+    @PreAuthorize("hasAnyRole('TRAINER', 'TRAINEE')")
     public ResponseEntity<TraineeGetResponse> getTraineeProfile(@PathVariable String username) {
         TraineeGetResponse response = gymFacade.getTraineeByUsername(username);
 
@@ -52,6 +54,7 @@ public class TraineeController {
     }
 
     @PutMapping("/{username}")
+    @PreAuthorize("hasPermission(#username, 'TRAINEE')")
     public ResponseEntity<TraineeUpdateResponse> updateTraineeProfile(@PathVariable String username, @Valid @RequestBody TraineeUpdateRequest request) {
         TraineeUpdateResponse response = gymFacade.updateTrainee(request, username);
 
@@ -59,6 +62,7 @@ public class TraineeController {
     }
 
     @DeleteMapping("/{username}")
+    @PreAuthorize("hasPermission(#username, 'TRAINEE')")
     public ResponseEntity<Void> deleteTraineeProfile(@PathVariable String username) {
         gymFacade.deleteTraineeByUsername(username);
 
@@ -66,6 +70,7 @@ public class TraineeController {
     }
 
     @PatchMapping("/{username}/change-activation-status")
+    @PreAuthorize("hasRole('TRAINER')")
     public ResponseEntity<Void> changeActivationStatus(@PathVariable String username, @Valid @RequestBody ActivationStatusRequest request) {
         gymFacade.setTraineeActive(username, request.getIsActive());
 
@@ -73,6 +78,7 @@ public class TraineeController {
     }
 
     @GetMapping("/{username}/available-trainers")
+    @PreAuthorize("hasPermission(#username, 'TRAINEE')")
     public ResponseEntity<List<AvailableTrainerGetResponse>> getAvailableTrainers(@PathVariable String username) {
         List<AvailableTrainerGetResponse> response = gymFacade.getUnassignedTrainers(username);
 
@@ -80,6 +86,7 @@ public class TraineeController {
     }
 
     @PutMapping("/{username}/trainers")
+    @PreAuthorize("hasPermission(#username, 'TRAINEE')")
     public ResponseEntity<TraineeAssignedTrainersUpdateResponse> updateTraineeTrainers(@PathVariable String username, @Valid @RequestBody TraineeAssignedTrainersUpdateRequest request) {
         TraineeAssignedTrainersUpdateResponse response = gymFacade.updateTraineeTrainers(username, request.getTrainerUsernames());
 
@@ -87,6 +94,7 @@ public class TraineeController {
     }
 
     @GetMapping("/{username}/trainings")
+    @PreAuthorize("hasAnyRole('TRAINER', 'TRAINEE')")
     public ResponseEntity<List<TraineeTrainingGetResponse>> getTraineeTrainings(
             @PathVariable String username,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate periodFrom,

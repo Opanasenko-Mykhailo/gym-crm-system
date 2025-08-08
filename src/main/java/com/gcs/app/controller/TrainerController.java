@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +42,7 @@ public class TrainerController {
     }
 
     @GetMapping("/{username}")
+    @PreAuthorize("hasAnyRole('TRAINER')")
     public ResponseEntity<TrainerGetResponse> getTrainerProfile(@PathVariable String username) {
         TrainerGetResponse response = gymFacade.getTrainerByUsername(username);
 
@@ -48,6 +50,7 @@ public class TrainerController {
     }
 
     @PutMapping("/{username}")
+    @PreAuthorize("hasPermission(#username, 'TRAINER')")
     public ResponseEntity<TrainerUpdateResponse> updateTrainerProfile(@PathVariable String username, @Valid @RequestBody TrainerUpdateRequest request) {
         TrainerUpdateResponse response = gymFacade.updateTrainer(request, username);
 
@@ -55,6 +58,7 @@ public class TrainerController {
     }
 
     @PatchMapping("/{username}/change-activation-status")
+    @PreAuthorize("hasPermission(#username, 'TRAINER')")
     public ResponseEntity<Void> changeActivationStatus(@PathVariable String username, @Valid @RequestBody ActivationStatusRequest request) {
         gymFacade.setTrainerActive(username, request.getIsActive());
 
@@ -62,6 +66,7 @@ public class TrainerController {
     }
 
     @GetMapping("/{username}/trainings")
+    @PreAuthorize("hasAnyRole('TRAINER')")
     public ResponseEntity<List<TrainerTrainingGetResponse>> getTrainerTrainings(
             @PathVariable String username,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate periodFrom,

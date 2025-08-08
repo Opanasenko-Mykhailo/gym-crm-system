@@ -3,12 +3,18 @@ package com.gcs.app.controller.security;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gcs.app.util.JsonReaderUtil;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,79 +33,97 @@ class TrainerSecurityControllerTest extends AbstractSecurityControllerTest {
         testData = JsonReaderUtil.readFromJson(TEST_DATA_PATH, JsonNode.class);
     }
 
+    @DisplayName("Register should be accessible without authentication")
     @Test
-    @WithAnonymousUser
     void register_shouldBeAccessibleWithoutAuth() throws Exception {
-        String json = testData.get("trainerCreateRequest").toString();
-
         mockMvc.perform(post(basePath + "/trainers/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
+                        .content(getCreateJson()))
                 .andExpect(status().isOk());
     }
 
-    @Test
-    @WithAnonymousUser
-    void getProfile_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        mockMvc.perform(get(basePath + "/trainers/" + USERNAME))
+    @DisplayName("All protected endpoints should return 401 without authentication")
+    @ParameterizedTest(name = "{index} => method={0}, endpoint={1}")
+    @MethodSource("unauthorizedRequestProvider")
+    void request_shouldBeUnauthorizedWithoutAuth(String method, String endpoint) throws Exception {
+        mockMvc.perform(buildRequestWithoutAuth(method, endpoint))
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    @WithMockUser
-    void getProfile_shouldBeAccessibleWithAuth() throws Exception {
-        mockMvc.perform(get(basePath + "/trainers/" + USERNAME))
-                .andExpect(status().isOk());
+    @DisplayName("Access control tests for different users and roles")
+    @ParameterizedTest(name = "{index} => user={0}, role={1}, method={2}, endpoint={3}, expectedStatus={4}")
+    @MethodSource("accessControlDataProvider")
+    void accessControlTests(String username, String role, String method, String endpoint, int expectedStatus) throws Exception {
+        mockMvc.perform(buildRequestWithAuth(method, endpoint, username, role))
+                .andExpect(status().is(expectedStatus));
     }
 
-    @Test
-    @WithAnonymousUser
-    void updateProfile_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        String json = testData.get("trainerUpdateRequest").toString();
-
-        mockMvc.perform(put(basePath + "/trainers/" + USERNAME)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isUnauthorized());
+    private static Stream<Arguments> unauthorizedRequestProvider() {
+        return Stream.of(
+                arguments("GET", "/trainers/" + USERNAME),
+                arguments("PUT", "/trainers/" + USERNAME),
+                arguments("PATCH", "/trainers/" + USERNAME + "/change-activation-status"),
+                arguments("GET", "/trainers/" + USERNAME + "/trainings")
+        );
     }
 
-    @Test
-    @WithMockUser
-    void updateProfile_shouldBeAccessibleWithAuth() throws Exception {
-        String json = testData.get("trainerUpdateRequest").toString();
+    private static Stream<Arguments> accessControlDataProvider() {
+        return Stream.of(
+                arguments("rowan.atkinson", "TRAINER", "GET", "/trainers/rowan.atkinson", 200),
+                arguments("some.trainee", "TRAINEE", "GET", "/trainers/rowan.atkinson", 403),
 
-        mockMvc.perform(put(basePath + "/trainers/" + USERNAME)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isOk());
+                arguments("rowan.atkinson", "TRAINER", "PUT", "/trainers/rowan.atkinson", 200),
+                arguments("other.trainer", "TRAINER", "PUT", "/trainers/rowan.atkinson", 403),
+                arguments("some.trainee", "TRAINEE", "PUT", "/trainers/rowan.atkinson", 403),
+
+                arguments("rowan.atkinson", "TRAINER", "PATCH", "/trainers/rowan.atkinson/change-activation-status", 200),
+                arguments("other.trainer", "TRAINER", "PATCH", "/trainers/rowan.atkinson/change-activation-status", 403),
+                arguments("some.trainee", "TRAINEE", "PATCH", "/trainers/rowan.atkinson/change-activation-status", 403),
+
+                arguments("rowan.atkinson", "TRAINER", "GET", "/trainers/rowan.atkinson/trainings", 200),
+                arguments("some.trainee", "TRAINEE", "GET", "/trainers/rowan.atkinson/trainings", 403)
+        );
     }
 
-    @Test
-    @WithAnonymousUser
-    void deleteProfile_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        mockMvc.perform(delete(basePath + "/trainers/" + USERNAME))
-                .andExpect(status().isUnauthorized());
+    private MockHttpServletRequestBuilder buildRequestWithAuth(String method, String endpoint, String username, String role) {
+        return buildRequest(method, endpoint)
+                .with(SecurityMockMvcRequestPostProcessors.user(username).roles(role));
     }
 
-    @Test
-    @WithAnonymousUser
-    void changeActivationStatus_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        String json = testData.get("activationStatusRequest").toString();
-
-        mockMvc.perform(patch(basePath + "/trainers/" + USERNAME + "/change-activation-status")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isUnauthorized());
+    private MockHttpServletRequestBuilder buildRequestWithoutAuth(String method, String endpoint) {
+        return buildRequest(method, endpoint);
     }
 
-    @Test
-    @WithMockUser
-    void changeActivationStatus_shouldBeAccessibleWithAuth() throws Exception {
-        String json = testData.get("activationStatusRequest").toString();
+    private MockHttpServletRequestBuilder buildRequest(String method, String endpoint) {
+        String fullUrl = basePath + endpoint;
+        String content = getContentForEndpoint(endpoint);
 
-        mockMvc.perform(patch(basePath + "/trainers/" + USERNAME + "/change-activation-status")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isOk());
+        return switch (method) {
+            case "GET" -> get(fullUrl);
+            case "PUT" -> put(fullUrl).contentType(MediaType.APPLICATION_JSON).content(content);
+            case "PATCH" -> patch(fullUrl).contentType(MediaType.APPLICATION_JSON).content(content);
+            default -> throw new IllegalArgumentException("Unsupported method: " + method);
+        };
+    }
+
+    private String getContentForEndpoint(String endpoint) {
+        if (endpoint.endsWith("/change-activation-status")) {
+            return getActivationJson();
+        } else if (endpoint.equals("/trainers/" + USERNAME)) {
+            return getUpdateJson();
+        }
+        return "";
+    }
+
+    private static String getCreateJson() {
+        return testData.get("trainerCreateRequest").toString();
+    }
+
+    private static String getUpdateJson() {
+        return testData.get("trainerUpdateRequest").toString();
+    }
+
+    private static String getActivationJson() {
+        return testData.get("activationStatusRequest").toString();
     }
 }

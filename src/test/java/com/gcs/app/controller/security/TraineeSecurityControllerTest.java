@@ -3,11 +3,18 @@ package com.gcs.app.controller.security;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gcs.app.util.JsonReaderUtil;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -27,136 +34,121 @@ class TraineeSecurityControllerTest extends AbstractSecurityControllerTest {
         testData = JsonReaderUtil.readFromJson(TEST_DATA_PATH, JsonNode.class);
     }
 
+    @DisplayName("Register should be accessible without authentication")
     @Test
-    @WithAnonymousUser
     void register_shouldBeAccessibleWithoutAuth() throws Exception {
-        String createJson = testData.get("traineeCreateRequest").toString();
-
         mockMvc.perform(post(basePath + "/trainees/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(createJson))
+                        .content(getCreateJson()))
                 .andExpect(status().isOk());
     }
 
-    @Test
-    @WithAnonymousUser
-    void getProfile_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME))
+    @DisplayName("All protected endpoints should return 401 without authentication")
+    @ParameterizedTest(name = "{index} => method={0}, endpoint={1}")
+    @MethodSource("unauthorizedRequestProvider")
+    void request_shouldBeUnauthorizedWithoutAuth(String method, String endpoint) throws Exception {
+        mockMvc.perform(buildRequestWithoutAuth(method, endpoint))
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test
-    @WithMockUser
-    void getProfile_shouldBeAccessibleWithAuth() throws Exception {
-        mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME))
-                .andExpect(status().isOk());
+    @DisplayName("Access control for different users and roles")
+    @ParameterizedTest(name = "{index} => user={0}, role={1}, method={2}, endpoint={3}, expectedStatus={4}")
+    @MethodSource("accessControlDataProvider")
+    void accessControlTests(String username, String role, String method, String endpoint, int expectedStatus) throws Exception {
+        mockMvc.perform(buildRequestWithAuth(method, endpoint, username, role))
+                .andExpect(status().is(expectedStatus));
     }
 
-    @Test
-    @WithAnonymousUser
-    void updateProfile_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        String updateJson = testData.get("traineeUpdateRequest").toString();
-
-        mockMvc.perform(put(basePath + "/trainees/" + TRAINEE_USERNAME)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(updateJson))
-                .andExpect(status().isUnauthorized());
+    private static Stream<Arguments> unauthorizedRequestProvider() {
+        return Stream.of(
+                arguments("GET", "/trainees/" + TRAINEE_USERNAME),
+                arguments("PUT", "/trainees/" + TRAINEE_USERNAME),
+                arguments("DELETE", "/trainees/" + TRAINEE_USERNAME),
+                arguments("PATCH", "/trainees/" + TRAINEE_USERNAME + "/change-activation-status"),
+                arguments("GET", "/trainees/" + TRAINEE_USERNAME + "/available-trainers"),
+                arguments("PUT", "/trainees/" + TRAINEE_USERNAME + "/trainers"),
+                arguments("GET", "/trainees/" + TRAINEE_USERNAME + "/trainings")
+        );
     }
 
-    @Test
-    @WithMockUser
-    void updateProfile_shouldBeAccessibleWithAuth() throws Exception {
-        String updateJson = testData.get("traineeUpdateRequest").toString();
+    private static Stream<Arguments> accessControlDataProvider() {
+        return Stream.of(
+                arguments("oleksandr.kovalenko", "TRAINEE", "GET", "/trainees/oleksandr.kovalenko", 200),
+                arguments("trainer.user", "TRAINER", "GET", "/trainees/oleksandr.kovalenko", 200),
+                arguments("other.user", "TRAINEE", "GET", "/trainees/oleksandr.kovalenko", 200),
 
-        mockMvc.perform(put(basePath + "/trainees/" + TRAINEE_USERNAME)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(updateJson))
-                .andExpect(status().isOk());
+                arguments("oleksandr.kovalenko", "TRAINEE", "PUT", "/trainees/oleksandr.kovalenko", 200),
+                arguments("trainer.user", "TRAINER", "PUT", "/trainees/oleksandr.kovalenko", 403),
+                arguments("other.user", "TRAINEE", "PUT", "/trainees/oleksandr.kovalenko", 403),
+
+                arguments("oleksandr.kovalenko", "TRAINEE", "DELETE", "/trainees/oleksandr.kovalenko", 200),
+                arguments("trainer.user", "TRAINER", "DELETE", "/trainees/oleksandr.kovalenko", 403),
+                arguments("other.user", "TRAINEE", "DELETE", "/trainees/oleksandr.kovalenko", 403),
+
+                arguments("trainer.user", "TRAINER", "PATCH", "/trainees/oleksandr.kovalenko/change-activation-status", 200),
+                arguments("oleksandr.kovalenko", "TRAINEE", "PATCH", "/trainees/oleksandr.kovalenko/change-activation-status", 403),
+                arguments("other.user", "TRAINEE", "PATCH", "/trainees/oleksandr.kovalenko/change-activation-status", 403),
+
+                arguments("oleksandr.kovalenko", "TRAINEE", "GET", "/trainees/oleksandr.kovalenko/available-trainers", 200),
+                arguments("trainer.user", "TRAINER", "GET", "/trainees/oleksandr.kovalenko/available-trainers", 403),
+                arguments("other.user", "TRAINEE", "GET", "/trainees/oleksandr.kovalenko/available-trainers", 403),
+
+                arguments("oleksandr.kovalenko", "TRAINEE", "PUT", "/trainees/oleksandr.kovalenko/trainers", 200),
+                arguments("trainer.user", "TRAINER", "PUT", "/trainees/oleksandr.kovalenko/trainers", 403),
+                arguments("other.user", "TRAINEE", "PUT", "/trainees/oleksandr.kovalenko/trainers", 403),
+
+                arguments("oleksandr.kovalenko", "TRAINEE", "GET", "/trainees/oleksandr.kovalenko/trainings", 200),
+                arguments("trainer.user", "TRAINER", "GET", "/trainees/oleksandr.kovalenko/trainings", 200),
+                arguments("other.user", "TRAINEE", "GET", "/trainees/oleksandr.kovalenko/trainings", 200)
+        );
     }
 
-    @Test
-    @WithAnonymousUser
-    void deleteProfile_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        mockMvc.perform(delete(basePath + "/trainees/" + TRAINEE_USERNAME))
-                .andExpect(status().isUnauthorized());
+    private MockHttpServletRequestBuilder buildRequestWithAuth(String method, String endpoint, String username, String role) {
+        return buildRequest(method, endpoint)
+                .with(SecurityMockMvcRequestPostProcessors.user(username).roles(role));
     }
 
-    @Test
-    @WithMockUser
-    void deleteProfile_shouldBeAccessibleWithAuth() throws Exception {
-        mockMvc.perform(delete(basePath + "/trainees/" + TRAINEE_USERNAME))
-                .andExpect(status().isOk());
+    private MockHttpServletRequestBuilder buildRequestWithoutAuth(String method, String endpoint) {
+        return buildRequest(method, endpoint);
     }
 
-    @Test
-    @WithAnonymousUser
-    void changeActivationStatus_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        String activationJson = testData.get("activationStatusRequest").toString();
+    private MockHttpServletRequestBuilder buildRequest(String method, String endpoint) {
+        String fullUrl = basePath + endpoint;
+        String content = getContentForEndpoint(endpoint);
 
-        mockMvc.perform(patch(basePath + "/trainees/" + TRAINEE_USERNAME + "/change-activation-status")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(activationJson))
-                .andExpect(status().isUnauthorized());
+        return switch (method) {
+            case "GET" -> get(fullUrl);
+            case "PUT" -> put(fullUrl).contentType(MediaType.APPLICATION_JSON).content(content);
+            case "DELETE" -> delete(fullUrl);
+            case "PATCH" -> patch(fullUrl).contentType(MediaType.APPLICATION_JSON).content(content);
+            default -> throw new IllegalArgumentException("Unsupported method: " + method);
+        };
     }
 
-    @Test
-    @WithMockUser
-    void changeActivationStatus_shouldBeAccessibleWithAuth() throws Exception {
-        String activationJson = testData.get("activationStatusRequest").toString();
-
-        mockMvc.perform(patch(basePath + "/trainees/" + TRAINEE_USERNAME + "/change-activation-status")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(activationJson))
-                .andExpect(status().isOk());
+    private String getContentForEndpoint(String endpoint) {
+        if (endpoint.endsWith("/change-activation-status")) {
+            return getActivationJson();
+        } else if (endpoint.endsWith("/trainers")) {
+            return getTrainersUpdateJson();
+        } else if (endpoint.equals("/trainees/" + TRAINEE_USERNAME)) {
+            return getUpdateJson();
+        }
+        return "";
     }
 
-    @Test
-    @WithAnonymousUser
-    void getAvailableTrainers_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME + "/available-trainers"))
-                .andExpect(status().isUnauthorized());
+    private static String getCreateJson() {
+        return testData.get("traineeCreateRequest").toString();
     }
 
-    @Test
-    @WithMockUser
-    void getAvailableTrainers_shouldBeAccessibleWithAuth() throws Exception {
-        mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME + "/available-trainers"))
-                .andExpect(status().isOk());
+    private static String getUpdateJson() {
+        return testData.get("traineeUpdateRequest").toString();
     }
 
-    @Test
-    @WithAnonymousUser
-    void updateTraineeTrainers_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        String trainersUpdateJson = testData.get("traineeAssignedTrainersUpdateRequest").toString();
-
-        mockMvc.perform(put(basePath + "/trainees/" + TRAINEE_USERNAME + "/trainers")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(trainersUpdateJson))
-                .andExpect(status().isUnauthorized());
+    private static String getActivationJson() {
+        return testData.get("activationStatusRequest").toString();
     }
 
-    @Test
-    @WithMockUser
-    void updateTraineeTrainers_shouldBeAccessibleWithAuth() throws Exception {
-        String trainersUpdateJson = testData.get("traineeAssignedTrainersUpdateRequest").toString();
-
-        mockMvc.perform(put(basePath + "/trainees/" + TRAINEE_USERNAME + "/trainers")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(trainersUpdateJson))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithAnonymousUser
-    void getTraineeTrainings_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME + "/trainings"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser
-    void getTraineeTrainings_shouldBeAccessibleWithAuth() throws Exception {
-        mockMvc.perform(get(basePath + "/trainees/" + TRAINEE_USERNAME + "/trainings"))
-                .andExpect(status().isOk());
+    private static String getTrainersUpdateJson() {
+        return testData.get("traineeAssignedTrainersUpdateRequest").toString();
     }
 }

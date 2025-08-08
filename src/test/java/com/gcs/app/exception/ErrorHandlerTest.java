@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,13 +22,14 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.gcs.app.exception.ApiError.ACCESS_DENIED_ERROR;
 import static com.gcs.app.exception.ApiError.AUTHENTICATION_ERROR;
 import static com.gcs.app.exception.ApiError.AUTHORIZATION_ERROR;
 import static com.gcs.app.exception.ApiError.DATABASE_ERROR;
 import static com.gcs.app.exception.ApiError.INVALID_REQUEST_ERROR;
 import static com.gcs.app.exception.ApiError.NOT_FOUND_ERROR;
 import static com.gcs.app.exception.ApiError.SERVER_ERROR;
-import static com.gcs.app.exception.ApiError.TOKEN_INVALID;
+import static com.gcs.app.exception.ApiError.TOKEN_INVALID_ERROR;
 import static com.gcs.app.exception.ApiError.VALIDATION_ERROR;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -51,6 +54,7 @@ class ErrorHandlerTest {
     private static final String UNHANDLED_ERROR_MSG = "Unhandled exception occurred while processing request";
     private static final String TYPE_MISMATCH_MSG = "Failed to convert value 'abc' to required type 'java.time.LocalDate'";
     private static final String REFRESH_TOKEN_ERROR_MSG = "Refresh token is invalid or expired";
+    private static final String ACCESS_DENIED_MSG = "Access denied: insufficient permissions";
 
     @InjectMocks
     private ErrorHandler errorHandler;
@@ -174,6 +178,18 @@ class ErrorHandlerTest {
     }
 
     @Test
+    void handleAuthorizationDeniedException_whenThrown_returnsForbiddenError() {
+        AuthorizationDeniedException ex = new AuthorizationDeniedException(ACCESS_DENIED_MSG);
+
+        ResponseEntity<ErrorResponse> result = errorHandler.handleAuthorizationDeniedException(ex);
+
+        assertNotNull(result.getBody());
+        assertEquals(FORBIDDEN, result.getStatusCode());
+        assertEquals(ACCESS_DENIED_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(ACCESS_DENIED_ERROR.getMessage(), result.getBody().getErrorMessage());
+    }
+
+    @Test
     void handleRefreshTokenNotFoundException_whenThrown_returnsTokenInvalidError() {
         RefreshTokenNotFoundException ex = new RefreshTokenNotFoundException(REFRESH_TOKEN_ERROR_MSG);
 
@@ -181,8 +197,8 @@ class ErrorHandlerTest {
 
         assertNotNull(result.getBody());
         assertEquals(UNAUTHORIZED, result.getStatusCode());
-        assertEquals(TOKEN_INVALID.getCode(), result.getBody().getErrorCode());
-        assertEquals(TOKEN_INVALID.getMessage(), result.getBody().getErrorMessage());
+        assertEquals(TOKEN_INVALID_ERROR.getCode(), result.getBody().getErrorCode());
+        assertEquals(TOKEN_INVALID_ERROR.getMessage(), result.getBody().getErrorMessage());
     }
 
     @Test
