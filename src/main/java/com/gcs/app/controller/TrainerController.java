@@ -50,7 +50,7 @@ public class TrainerController {
     }
 
     @PutMapping("/{username}")
-    @PreAuthorize("#username == authentication.name and hasRole('TRAINER')")
+    @PreAuthorize("@securityUtils.isCurrentUser(#username) and hasRole('TRAINER')")
     public ResponseEntity<TrainerUpdateResponse> updateTrainerProfile(@PathVariable String username, @Valid @RequestBody TrainerUpdateRequest request) {
         TrainerUpdateResponse response = gymFacade.updateTrainer(request, username);
 
@@ -58,7 +58,7 @@ public class TrainerController {
     }
 
     @PatchMapping("/{username}/change-activation-status")
-    @PreAuthorize("#username == authentication.name and hasRole('TRAINER')")
+    @PreAuthorize("@securityUtils.isCurrentUser(#username) and hasRole('TRAINER')")
     public ResponseEntity<Void> changeActivationStatus(@PathVariable String username, @Valid @RequestBody ActivationStatusRequest request) {
         gymFacade.setTrainerActive(username, request.getIsActive());
 

@@ -54,7 +54,7 @@ public class TraineeController {
     }
 
     @PutMapping("/{username}")
-    @PreAuthorize("#username == authentication.name and hasRole('TRAINEE')")
+    @PreAuthorize("@securityUtils.isCurrentUser(#username) and hasRole('TRAINEE')")
     public ResponseEntity<TraineeUpdateResponse> updateTraineeProfile(@PathVariable String username, @Valid @RequestBody TraineeUpdateRequest request) {
         TraineeUpdateResponse response = gymFacade.updateTrainee(request, username);
 
@@ -62,7 +62,7 @@ public class TraineeController {
     }
 
     @DeleteMapping("/{username}")
-    @PreAuthorize("#username == authentication.name and hasRole('TRAINEE')")
+    @PreAuthorize("@securityUtils.isCurrentUser(#username) and hasRole('TRAINEE')")
     public ResponseEntity<Void> deleteTraineeProfile(@PathVariable String username) {
         gymFacade.deleteTraineeByUsername(username);
 
@@ -78,7 +78,7 @@ public class TraineeController {
     }
 
     @GetMapping("/{username}/available-trainers")
-    @PreAuthorize("#username == authentication.name and hasRole('TRAINEE')")
+    @PreAuthorize("@securityUtils.isCurrentUser(#username) and hasRole('TRAINEE')")
     public ResponseEntity<List<AvailableTrainerGetResponse>> getAvailableTrainers(@PathVariable String username) {
         List<AvailableTrainerGetResponse> response = gymFacade.getUnassignedTrainers(username);
 
@@ -86,7 +86,7 @@ public class TraineeController {
     }
 
     @PutMapping("/{username}/trainers")
-    @PreAuthorize("#username == authentication.name and hasRole('TRAINEE')")
+    @PreAuthorize("@securityUtils.isCurrentUser(#username) and hasRole('TRAINEE')")
     public ResponseEntity<TraineeAssignedTrainersUpdateResponse> updateTraineeTrainers(@PathVariable String username, @Valid @RequestBody TraineeAssignedTrainersUpdateRequest request) {
         TraineeAssignedTrainersUpdateResponse response = gymFacade.updateTraineeTrainers(username, request.getTrainerUsernames());
 
