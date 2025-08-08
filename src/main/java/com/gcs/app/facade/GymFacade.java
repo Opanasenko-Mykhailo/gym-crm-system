@@ -1,7 +1,9 @@
 package com.gcs.app.facade;
 
 import com.gcs.app.facade.dto.AuthRequestDto;
+import com.gcs.app.facade.dto.AuthResponseDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
+import com.gcs.app.facade.dto.RefreshTokenRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
@@ -23,6 +25,7 @@ import com.gcs.app.rest.AvailableTrainerGetResponse;
 import com.gcs.app.rest.ChangePasswordRequest;
 import com.gcs.app.rest.LoginRequest;
 import com.gcs.app.rest.LoginResponse;
+import com.gcs.app.rest.RefreshTokenRequest;
 import com.gcs.app.rest.TraineeAssignedTrainersUpdateResponse;
 import com.gcs.app.rest.TraineeCreateRequest;
 import com.gcs.app.rest.TraineeGetResponse;
@@ -206,5 +209,18 @@ public class GymFacade {
         AuthRequestDto dto = userMapper.toAuthRequestDto(request);
 
         return userMapper.toLoginResponse(authService.authenticate(dto));
+    }
+
+    public LoginResponse refreshToken(RefreshTokenRequest request) {
+        RefreshTokenRequestDto dto = userMapper.toRefreshTokenRequestDto(request);
+        AuthResponseDto response = authService.refreshToken(dto);
+        log.info("Token refreshed successfully");
+
+        return userMapper.toLoginResponse(response);
+    }
+
+    public void logout(RefreshTokenRequest request) {
+        authService.logout(userMapper.toLogoutRequestDto(request));
+        log.info("User logged out successfully");
     }
 }

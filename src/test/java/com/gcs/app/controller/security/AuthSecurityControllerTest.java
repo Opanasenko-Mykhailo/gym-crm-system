@@ -2,6 +2,7 @@ package com.gcs.app.controller.security;
 
 import com.gcs.app.rest.ChangePasswordRequest;
 import com.gcs.app.rest.LoginRequest;
+import com.gcs.app.rest.RefreshTokenRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -26,6 +27,32 @@ class AuthSecurityControllerTest extends AbstractSecurityControllerTest {
         request.setPassword(PASSWORD);
 
         mockMvc.perform(post(basePath + "/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void refreshToken_shouldBeAccessibleWithoutAuth() throws Exception {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken("dummy-refresh-token");
+
+        mockMvc.perform(post(basePath + "/refresh-token")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void logout_shouldBeAccessibleWithoutAuth() throws Exception {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken("dummy-refresh-token");
+
+        mockMvc.perform(post(basePath + "/logout")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

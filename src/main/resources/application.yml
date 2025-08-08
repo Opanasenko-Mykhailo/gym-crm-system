@@ -30,7 +30,8 @@ spring:
 
 jwt:
   secret: gym-crm-secret-key-1234567890XXABCD
-  expiration: 86400000
+  expiration: 900000
+  refresh-expiration: 604800000
 
 logging:
   level:
@@ -45,3 +46,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+refresh-token:
+  cleanup:
+    every-milliseconds: 3600000

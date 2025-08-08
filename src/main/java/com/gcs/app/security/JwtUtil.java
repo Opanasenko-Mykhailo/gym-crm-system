@@ -23,18 +23,13 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long expirationTime;
 
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-
-        if (keyBytes.length < 32) {
-            throw new IllegalArgumentException("JWT secret must be at least 32 bytes (256 bits)");
-        }
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
+    @Value("${jwt.refresh-expiration}")
+    private Long refreshExpirationTime;
 
     public String generateToken(String username, Set<String> roles) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", new ArrayList<>(roles));
+        claims.put("type", "access");
 
         return Jwts.builder()
                 .claims(claims)
@@ -45,22 +40,46 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateRefreshToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh");
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshExpirationTime))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
     public String extractUsername(String token) {
         return getClaims(token).getSubject();
     }
 
-    public boolean validateToken(String token, String expectedUsername) {
+    public boolean isTokenValid(String token) {
         try {
-            String actualUsername = extractUsername(token);
-
-            return actualUsername.equals(expectedUsername) && !isTokenExpired(token);
+            return getClaims(token).getExpiration().after(new Date());
         } catch (Exception e) {
             return false;
         }
     }
 
-    private boolean isTokenExpired(String token) {
-        return getClaims(token).getExpiration().before(new Date());
+    public String getTokenType(String token) {
+        try {
+            return (String) getClaims(token).get("type");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 bytes (256 bits)");
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     private Claims getClaims(String token) {

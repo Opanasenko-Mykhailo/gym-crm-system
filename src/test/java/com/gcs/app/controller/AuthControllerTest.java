@@ -3,6 +3,7 @@ package com.gcs.app.controller;
 import com.gcs.app.rest.ChangePasswordRequest;
 import com.gcs.app.rest.LoginRequest;
 import com.gcs.app.rest.LoginResponse;
+import com.gcs.app.rest.RefreshTokenRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,16 +33,48 @@ class AuthControllerTest extends AbstractControllerTest {
         request.setPassword(PASSWORD);
 
         when(gymFacade.authenticate(any(LoginRequest.class)))
-                .thenReturn(new LoginResponse());
+                .thenReturn(new LoginResponse(true, "access-token", "refresh-token"));
 
-        var result = mockMvc.perform(post(basePath + "/login")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)));
-
-        result.andExpect(status().isOk());
+        mockMvc.perform(post(basePath + "/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
 
         verify(gymFacade).authenticate(any(LoginRequest.class));
+    }
+
+    @Test
+    void testRefreshTokenSuccess() throws Exception {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken("dummy-refresh-token");
+
+        when(gymFacade.refreshToken(any(RefreshTokenRequest.class)))
+                .thenReturn(new LoginResponse(true, "new-access-token", "dummy-refresh-token"));
+
+        mockMvc.perform(post(basePath + "/refresh-token")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(gymFacade).refreshToken(any(RefreshTokenRequest.class));
+    }
+
+    @Test
+    void testLogoutSuccess() throws Exception {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken("dummy-refresh-token");
+
+        doNothing().when(gymFacade).logout(any(RefreshTokenRequest.class));
+
+        mockMvc.perform(post(basePath + "/logout")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(gymFacade).logout(any(RefreshTokenRequest.class));
     }
 
     @Test
@@ -53,12 +86,11 @@ class AuthControllerTest extends AbstractControllerTest {
 
         doNothing().when(gymFacade).changePassword(any(ChangePasswordRequest.class));
 
-        var result = mockMvc.perform(put(basePath + "/change-password")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)));
-
-        result.andExpect(status().isOk());
+        mockMvc.perform(put(basePath + "/change-password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
 
         verify(gymFacade).changePassword(any(ChangePasswordRequest.class));
     }

@@ -94,6 +94,13 @@ public class ErrorHandler {
         return buildErrorResponse(SERVER_ERROR);
     }
 
+    @ExceptionHandler(RefreshTokenNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleRefreshTokenNotFoundException(RefreshTokenNotFoundException ex) {
+        log.error("RefreshTokenNotFoundException: {}", ex.getMessage());
+
+        return buildErrorResponse(ApiError.TOKEN_INVALID);
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         log.error("MethodArgumentTypeMismatchException: {}", ex.getMessage(), ex);

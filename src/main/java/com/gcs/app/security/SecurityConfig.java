@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .requestMatchers("/gym-crm-core/api/v1/trainers/register").permitAll()
                         .requestMatchers("/gym-crm-core/api/v1/login").permitAll()
                         .requestMatchers("/gym-crm-core/api/v1/change-password").permitAll()
+                        .requestMatchers("/gym-crm-core/api/v1/refresh-token").permitAll()
+                        .requestMatchers("/gym-crm-core/api/v1/logout").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/gym-docs", "/gym-crm-core/api/v1/openapi").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
