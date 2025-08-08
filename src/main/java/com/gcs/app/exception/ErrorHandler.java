@@ -101,7 +101,6 @@ public class ErrorHandler {
         return buildErrorResponse(ApiError.TOKEN_INVALID);
     }
 
-
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         log.error("MethodArgumentTypeMismatchException: {}", ex.getMessage(), ex);
