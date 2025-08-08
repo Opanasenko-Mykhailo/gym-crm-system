@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -46,10 +45,17 @@ class TrainerSecurityControllerTest extends AbstractSecurityControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void getProfile_shouldBeAccessibleWithAuth() throws Exception {
+    @WithMockUser(username = USERNAME, roles = {"TRAINER"})
+    void getProfile_shouldBeAccessibleForTrainer() throws Exception {
         mockMvc.perform(get(basePath + "/trainers/" + USERNAME))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "some.trainee", roles = {"TRAINEE"})
+    void getProfile_shouldBeForbiddenForTrainee() throws Exception {
+        mockMvc.perform(get(basePath + "/trainers/" + USERNAME))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -64,8 +70,8 @@ class TrainerSecurityControllerTest extends AbstractSecurityControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void updateProfile_shouldBeAccessibleWithAuth() throws Exception {
+    @WithMockUser(username = USERNAME, roles = {"TRAINER"})
+    void updateProfile_shouldBeAccessibleForOwnerTrainer() throws Exception {
         String json = testData.get("trainerUpdateRequest").toString();
 
         mockMvc.perform(put(basePath + "/trainers/" + USERNAME)
@@ -75,10 +81,25 @@ class TrainerSecurityControllerTest extends AbstractSecurityControllerTest {
     }
 
     @Test
-    @WithAnonymousUser
-    void deleteProfile_shouldBeUnauthorizedWithoutAuth() throws Exception {
-        mockMvc.perform(delete(basePath + "/trainers/" + USERNAME))
-                .andExpect(status().isUnauthorized());
+    @WithMockUser(username = "other.trainer", roles = {"TRAINER"})
+    void updateProfile_shouldBeForbiddenForOtherTrainer() throws Exception {
+        String json = testData.get("trainerUpdateRequest").toString();
+
+        mockMvc.perform(put(basePath + "/trainers/" + USERNAME)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "some.trainee", roles = {"TRAINEE"})
+    void updateProfile_shouldBeForbiddenForTrainee() throws Exception {
+        String json = testData.get("trainerUpdateRequest").toString();
+
+        mockMvc.perform(put(basePath + "/trainers/" + USERNAME)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -93,13 +114,56 @@ class TrainerSecurityControllerTest extends AbstractSecurityControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void changeActivationStatus_shouldBeAccessibleWithAuth() throws Exception {
+    @WithMockUser(username = USERNAME, roles = {"TRAINER"})
+    void changeActivationStatus_shouldBeAccessibleForOwnerTrainer() throws Exception {
         String json = testData.get("activationStatusRequest").toString();
 
         mockMvc.perform(patch(basePath + "/trainers/" + USERNAME + "/change-activation-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "other.trainer", roles = {"TRAINER"})
+    void changeActivationStatus_shouldBeForbiddenForOtherTrainer() throws Exception {
+        String json = testData.get("activationStatusRequest").toString();
+
+        mockMvc.perform(patch(basePath + "/trainers/" + USERNAME + "/change-activation-status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "some.trainee", roles = {"TRAINEE"})
+    void changeActivationStatus_shouldBeForbiddenForTrainee() throws Exception {
+        String json = testData.get("activationStatusRequest").toString();
+
+        mockMvc.perform(patch(basePath + "/trainers/" + USERNAME + "/change-activation-status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void getTrainings_shouldBeUnauthorizedWithoutAuth() throws Exception {
+        mockMvc.perform(get(basePath + "/trainers/" + USERNAME + "/trainings"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = USERNAME, roles = {"TRAINER"})
+    void getTrainings_shouldBeAccessibleForTrainer() throws Exception {
+        mockMvc.perform(get(basePath + "/trainers/" + USERNAME + "/trainings"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "some.trainee", roles = {"TRAINEE"})
+    void getTrainings_shouldBeForbiddenForTrainee() throws Exception {
+        mockMvc.perform(get(basePath + "/trainers/" + USERNAME + "/trainings"))
+                .andExpect(status().isForbidden());
     }
 }

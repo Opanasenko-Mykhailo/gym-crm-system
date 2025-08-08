@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,8 +39,10 @@ public class TrainingController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
+    @PreAuthorize("hasRole('TRAINER')")
     public ResponseEntity<Void> addTraining(@Valid @RequestBody TrainingCreateRequest request) {
         gymFacade.createTraining(request);
+
         return ResponseEntity.ok().build();
     }
 }

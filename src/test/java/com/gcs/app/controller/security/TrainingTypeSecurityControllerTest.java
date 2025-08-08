@@ -17,8 +17,15 @@ class TrainingTypeSecurityControllerTest extends AbstractSecurityControllerTest 
     }
 
     @Test
-    @WithMockUser
-    void getTrainingTypes_shouldReturnOkForAuthenticatedUser() throws Exception {
+    @WithMockUser(username = "trainer.user", roles = {"TRAINER"})
+    void getTrainingTypes_shouldReturnOkForTrainerRole() throws Exception {
+        mockMvc.perform(get(basePath + "/training-types"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "trainee.user", roles = {"TRAINEE"})
+    void getTrainingTypes_shouldReturnOkForTraineeRole() throws Exception {
         mockMvc.perform(get(basePath + "/training-types"))
                 .andExpect(status().isOk());
     }

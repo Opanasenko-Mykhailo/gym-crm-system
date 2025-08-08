@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -94,11 +95,18 @@ public class ErrorHandler {
         return buildErrorResponse(SERVER_ERROR);
     }
 
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(AuthorizationDeniedException ex) {
+        log.error("AuthorizationDeniedException: {}", ex.getMessage(), ex);
+
+        return buildErrorResponse(ApiError.ACCESS_DENIED_ERROR);
+    }
+
     @ExceptionHandler(RefreshTokenNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleRefreshTokenNotFoundException(RefreshTokenNotFoundException ex) {
         log.error("RefreshTokenNotFoundException: {}", ex.getMessage());
 
-        return buildErrorResponse(ApiError.TOKEN_INVALID);
+        return buildErrorResponse(ApiError.TOKEN_INVALID_ERROR);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
