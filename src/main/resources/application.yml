@@ -33,6 +33,11 @@ jwt:
   expiration: 900000
   refresh-expiration: 604800000
 
+bruteforce:
+  max-attempts: 5
+  max-size: 10000
+  lock-duration-minutes: 15
+
 logging:
   level:
     org.springframework: INFO

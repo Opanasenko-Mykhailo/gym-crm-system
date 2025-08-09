@@ -2,6 +2,7 @@ package com.gcs.app.controller.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gcs.app.facade.GymFacade;
+import com.gcs.app.security.BruteForceProtectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,6 +22,9 @@ public abstract class AbstractSecurityControllerTest {
 
     @MockitoBean
     protected GymFacade gymFacade;
+
+    @MockitoBean
+    protected BruteForceProtectionService bruteForceService;
 
     @Value("${app.api.base-path}")
     protected String basePath;

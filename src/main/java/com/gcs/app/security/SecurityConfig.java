@@ -1,6 +1,9 @@
 package com.gcs.app.security;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.concurrent.TimeUnit;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -27,6 +32,12 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomPermissionEvaluator customPermissionEvaluator;
+
+    @Value("${bruteforce.expire-minutes:15}")
+    private long bruteForceExpireMinutes;
+
+    @Value("${bruteforce.max-size:10000}")
+    private long bruteForceMaxSize;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -57,11 +68,20 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
         DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
         expressionHandler.setPermissionEvaluator(customPermissionEvaluator);
 
         return expressionHandler;
+    }
+
+    @Bean
+    public Cache<String, Integer> bruteForceLoginAttemptsCache() {
+        return Caffeine.newBuilder()
+                .expireAfterWrite(bruteForceExpireMinutes, TimeUnit.MINUTES)
+                .maximumSize(bruteForceMaxSize)
+                .build();
     }
 }

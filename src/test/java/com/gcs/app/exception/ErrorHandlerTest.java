@@ -25,7 +25,9 @@ import java.util.stream.Stream;
 import static com.gcs.app.exception.ApiError.ACCESS_DENIED_ERROR;
 import static com.gcs.app.exception.ApiError.AUTHENTICATION_ERROR;
 import static com.gcs.app.exception.ApiError.AUTHORIZATION_ERROR;
+import static com.gcs.app.exception.ApiError.BRUTE_FORCE_BLOCKED;
 import static com.gcs.app.exception.ApiError.DATABASE_ERROR;
+import static com.gcs.app.exception.ApiError.INVALID_CREDENTIALS;
 import static com.gcs.app.exception.ApiError.INVALID_REQUEST_ERROR;
 import static com.gcs.app.exception.ApiError.NOT_FOUND_ERROR;
 import static com.gcs.app.exception.ApiError.SERVER_ERROR;
@@ -54,6 +56,8 @@ class ErrorHandlerTest {
     private static final String UNHANDLED_ERROR_MSG = "Unhandled exception occurred while processing request";
     private static final String TYPE_MISMATCH_MSG = "Failed to convert value 'abc' to required type 'java.time.LocalDate'";
     private static final String REFRESH_TOKEN_ERROR_MSG = "Refresh token is invalid or expired";
+    private static final String INVALID_CREDENTIALS_MSG = "Invalid username or password";
+    private static final String BRUTE_FORCE_BLOCKED_MSG = "Too many failed login attempts. Try again later.";
     private static final String ACCESS_DENIED_MSG = "Access denied: insufficient permissions";
 
     @InjectMocks
@@ -199,6 +203,30 @@ class ErrorHandlerTest {
         assertEquals(UNAUTHORIZED, result.getStatusCode());
         assertEquals(TOKEN_INVALID_ERROR.getCode(), result.getBody().getErrorCode());
         assertEquals(TOKEN_INVALID_ERROR.getMessage(), result.getBody().getErrorMessage());
+    }
+
+    @Test
+    void handleUserBlockedException_whenThrown_returnsBruteForceBlockedError() {
+        UserBlockedException ex = new UserBlockedException(BRUTE_FORCE_BLOCKED_MSG);
+
+        ResponseEntity<ErrorResponse> result = errorHandler.handleUserBlockedException(ex);
+
+        assertNotNull(result.getBody());
+        assertEquals(BRUTE_FORCE_BLOCKED.getHttpStatus(), result.getStatusCode());
+        assertEquals(BRUTE_FORCE_BLOCKED.getCode(), result.getBody().getErrorCode());
+        assertTrue(result.getBody().getErrorMessage().contains(BRUTE_FORCE_BLOCKED_MSG));
+    }
+
+    @Test
+    void handleInvalidCredentialsException_whenThrown_returnsInvalidCredentialsError() {
+        InvalidCredentialsException ex = new InvalidCredentialsException(INVALID_CREDENTIALS_MSG);
+
+        ResponseEntity<ErrorResponse> result = errorHandler.handleInvalidCredentialsException(ex);
+
+        assertNotNull(result.getBody());
+        assertEquals(INVALID_CREDENTIALS.getHttpStatus(), result.getStatusCode());
+        assertEquals(INVALID_CREDENTIALS.getCode(), result.getBody().getErrorCode());
+        assertTrue(result.getBody().getErrorMessage().contains(INVALID_CREDENTIALS_MSG));
     }
 
     @Test

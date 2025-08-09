@@ -12,20 +12,20 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class JwtUtilTest {
+class JwtServiceTest {
 
     private static final String SECRET = "12345678901234567890123456789012";
     private static final long EXPIRATION_TIME = 1000 * 60 * 60;
     private static final long REFRESH_EXPIRATION_TIME = 1000 * 60 * 60 * 24;
 
-    private JwtUtil jwtUtil;
+    private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        jwtUtil = new JwtUtil();
-        ReflectionTestUtils.setField(jwtUtil, "secret", SECRET);
-        ReflectionTestUtils.setField(jwtUtil, "expirationTime", EXPIRATION_TIME);
-        ReflectionTestUtils.setField(jwtUtil, "refreshExpirationTime", REFRESH_EXPIRATION_TIME);
+        jwtService = new JwtService();
+        ReflectionTestUtils.setField(jwtService, "secret", SECRET);
+        ReflectionTestUtils.setField(jwtService, "expirationTime", EXPIRATION_TIME);
+        ReflectionTestUtils.setField(jwtService, "refreshExpirationTime", REFRESH_EXPIRATION_TIME);
     }
 
     @Test
@@ -33,7 +33,7 @@ class JwtUtilTest {
         String username = "test.user";
         Set<String> roles = Set.of("ROLE_USER");
 
-        String token = jwtUtil.generateToken(username, roles);
+        String token = jwtService.generateToken(username, roles);
 
         assertNotNull(token);
     }
@@ -42,19 +42,19 @@ class JwtUtilTest {
     void generateRefreshToken_shouldReturnNonNullToken() {
         String username = "test.user";
 
-        String token = jwtUtil.generateRefreshToken(username);
+        String token = jwtService.generateRefreshToken(username);
 
         assertNotNull(token);
-        assertEquals("refresh", jwtUtil.getTokenType(token));
+        assertEquals("refresh", jwtService.getTokenType(token));
     }
 
     @Test
     void extractUsername_shouldReturnCorrectUsername() {
         String username = "test.user";
         Set<String> roles = Set.of("ROLE_USER");
-        String token = jwtUtil.generateToken(username, roles);
+        String token = jwtService.generateToken(username, roles);
 
-        String extractedUsername = jwtUtil.extractUsername(token);
+        String extractedUsername = jwtService.extractUsername(token);
 
         assertEquals(username, extractedUsername);
     }
@@ -63,9 +63,9 @@ class JwtUtilTest {
     void isTokenValid_shouldReturnTrue_whenTokenIsValid() {
         String username = "validUser";
         Set<String> roles = Set.of("ROLE_USER");
-        String token = jwtUtil.generateToken(username, roles);
+        String token = jwtService.generateToken(username, roles);
 
-        boolean isValid = jwtUtil.isTokenValid(token);
+        boolean isValid = jwtService.isTokenValid(token);
 
         assertTrue(isValid);
     }
@@ -74,10 +74,10 @@ class JwtUtilTest {
     void isTokenValid_shouldReturnFalse_whenTokenIsExpired() {
         String username = "expiredUser";
         Set<String> roles = Set.of("ROLE_USER");
-        ReflectionTestUtils.setField(jwtUtil, "expirationTime", 0L);
-        String token = jwtUtil.generateToken(username, roles);
+        ReflectionTestUtils.setField(jwtService, "expirationTime", 0L);
+        String token = jwtService.generateToken(username, roles);
 
-        boolean isValid = jwtUtil.isTokenValid(token);
+        boolean isValid = jwtService.isTokenValid(token);
 
         assertFalse(isValid);
     }
@@ -86,13 +86,13 @@ class JwtUtilTest {
     void isTokenValid_shouldReturnFalse_whenTokenMalformed() {
         String badToken = "not.a.jwt.token";
 
-        assertFalse(jwtUtil.isTokenValid(badToken));
+        assertFalse(jwtService.isTokenValid(badToken));
     }
 
     @Test
     void getTokenType_shouldReturnNull_whenTokenMalformed() {
         String badToken = "not.a.jwt.token";
 
-        assertNull(jwtUtil.getTokenType(badToken));
+        assertNull(jwtService.getTokenType(badToken));
     }
 }
