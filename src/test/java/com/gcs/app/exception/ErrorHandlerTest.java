@@ -57,7 +57,7 @@ class ErrorHandlerTest {
     private static final String TYPE_MISMATCH_MSG = "Failed to convert value 'abc' to required type 'java.time.LocalDate'";
     private static final String REFRESH_TOKEN_ERROR_MSG = "Refresh token is invalid or expired";
     private static final String INVALID_CREDENTIALS_MSG = "Invalid username or password";
-    private static final String BRUTE_FORCE_BLOCKED_MSG = "Too many failed login attempts. Try again later.";
+    private static final String BRUTE_FORCE_BLOCKED_MSG =  "Too many failed login attempts, try again later";
     private static final String ACCESS_DENIED_MSG = "Access denied: insufficient permissions";
 
     @InjectMocks

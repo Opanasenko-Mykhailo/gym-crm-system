@@ -40,9 +40,9 @@ class BruteForceProtectionServiceTest {
     void isBlocked_whenAttemptsAreNull_returnsFalse() {
         when(loginAttemptsCache.getIfPresent(USERNAME)).thenReturn(null);
 
-        boolean blocked = service.isBlocked(USERNAME);
+        boolean actual = service.isBlocked(USERNAME);
 
-        assertFalse(blocked);
+        assertFalse(actual);
         verify(loginAttemptsCache).getIfPresent(USERNAME);
     }
 
@@ -50,9 +50,9 @@ class BruteForceProtectionServiceTest {
     void isBlocked_whenAttemptsLessThanMax_returnsFalse() {
         when(loginAttemptsCache.getIfPresent(USERNAME)).thenReturn(MAX_ATTEMPTS - 1);
 
-        boolean blocked = service.isBlocked(USERNAME);
+        boolean actual = service.isBlocked(USERNAME);
 
-        assertFalse(blocked);
+        assertFalse(actual);
         verify(loginAttemptsCache).getIfPresent(USERNAME);
     }
 
@@ -60,9 +60,9 @@ class BruteForceProtectionServiceTest {
     void isBlocked_whenAttemptsEqualToMax_returnsTrue() {
         when(loginAttemptsCache.getIfPresent(USERNAME)).thenReturn(MAX_ATTEMPTS);
 
-        boolean blocked = service.isBlocked(USERNAME);
+        boolean actual = service.isBlocked(USERNAME);
 
-        assertTrue(blocked);
+        assertTrue(actual);
         verify(loginAttemptsCache).getIfPresent(USERNAME);
     }
 

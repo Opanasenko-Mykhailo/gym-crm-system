@@ -36,7 +36,7 @@ jwt:
 bruteforce:
   max-attempts: 5
   max-size: 10000
-  lock-duration-minutes: 15
+  expire-minutes: 15
 
 logging:
   level:

@@ -138,7 +138,7 @@ class AuthServiceTest {
         UserBlockedException ex = assertThrows(UserBlockedException.class,
                 () -> service.authenticate(dto));
 
-        assertEquals("Too many failed login attempts. Try again later.", ex.getMessage());
+        assertEquals("Too many failed login attempts, try again later", ex.getMessage());
         verify(bruteForceProtectionService).isBlocked(USERNAME);
         verifyNoMoreInteractions(userService, credentialsService, jwtService, refreshTokenService);
     }

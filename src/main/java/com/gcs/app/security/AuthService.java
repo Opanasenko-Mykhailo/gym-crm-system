@@ -35,7 +35,7 @@ public class AuthService {
         String username = dto.getUsername();
 
         if (bruteForceProtectionService.isBlocked(username)) {
-            throw new UserBlockedException("Too many failed login attempts. Try again later.");
+            throw new UserBlockedException("Too many failed login attempts, try again later");
         }
 
         User user = userService.getByUsername(username);
