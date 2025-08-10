@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 class JwtAuthFilterTest {
 
     @Mock
-    private JwtUtil jwtUtil;
+    private JwtService jwtService;
 
     @Mock
     private CustomUserDetailsService userDetailsService;
@@ -69,7 +69,7 @@ class JwtAuthFilterTest {
         filter.doFilterInternal(request, response, filterChain);
 
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(jwtUtil, userDetailsService, securityContext);
+        verifyNoInteractions(jwtService, userDetailsService, securityContext);
     }
 
     @Test
@@ -79,15 +79,15 @@ class JwtAuthFilterTest {
         filter.doFilterInternal(request, response, filterChain);
 
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(jwtUtil, userDetailsService, securityContext);
+        verifyNoInteractions(jwtService, userDetailsService, securityContext);
     }
 
     @Test
     void doFilterInternal_tokenNotAccessType_callsFilterChain() throws Exception {
         String token = "token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtUtil.extractUsername(token)).thenReturn("user");
-        when(jwtUtil.getTokenType(token)).thenReturn("refresh");
+        when(jwtService.extractUsername(token)).thenReturn("user");
+        when(jwtService.getTokenType(token)).thenReturn("refresh");
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -101,13 +101,13 @@ class JwtAuthFilterTest {
         String username = "test.user";
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtUtil.extractUsername(token)).thenReturn(username);
-        when(jwtUtil.getTokenType(token)).thenReturn("access");
+        when(jwtService.extractUsername(token)).thenReturn(username);
+        when(jwtService.getTokenType(token)).thenReturn("access");
         when(securityContext.getAuthentication()).thenReturn(null);
 
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
         when(userDetails.isEnabled()).thenReturn(true);
-        when(jwtUtil.isTokenValid(token)).thenReturn(true);
+        when(jwtService.isTokenValid(token)).thenReturn(true);
         when(userDetails.getAuthorities()).thenReturn(Collections.emptyList());
 
         filter.doFilterInternal(request, response, filterChain);
@@ -127,13 +127,13 @@ class JwtAuthFilterTest {
         String username = "test.user";
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtUtil.extractUsername(token)).thenReturn(username);
-        when(jwtUtil.getTokenType(token)).thenReturn("access");
+        when(jwtService.extractUsername(token)).thenReturn(username);
+        when(jwtService.getTokenType(token)).thenReturn("access");
         when(securityContext.getAuthentication()).thenReturn(null);
 
         when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
         when(userDetails.isEnabled()).thenReturn(true);
-        when(jwtUtil.isTokenValid(token)).thenReturn(false);
+        when(jwtService.isTokenValid(token)).thenReturn(false);
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -145,8 +145,8 @@ class JwtAuthFilterTest {
     void doFilterInternal_alreadyAuthenticated_callsFilterChainWithoutChanges() throws Exception {
         String token = "token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-        when(jwtUtil.extractUsername(token)).thenReturn("user");
-        when(jwtUtil.getTokenType(token)).thenReturn("access");
+        when(jwtService.extractUsername(token)).thenReturn("user");
+        when(jwtService.getTokenType(token)).thenReturn("access");
         when(securityContext.getAuthentication()).thenReturn(mock(UsernamePasswordAuthenticationToken.class));
 
         filter.doFilterInternal(request, response, filterChain);

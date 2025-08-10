@@ -1,5 +1,7 @@
 package com.gcs.app.security;
 
+import com.gcs.app.exception.InvalidCredentialsException;
+import com.gcs.app.exception.UserBlockedException;
 import com.gcs.app.exception.UserNotAuthorizedException;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
@@ -26,22 +28,31 @@ public class AuthService {
     private final UserService userService;
     private final CredentialsService credentialsService;
     private final RefreshTokenService refreshTokenService;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
+    private final BruteForceProtectionService bruteForceProtectionService;
 
     public AuthResponseDto authenticate(@Valid AuthRequestDto dto) {
-        User user = userService.getByUsername(dto.getUsername());
+        String username = dto.getUsername();
 
+        if (bruteForceProtectionService.isBlocked(username)) {
+            throw new UserBlockedException("Too many failed login attempts, try again later");
+        }
+
+        User user = userService.getByUsername(username);
         validateUserIsActive(user);
 
         if (!credentialsService.isPasswordCorrect(dto.getPassword(), user.getPassword())) {
-            throw new UserNotAuthorizedException("Invalid username or password");
+            bruteForceProtectionService.recordFailedAttempt(username);
+            throw new InvalidCredentialsException("Invalid username or password");
         }
 
-        String accessToken = jwtUtil.generateToken(user.getUsername(), extractRoleNames(user));
-        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
-        refreshTokenService.saveToken(refreshToken, user.getUsername());
+        bruteForceProtectionService.resetAttempts(username);
 
-        log.info("User {} authenticated successfully", dto.getUsername());
+        String accessToken = jwtService.generateToken(username, extractRoleNames(user));
+        String refreshToken = jwtService.generateRefreshToken(username);
+        refreshTokenService.saveToken(refreshToken, username);
+
+        log.info("User {} authenticated successfully", username);
 
         return new AuthResponseDto(true, accessToken, refreshToken);
     }
@@ -53,7 +64,7 @@ public class AuthService {
         User user = userService.getByUsername(username);
         validateUserIsActive(user);
 
-        String newAccessToken = jwtUtil.generateToken(user.getUsername(), extractRoleNames(user));
+        String newAccessToken = jwtService.generateToken(user.getUsername(), extractRoleNames(user));
         log.info("New access token generated for user {}", username);
 
         return new AuthResponseDto(true, newAccessToken, refreshToken);
@@ -76,7 +87,7 @@ public class AuthService {
             throw new UserNotAuthorizedException("Invalid refresh token");
         }
 
-        String tokenUsername = jwtUtil.extractUsername(refreshToken);
+        String tokenUsername = jwtService.extractUsername(refreshToken);
         if (!tokenUsername.equals(dbUsername)) {
             throw new UserNotAuthorizedException("Invalid refresh token");
         }
@@ -85,7 +96,7 @@ public class AuthService {
     }
 
     private void isValidRefreshTokenOrThrow(String token) {
-        if (!jwtUtil.isTokenValid(token)) {
+        if (!jwtService.isTokenValid(token)) {
             throw new UserNotAuthorizedException("Invalid or expired refresh token");
         }
     }

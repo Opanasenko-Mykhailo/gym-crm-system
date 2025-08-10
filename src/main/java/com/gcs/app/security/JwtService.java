@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-public class JwtUtil {
+public class JwtService {
 
     @Value("${jwt.secret}")
     private String secret;

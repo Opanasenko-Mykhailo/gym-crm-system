@@ -1,6 +1,8 @@
 package com.gcs.app.security;
 
+import com.gcs.app.exception.InvalidCredentialsException;
 import com.gcs.app.exception.ServiceException;
+import com.gcs.app.exception.UserBlockedException;
 import com.gcs.app.exception.UserNotAuthorizedException;
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
@@ -22,8 +24,8 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.anySet;
-import static org.mockito.Mockito.eq;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -49,7 +51,10 @@ class AuthServiceTest {
     private RefreshTokenService refreshTokenService;
 
     @Mock
-    private JwtUtil jwtUtil;
+    private JwtService jwtService;
+
+    @Mock
+    private BruteForceProtectionService bruteForceProtectionService;
 
     @InjectMocks
     private AuthService service;
@@ -60,10 +65,11 @@ class AuthServiceTest {
         dto.setUsername(USERNAME);
         dto.setPassword(RAW_PASSWORD);
 
+        when(bruteForceProtectionService.isBlocked(USERNAME)).thenReturn(false);
         when(userService.getByUsername(USERNAME)).thenReturn(activeUser);
         when(credentialsService.isPasswordCorrect(RAW_PASSWORD, ENCODED_PASSWORD)).thenReturn(true);
-        when(jwtUtil.generateToken(eq(USERNAME), anySet())).thenReturn(DUMMY_ACCESS_TOKEN);
-        when(jwtUtil.generateRefreshToken(USERNAME)).thenReturn(DUMMY_REFRESH_TOKEN);
+        when(jwtService.generateToken(eq(USERNAME), anySet())).thenReturn(DUMMY_ACCESS_TOKEN);
+        when(jwtService.generateRefreshToken(USERNAME)).thenReturn(DUMMY_REFRESH_TOKEN);
 
         AuthResponseDto response = service.authenticate(dto);
 
@@ -71,11 +77,13 @@ class AuthServiceTest {
         assertEquals(DUMMY_ACCESS_TOKEN, response.getAccessToken());
         assertEquals(DUMMY_REFRESH_TOKEN, response.getRefreshToken());
 
+        verify(bruteForceProtectionService).isBlocked(USERNAME);
         verify(userService).getByUsername(USERNAME);
         verify(credentialsService).isPasswordCorrect(RAW_PASSWORD, ENCODED_PASSWORD);
-        verify(jwtUtil).generateToken(eq(USERNAME), anySet());
-        verify(jwtUtil).generateRefreshToken(USERNAME);
+        verify(jwtService).generateToken(eq(USERNAME), anySet());
+        verify(jwtService).generateRefreshToken(USERNAME);
         verify(refreshTokenService).saveToken(DUMMY_REFRESH_TOKEN, USERNAME);
+        verify(bruteForceProtectionService).resetAttempts(USERNAME);
     }
 
     @Test
@@ -90,14 +98,16 @@ class AuthServiceTest {
                 .isActive(false)
                 .build();
 
+        when(bruteForceProtectionService.isBlocked(USERNAME)).thenReturn(false);
         when(userService.getByUsername(USERNAME)).thenReturn(inactiveUser);
 
         UserNotAuthorizedException ex = assertThrows(UserNotAuthorizedException.class,
                 () -> service.authenticate(dto));
 
         assertEquals("User is inactive", ex.getMessage());
+        verify(bruteForceProtectionService).isBlocked(USERNAME);
         verify(userService).getByUsername(USERNAME);
-        verifyNoMoreInteractions(credentialsService, jwtUtil, refreshTokenService);
+        verifyNoMoreInteractions(credentialsService, jwtService, refreshTokenService);
     }
 
     @Test
@@ -106,30 +116,52 @@ class AuthServiceTest {
         dto.setUsername(USERNAME);
         dto.setPassword(RAW_PASSWORD);
 
+        when(bruteForceProtectionService.isBlocked(USERNAME)).thenReturn(false);
         when(userService.getByUsername(USERNAME)).thenThrow(new ServiceException("User not found: " + USERNAME));
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.authenticate(dto));
 
         assertEquals("User not found: " + USERNAME, ex.getMessage());
+        verify(bruteForceProtectionService).isBlocked(USERNAME);
         verify(userService).getByUsername(USERNAME);
-        verifyNoMoreInteractions(credentialsService, jwtUtil, refreshTokenService);
+        verifyNoMoreInteractions(credentialsService, jwtService, refreshTokenService);
     }
 
     @Test
-    void authenticate_whenPasswordIncorrect_throwsUserNotAuthorizedException() {
+    void authenticate_whenUserIsBlocked_throwsUserBlockedException() {
+        AuthRequestDto dto = new AuthRequestDto();
+        dto.setUsername(USERNAME);
+        dto.setPassword(RAW_PASSWORD);
+
+        when(bruteForceProtectionService.isBlocked(USERNAME)).thenReturn(true);
+
+        UserBlockedException ex = assertThrows(UserBlockedException.class,
+                () -> service.authenticate(dto));
+
+        assertEquals("Too many failed login attempts, try again later", ex.getMessage());
+        verify(bruteForceProtectionService).isBlocked(USERNAME);
+        verifyNoMoreInteractions(userService, credentialsService, jwtService, refreshTokenService);
+    }
+
+    @Test
+    void authenticate_whenPasswordIncorrect_throwsInvalidCredentialsException() {
         AuthRequestDto dto = new AuthRequestDto();
         dto.setUsername(USERNAME);
         dto.setPassword("wrongPassword");
 
+        when(bruteForceProtectionService.isBlocked(USERNAME)).thenReturn(false);
         when(userService.getByUsername(USERNAME)).thenReturn(activeUser);
         when(credentialsService.isPasswordCorrect("wrongPassword", ENCODED_PASSWORD)).thenReturn(false);
 
-        UserNotAuthorizedException ex = assertThrows(UserNotAuthorizedException.class, () -> service.authenticate(dto));
+        InvalidCredentialsException ex = assertThrows(InvalidCredentialsException.class,
+                () -> service.authenticate(dto));
 
         assertEquals("Invalid username or password", ex.getMessage());
+        verify(bruteForceProtectionService).isBlocked(USERNAME);
         verify(userService).getByUsername(USERNAME);
         verify(credentialsService).isPasswordCorrect("wrongPassword", ENCODED_PASSWORD);
-        verifyNoMoreInteractions(jwtUtil, refreshTokenService);
+        verify(bruteForceProtectionService).recordFailedAttempt(USERNAME);
+        verifyNoMoreInteractions(jwtService, refreshTokenService);
     }
 
     @Test
@@ -137,11 +169,11 @@ class AuthServiceTest {
         RefreshTokenRequestDto request = new RefreshTokenRequestDto();
         request.setRefreshToken(DUMMY_REFRESH_TOKEN);
 
-        when(jwtUtil.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(true);
+        when(jwtService.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(true);
         when(refreshTokenService.getUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
-        when(jwtUtil.extractUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
+        when(jwtService.extractUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
         when(userService.getByUsername(USERNAME)).thenReturn(activeUser);
-        when(jwtUtil.generateToken(eq(USERNAME), anySet())).thenReturn(DUMMY_ACCESS_TOKEN);
+        when(jwtService.generateToken(eq(USERNAME), anySet())).thenReturn(DUMMY_ACCESS_TOKEN);
 
         AuthResponseDto response = service.refreshToken(request);
 
@@ -149,11 +181,11 @@ class AuthServiceTest {
         assertEquals(DUMMY_ACCESS_TOKEN, response.getAccessToken());
         assertEquals(DUMMY_REFRESH_TOKEN, response.getRefreshToken());
 
-        verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
+        verify(jwtService).isTokenValid(DUMMY_REFRESH_TOKEN);
         verify(refreshTokenService).getUsername(DUMMY_REFRESH_TOKEN);
-        verify(jwtUtil).extractUsername(DUMMY_REFRESH_TOKEN);
+        verify(jwtService).extractUsername(DUMMY_REFRESH_TOKEN);
         verify(userService).getByUsername(USERNAME);
-        verify(jwtUtil).generateToken(eq(USERNAME), anySet());
+        verify(jwtService).generateToken(eq(USERNAME), anySet());
     }
 
     @Test
@@ -161,14 +193,14 @@ class AuthServiceTest {
         RefreshTokenRequestDto request = new RefreshTokenRequestDto();
         request.setRefreshToken(DUMMY_REFRESH_TOKEN);
 
-        when(jwtUtil.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(false);
+        when(jwtService.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(false);
 
         UserNotAuthorizedException ex = assertThrows(UserNotAuthorizedException.class,
                 () -> service.refreshToken(request));
 
         assertEquals("Invalid or expired refresh token", ex.getMessage());
-        verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
-        verifyNoMoreInteractions(refreshTokenService, userService, jwtUtil);
+        verify(jwtService).isTokenValid(DUMMY_REFRESH_TOKEN);
+        verifyNoMoreInteractions(refreshTokenService, userService, jwtService);
     }
 
     @Test
@@ -176,17 +208,17 @@ class AuthServiceTest {
         RefreshTokenRequestDto request = new RefreshTokenRequestDto();
         request.setRefreshToken(DUMMY_REFRESH_TOKEN);
 
-        when(jwtUtil.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(true);
+        when(jwtService.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(true);
         when(refreshTokenService.getUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
-        when(jwtUtil.extractUsername(DUMMY_REFRESH_TOKEN)).thenReturn("anotherUser");
+        when(jwtService.extractUsername(DUMMY_REFRESH_TOKEN)).thenReturn("anotherUser");
 
         UserNotAuthorizedException ex = assertThrows(UserNotAuthorizedException.class,
                 () -> service.refreshToken(request));
 
         assertEquals("Invalid refresh token", ex.getMessage());
-        verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
+        verify(jwtService).isTokenValid(DUMMY_REFRESH_TOKEN);
         verify(refreshTokenService).getUsername(DUMMY_REFRESH_TOKEN);
-        verify(jwtUtil).extractUsername(DUMMY_REFRESH_TOKEN);
+        verify(jwtService).extractUsername(DUMMY_REFRESH_TOKEN);
         verifyNoMoreInteractions(userService);
     }
 
@@ -195,15 +227,15 @@ class AuthServiceTest {
         LogoutRequestDto request = new LogoutRequestDto();
         request.setRefreshToken(DUMMY_REFRESH_TOKEN);
 
-        when(jwtUtil.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(true);
+        when(jwtService.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(true);
         when(refreshTokenService.getUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
-        when(jwtUtil.extractUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
+        when(jwtService.extractUsername(DUMMY_REFRESH_TOKEN)).thenReturn(USERNAME);
 
         service.logout(request);
 
-        verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
+        verify(jwtService).isTokenValid(DUMMY_REFRESH_TOKEN);
         verify(refreshTokenService).getUsername(DUMMY_REFRESH_TOKEN);
-        verify(jwtUtil).extractUsername(DUMMY_REFRESH_TOKEN);
+        verify(jwtService).extractUsername(DUMMY_REFRESH_TOKEN);
         verify(refreshTokenService).invalidateToken(DUMMY_REFRESH_TOKEN);
     }
 
@@ -212,13 +244,13 @@ class AuthServiceTest {
         LogoutRequestDto request = new LogoutRequestDto();
         request.setRefreshToken(DUMMY_REFRESH_TOKEN);
 
-        when(jwtUtil.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(false);
+        when(jwtService.isTokenValid(DUMMY_REFRESH_TOKEN)).thenReturn(false);
 
         UserNotAuthorizedException ex = assertThrows(UserNotAuthorizedException.class,
                 () -> service.logout(request));
 
         assertEquals("Invalid or expired refresh token", ex.getMessage());
-        verify(jwtUtil).isTokenValid(DUMMY_REFRESH_TOKEN);
+        verify(jwtService).isTokenValid(DUMMY_REFRESH_TOKEN);
         verifyNoMoreInteractions(refreshTokenService);
     }
 

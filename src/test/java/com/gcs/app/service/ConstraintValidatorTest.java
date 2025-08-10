@@ -9,6 +9,7 @@ import com.gcs.app.model.Trainee;
 import com.gcs.app.model.User;
 import com.gcs.app.repository.TraineeRepository;
 import com.gcs.app.repository.UserRepository;
+import com.gcs.app.security.BruteForceProtectionService;
 import com.gcs.app.service.common.CredentialsService;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.DisplayName;
@@ -70,6 +71,9 @@ public class ConstraintValidatorTest {
 
     @MockitoBean
     private CredentialsService credentialsService;
+
+    @MockitoBean
+    protected BruteForceProtectionService bruteForceService;
 
     @Nested
     @DisplayName("UserService dto validation test")

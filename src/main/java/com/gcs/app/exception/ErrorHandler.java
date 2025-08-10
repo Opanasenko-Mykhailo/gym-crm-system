@@ -109,6 +109,20 @@ public class ErrorHandler {
         return buildErrorResponse(ApiError.TOKEN_INVALID_ERROR);
     }
 
+    @ExceptionHandler(UserBlockedException.class)
+    public ResponseEntity<ErrorResponse> handleUserBlockedException(UserBlockedException ex) {
+        log.error("UserBlockedException: {}", ex.getMessage(), ex);
+
+        return buildErrorResponse(ApiError.BRUTE_FORCE_BLOCKED);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        log.error("InvalidCredentialsException: {}", ex.getMessage(), ex);
+
+        return buildErrorResponse(ApiError.INVALID_CREDENTIALS);
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         log.error("MethodArgumentTypeMismatchException: {}", ex.getMessage(), ex);

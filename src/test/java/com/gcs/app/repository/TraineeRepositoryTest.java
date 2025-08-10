@@ -31,7 +31,7 @@ class TraineeRepositoryTest extends AbstractRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    @DataSet("dataset/trainee-data.xml")
+    @DataSet(value = "dataset/trainee-data.xml", cleanBefore = true, cleanAfter = true)
     void save_createTrainer_successfullyPersists() {
         User user = createUser("new.user", "newpass", "New");
         TrainingType specialization = trainingTypeRepository.findByName(TRAINING_TYPE_NAME).orElseThrow();
@@ -48,7 +48,7 @@ class TraineeRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    @DataSet("dataset/trainee-data.xml")
+    @DataSet(value = "dataset/trainee-data.xml", cleanBefore = true, cleanAfter = true)
     void findById_existingTrainer_returnsTrainer() {
         User user = userRepository.findByUsername(USERNAME).orElseThrow();
         TrainingType specialization = trainingTypeRepository.findByName(TRAINING_TYPE_NAME).orElseThrow();
@@ -64,7 +64,7 @@ class TraineeRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    @DataSet("dataset/trainee-data.xml")
+    @DataSet(value = "dataset/trainee-data.xml", cleanBefore = true, cleanAfter = true)
     void update_existingTrainer_updatesSuccessfully() {
         User user = createUser("update.user", "pwd", "Update");
         TrainingType oldSpec = trainingTypeRepository.findByName(TRAINING_TYPE_NAME).orElseThrow();
@@ -82,7 +82,7 @@ class TraineeRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    @DataSet("dataset/trainee-data.xml")
+    @DataSet(value = "dataset/trainee-data.xml", cleanBefore = true, cleanAfter = true)
     void delete_existingTrainer_removesFromDb() {
         User user = createUser("delete.user", "pwd", "Delete");
         TrainingType type = trainingTypeRepository.findByName(TRAINING_TYPE_NAME).orElseThrow();
@@ -99,7 +99,7 @@ class TraineeRepositoryTest extends AbstractRepositoryTest {
     }
 
     @Test
-    @DataSet("dataset/trainee-data.xml")
+    @DataSet(value = "dataset/trainee-data.xml", cleanBefore = true, cleanAfter = true)
     void findAll_returnsListOfTrainers() {
         List<Trainer> all = trainerRepository.findAll();
 

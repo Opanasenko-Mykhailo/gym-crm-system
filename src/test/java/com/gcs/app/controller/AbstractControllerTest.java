@@ -3,7 +3,7 @@ package com.gcs.app.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gcs.app.facade.GymFacade;
 import com.gcs.app.security.JwtAuthFilter;
-import com.gcs.app.security.JwtUtil;
+import com.gcs.app.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
@@ -23,7 +23,7 @@ public abstract class AbstractControllerTest {
     protected GymFacade gymFacade;
 
     @MockitoBean
-    protected JwtUtil jwtUtil;
+    protected JwtService jwtService;
 
     @MockitoBean
     protected JwtAuthFilter jwtAuthFilter;
