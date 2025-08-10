@@ -21,7 +21,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -39,10 +43,14 @@ public class SecurityConfig {
     @Value("${bruteforce.max-size:10000}")
     private long bruteForceMaxSize;
 
+    @Value("${cors.allowed-origins:*}")
+    private String allowedOrigins;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
@@ -50,7 +58,6 @@ public class SecurityConfig {
                         .requestMatchers("/gym-crm-core/api/v1/trainees/register").permitAll()
                         .requestMatchers("/gym-crm-core/api/v1/trainers/register").permitAll()
                         .requestMatchers("/gym-crm-core/api/v1/login").permitAll()
-                        .requestMatchers("/gym-crm-core/api/v1/change-password").permitAll()
                         .requestMatchers("/gym-crm-core/api/v1/refresh-token").permitAll()
                         .requestMatchers("/gym-crm-core/api/v1/logout").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/gym-docs", "/gym-crm-core/api/v1/openapi").permitAll()
@@ -67,6 +74,21 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.addExposedHeader("Authorization");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
     }
 
     @Bean
