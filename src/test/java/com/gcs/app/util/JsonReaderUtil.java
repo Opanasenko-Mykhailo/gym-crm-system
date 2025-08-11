@@ -1,8 +1,10 @@
 package com.gcs.app.util;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -13,9 +15,10 @@ import java.io.InputStream;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class JsonReaderUtil {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, false);
+    private static final ObjectMapper objectMapper = JsonMapper.builder()
+            .addModule(new JavaTimeModule())
+            .defaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.SKIP))
+            .build();
 
     public static <T> T readFromJson(String path, Class<T> clazz) {
         try (InputStream is = readResourceAsStream(path)) {
