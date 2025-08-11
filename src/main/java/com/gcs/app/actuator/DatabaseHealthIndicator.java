@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class DatabaseHealthIndicator implements HealthIndicator {
 
+    private static final String DATABASE = "database";
+
     private final HikariDataSource hikariDataSource;
 
     @Override
@@ -20,15 +22,15 @@ public class DatabaseHealthIndicator implements HealthIndicator {
             int totalConnections = hikariDataSource.getHikariPoolMXBean().getTotalConnections();
 
             return isRunning
-                    ? Health.up().withDetail("database", "Available")
+                    ? Health.up().withDetail(DATABASE, "Available")
                     .withDetail("activeConnections", activeConnections)
                     .withDetail("totalConnections", totalConnections)
                     .build()
                     : Health.down()
-                    .withDetail("database", "HikariPool not running")
+                    .withDetail(DATABASE, "HikariPool not running")
                     .build();
         } catch (Exception e) {
-            return Health.down(e).withDetail("database", "Unavailable").build();
+            return Health.down(e).withDetail(DATABASE, "Unavailable").build();
         }
     }
 }

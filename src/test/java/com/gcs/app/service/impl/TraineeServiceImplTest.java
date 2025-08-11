@@ -46,7 +46,7 @@ class TraineeServiceImplTest {
     private static final String LAST_NAME = "Halvorsen";
     private static final LocalDate DATE_OF_BIRTH = LocalDate.of(1990, 1, 1);
     private static final String ADDRESS = "123 Main St";
-    private static final String TRAINEE_NOT_FOUND_MESSAGE = format("Trainee with username %s not found", USERNAME);
+    private static final String TRAINEE_NOT_FOUND_MESSAGE = format("Trainee not found with username: %s", USERNAME);
 
     private static final Trainee TRAINEE = createTrainee();
     private static final TraineeCreateRequestDto CREATE_REQUEST = createTraineeCreateRequestDto();
@@ -87,7 +87,7 @@ class TraineeServiceImplTest {
 
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertTrue(actual.getUser().getIsActive());
+        assertTrue(actual.getUser().isActive());
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
@@ -106,7 +106,7 @@ class TraineeServiceImplTest {
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
         assertEquals(USERNAME, actual.getUser().getUsername());
-        assertTrue(actual.getUser().getIsActive());
+        assertTrue(actual.getUser().isActive());
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
@@ -117,7 +117,7 @@ class TraineeServiceImplTest {
         assertEquals(FIRST_NAME, updated.getUser().getFirstName());
         assertEquals(LAST_NAME, updated.getUser().getLastName());
         assertEquals(USERNAME, updated.getUser().getUsername());
-        assertTrue(updated.getUser().getIsActive());
+        assertTrue(updated.getUser().isActive());
         assertEquals(DATE_OF_BIRTH, updated.getDateOfBirth());
         assertEquals(ADDRESS, updated.getAddress());
 
@@ -163,7 +163,7 @@ class TraineeServiceImplTest {
         assertEquals(USERNAME, actual.getUser().getUsername());
         assertEquals(FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(LAST_NAME, actual.getUser().getLastName());
-        assertTrue(actual.getUser().getIsActive());
+        assertTrue(actual.getUser().isActive());
         assertEquals(DATE_OF_BIRTH, actual.getDateOfBirth());
         assertEquals(ADDRESS, actual.getAddress());
 
@@ -190,7 +190,7 @@ class TraineeServiceImplTest {
         verify(traineeRepository).save(captor.capture());
 
         Trainee updated = captor.getValue();
-        assertFalse(updated.getUser().getIsActive());
+        assertFalse(updated.getUser().isActive());
         assertEquals(USERNAME, updated.getUser().getUsername());
         verify(traineeRepository).findByUsername(USERNAME);
     }

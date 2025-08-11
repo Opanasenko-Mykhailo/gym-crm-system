@@ -15,7 +15,7 @@ public final class JsonReaderUtil {
 
     private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
-            .disable(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS);
+            .configure(MapperFeature.REQUIRE_SETTERS_FOR_GETTERS, false);
 
     public static <T> T readFromJson(String path, Class<T> clazz) {
         try (InputStream is = readResourceAsStream(path)) {

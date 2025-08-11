@@ -41,7 +41,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changePassword(@Valid PasswordChangeRequestDto dto) {
         log.info("Changing password for username: {}", dto.getUsername());
-        User user = getByUsername(dto.getUsername());
+
+        User user = userRepository.findByUsername(dto.getUsername())
+                .orElseThrow(() -> new ServiceException("User not found: " + dto.getUsername()));
 
         if (!credentialsService.isPasswordCorrect(dto.getOldPassword(), user.getPassword())) {
             throw new ServiceException("Old password is incorrect");

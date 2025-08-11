@@ -76,9 +76,10 @@ class SensitiveDataMaskerTest {
 
         String masked = masker.mask(response);
 
-        assertThat(masked).contains("status=200 OK");
-        assertThat(masked).contains("\"token\":\"********\"");
-        assertThat(masked).contains("\"info\":\"public\"");
+        assertThat(masked)
+                .contains("status=200 OK")
+                .contains("\"token\":\"********\"")
+                .contains("\"info\":\"public\"");
     }
 
     @Test
@@ -113,11 +114,12 @@ class SensitiveDataMaskerTest {
 
         String result = masker.maskArguments(args);
 
-        assertThat(result).contains("\"password\":\"********\"");
-        assertThat(result).contains("\"username\":\"bob\"");
-        assertThat(result).contains("stringValue");
-        assertThat(result).startsWith("[");
-        assertThat(result).endsWith("]");
+        assertThat(result)
+                .contains("\"password\":\"********\"")
+                .contains("\"username\":\"bob\"")
+                .contains("stringValue")
+                .startsWith("[")
+                .endsWith("]");
     }
 
     private static Stream<Map<String, Object>> provideSensitiveInputMaps() {

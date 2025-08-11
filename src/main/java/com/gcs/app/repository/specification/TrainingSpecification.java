@@ -9,6 +9,9 @@ import java.time.LocalDate;
 
 public abstract class TrainingSpecification {
 
+    protected TrainingSpecification() {
+    }
+
     protected static Specification<Training> dateRangePredicate(@Nullable LocalDate from, @Nullable LocalDate to) {
         return (root, query, cb) -> {
             Predicate predicate = cb.conjunction();

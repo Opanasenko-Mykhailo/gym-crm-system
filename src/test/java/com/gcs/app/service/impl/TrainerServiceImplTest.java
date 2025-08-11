@@ -97,7 +97,7 @@ class TrainerServiceImplTest {
         assertEquals(LAST_NAME, actual.getUser().getLastName());
         assertEquals(USERNAME, actual.getUser().getUsername());
         assertEquals(PASSWORD, actual.getUser().getPassword());
-        assertTrue(actual.getUser().getIsActive());
+        assertTrue(actual.getUser().isActive());
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         verify(trainerMapper).toEntity(CREATE_REQUEST);
@@ -120,7 +120,7 @@ class TrainerServiceImplTest {
         assertEquals(UPDATED_FIRST_NAME, actual.getUser().getFirstName());
         assertEquals(UPDATED_LAST_NAME, actual.getUser().getLastName());
         assertEquals(USERNAME, actual.getUser().getUsername());
-        assertTrue(actual.getUser().getIsActive());
+        assertTrue(actual.getUser().isActive());
         assertEquals(SPECIALIZATION, actual.getSpecialization().getName());
 
         ArgumentCaptor<Trainer> captor = ArgumentCaptor.forClass(Trainer.class);
@@ -129,7 +129,7 @@ class TrainerServiceImplTest {
         assertEquals(UPDATED_FIRST_NAME, updatedTrainer.getUser().getFirstName());
         assertEquals(UPDATED_LAST_NAME, updatedTrainer.getUser().getLastName());
         assertEquals(USERNAME, updatedTrainer.getUser().getUsername());
-        assertTrue(updatedTrainer.getUser().getIsActive());
+        assertTrue(updatedTrainer.getUser().isActive());
         assertEquals(SPECIALIZATION, updatedTrainer.getSpecialization().getName());
 
         verify(trainerRepository).findByUsername(USERNAME);
@@ -177,7 +177,7 @@ class TrainerServiceImplTest {
         verify(trainerRepository).save(captor.capture());
 
         Trainer updated = captor.getValue();
-        assertFalse(updated.getUser().getIsActive());
+        assertFalse(updated.getUser().isActive());
         assertEquals(USERNAME, updated.getUser().getUsername());
         verify(trainerRepository).findByUsername(USERNAME);
     }
@@ -196,13 +196,13 @@ class TrainerServiceImplTest {
     @Test
     void getUnassignedForTrainee_returnsListOfUnassignedTrainers() {
         Trainee trainee = createTrainee();
-        List<Trainer> TRAINERList = List.of(TRAINER);
+        List<Trainer> trainerList = List.of(TRAINER);
 
-        when(trainerRepository.findAllNotAssignedToTrainee(trainee)).thenReturn(TRAINERList);
+        when(trainerRepository.findAllNotAssignedToTrainee(trainee)).thenReturn(trainerList);
 
         List<Trainer> actual = service.getUnassignedForTrainee(trainee);
 
-        assertEquals(TRAINERList, actual);
+        assertEquals(trainerList, actual);
         verify(trainerRepository).findAllNotAssignedToTrainee(trainee);
     }
 
@@ -210,13 +210,13 @@ class TrainerServiceImplTest {
     void getTrainerTrainings_returnsListOfTrainings() {
         TrainerTrainingSearchCriteriaDto criteria = new TrainerTrainingSearchCriteriaDto();
         Training training = Training.builder().id(1L).build();
-        List<Training> TRAINERTrainings = List.of(training);
+        List<Training> trainerTrainings = List.of(training);
 
-        when(trainingQueryRepository.findTrainingsForTrainer(criteria)).thenReturn(TRAINERTrainings);
+        when(trainingQueryRepository.findTrainingsForTrainer(criteria)).thenReturn(trainerTrainings);
 
         List<Training> actual = service.getTrainerTrainings(criteria);
 
-        assertEquals(TRAINERTrainings, actual);
+        assertEquals(trainerTrainings, actual);
         verify(trainingQueryRepository).findTrainingsForTrainer(criteria);
     }
 
@@ -276,7 +276,7 @@ class TrainerServiceImplTest {
         assertEquals(FIRST_NAME, trainer.getUser().getFirstName());
         assertEquals(LAST_NAME, trainer.getUser().getLastName());
         assertEquals(USERNAME, trainer.getUser().getUsername());
-        assertTrue(trainer.getUser().getIsActive());
+        assertTrue(trainer.getUser().isActive());
         assertEquals(SPECIALIZATION, trainer.getSpecialization().getName());
     }
 }
