@@ -59,6 +59,32 @@ jobs:
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
             -Dsonar.exclusions=**/mapper/**,**/constant/**,**/dto/**,**/model/**,**/config/**
 
+      - name: Wait for SonarCloud analysis to finish
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PROJECT_KEY: ${{ env.PROJECT_KEY }}
+        run: |
+          echo "Waiting for SonarCloud analysis to finish for project: $PROJECT_KEY"
+          TASK_ID=$(curl -s -u "${SONAR_TOKEN}:" \
+            "https://sonarcloud.io/api/ce/component?component=${PROJECT_KEY}" \
+            | jq -r '.queue[0].id // .current.id')
+
+          STATUS="IN_PROGRESS"
+          ATTEMPTS=0
+          while [ "$STATUS" = "IN_PROGRESS" ] && [ $ATTEMPTS -lt 60 ]; do
+            sleep 10
+            STATUS=$(curl -s -u "${SONAR_TOKEN}:" \
+              "https://sonarcloud.io/api/ce/task?id=${TASK_ID}" \
+              | jq -r '.task.status')
+            echo "Current status: $STATUS"
+            ATTEMPTS=$((ATTEMPTS+1))
+          done
+
+          if [ "$STATUS" != "SUCCESS" ]; then
+            echo "SonarCloud analysis failed or timed out."
+            exit 1
+          fi
+
       - name: Check SonarCloud issues and Quality Gate status
         id: check-sonar
         env:
