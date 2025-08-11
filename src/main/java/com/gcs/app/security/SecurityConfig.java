@@ -37,7 +37,7 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomPermissionEvaluator customPermissionEvaluator;
 
-    @Value("${bruteforce.expire-minutes:15}")
+    @Value("${bruteforce.expire-minutes:5}")
     private long bruteForceExpireMinutes;
 
     @Value("${bruteforce.max-size:10000}")

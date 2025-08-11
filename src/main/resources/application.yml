@@ -38,9 +38,9 @@ refresh-token:
     every-milliseconds: 3600000
 
 bruteforce:
-  max-attempts: 5
+  max-attempts: 3
   max-size: 10000
-  expire-minutes: 15
+  expire-minutes: 5
 
 cors:
   allowed-origins: "*"
