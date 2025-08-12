@@ -102,7 +102,7 @@ public class AuthService {
     }
 
     private void validateUserIsActive(User user) {
-        if (!user.getIsActive()) {
+        if (!user.isActive()) {
             throw new UserNotAuthorizedException("User is inactive");
         }
     }

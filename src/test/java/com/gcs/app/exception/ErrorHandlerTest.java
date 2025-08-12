@@ -67,7 +67,7 @@ class ErrorHandlerTest {
     @MethodSource("invalidRequestProvider")
     void handleServiceException_whenPrefixMatches_returnsInvalidRequestError(String errorMessage) {
         ServiceException ex = new ServiceException(errorMessage);
-        String expectedMessage = format(INVALID_REQUEST_ERROR.getMessage() + errorMessage);
+        String expectedMessage = format("%s%s", INVALID_REQUEST_ERROR.getMessage(), errorMessage);
 
         ResponseEntity<ErrorResponse> result = errorHandler.handleServiceException(ex);
 
@@ -104,7 +104,7 @@ class ErrorHandlerTest {
     @Test
     void handleEntityNotFoundException_whenThrown_returnsNotFoundErrorWithMessage() {
         EntityNotFoundException ex = new EntityNotFoundException(ENTITY_NOT_FOUND_MSG);
-        String expectedMessage = format(NOT_FOUND_ERROR.getMessage() + ENTITY_NOT_FOUND_MSG);
+        String expectedMessage = format("%s%s", NOT_FOUND_ERROR.getMessage(), ENTITY_NOT_FOUND_MSG);
 
         ResponseEntity<ErrorResponse> result = errorHandler.handleEntityNotFoundException(ex);
 
@@ -135,7 +135,7 @@ class ErrorHandlerTest {
     @Test
     void handleValidationException_whenThrown_returnsValidationErrorWithMessage() {
         ConstraintViolationException ex = new ConstraintViolationException(VALIDATION_MSG, null);
-        String expectedMessage = format(VALIDATION_ERROR.getMessage() + VALIDATION_MSG);
+        String expectedMessage = format("%s%s", VALIDATION_ERROR.getMessage(), VALIDATION_MSG);
 
         ResponseEntity<ErrorResponse> result = errorHandler.handleValidationException(ex);
 
@@ -246,6 +246,7 @@ class ErrorHandlerTest {
     }
 
     public void dummyMethod(String param) {
+        throw new UnsupportedOperationException("This is a dummy method used only for test parameter reflection.");
     }
 
     private static Stream<Arguments> invalidRequestProvider() {

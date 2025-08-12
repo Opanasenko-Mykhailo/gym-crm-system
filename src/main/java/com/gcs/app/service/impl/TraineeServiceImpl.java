@@ -38,6 +38,8 @@ import static java.util.Optional.ofNullable;
 @Validated
 public class TraineeServiceImpl implements TraineeService {
 
+    private static final String TRAINEE_NOT_FOUND_MSG = "Trainee not found with username: %s";
+
     private final TraineeRepository traineeRepository;
     private final TrainingQueryRepository trainingQueryRepository;
     private final UserService userService;
@@ -75,7 +77,7 @@ public class TraineeServiceImpl implements TraineeService {
     public Trainee updateTrainee(@Valid TraineeUpdateRequestDto dto) {
         String username = dto.getUsername();
         Trainee existing = traineeRepository.findByUsername(username)
-                .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINEE_NOT_FOUND_MSG, username)));
 
         Trainee updated = buildUpdatedTrainee(existing, dto);
 
@@ -88,7 +90,7 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Deleting trainee with username: {}", username);
 
         traineeRepository.findByUsername(username)
-                .orElseThrow(() -> new ServiceException(String.format("Trainee with username %s not found", username)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINEE_NOT_FOUND_MSG, username)));
 
         traineeRepository.deleteByUser_Username(username);
         log.debug("Trainee with username {} deleted", username);
@@ -100,7 +102,7 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Getting trainee by username: {}", username);
 
         return traineeRepository.findByUsername(username)
-                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINEE_NOT_FOUND_MSG, username)));
     }
 
     @Transactional(readOnly = true)
@@ -115,7 +117,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public void setTraineeActivationStatus(String username, boolean isActive) {
         Trainee trainee = traineeRepository.findByUsername(username)
-                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", username)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINEE_NOT_FOUND_MSG, username)));
 
         User updatedUser = trainee.getUser().toBuilder()
                 .isActive(isActive)
@@ -132,7 +134,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public List<Trainer> getUnassignedTrainers(String traineeUsername) {
         Trainee trainee = traineeRepository.findByUsername(traineeUsername)
-                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", traineeUsername)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINEE_NOT_FOUND_MSG, traineeUsername)));
 
         return trainerService.getUnassignedForTrainee(trainee);
     }
@@ -141,7 +143,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public Trainee updateTraineeTrainers(String traineeUsername, List<String> trainerUsernames) {
         Trainee trainee = traineeRepository.findByUsername(traineeUsername)
-                .orElseThrow(() -> new ServiceException(String.format("Trainee not found with username: %s", traineeUsername)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINEE_NOT_FOUND_MSG, traineeUsername)));
 
         Set<Trainer> newTrainers = trainerUsernames.stream()
                 .map(trainerService::getByUsername)

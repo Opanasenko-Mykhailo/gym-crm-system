@@ -2,7 +2,9 @@ package com.gcs.app.facade;
 
 import com.gcs.app.facade.dto.AuthRequestDto;
 import com.gcs.app.facade.dto.AuthResponseDto;
+import com.gcs.app.facade.dto.LogoutRequestDto;
 import com.gcs.app.facade.dto.PasswordChangeRequestDto;
+import com.gcs.app.facade.dto.RefreshTokenRequestDto;
 import com.gcs.app.facade.dto.TraineeCreateRequestDto;
 import com.gcs.app.facade.dto.TraineeTrainingSearchCriteriaDto;
 import com.gcs.app.facade.dto.TraineeUpdateRequestDto;
@@ -26,6 +28,7 @@ import com.gcs.app.rest.AvailableTrainerGetResponse;
 import com.gcs.app.rest.ChangePasswordRequest;
 import com.gcs.app.rest.LoginRequest;
 import com.gcs.app.rest.LoginResponse;
+import com.gcs.app.rest.RefreshTokenRequest;
 import com.gcs.app.rest.TraineeAssignedTrainersUpdateResponse;
 import com.gcs.app.rest.TraineeCreateRequest;
 import com.gcs.app.rest.TraineeGetResponse;
@@ -407,6 +410,45 @@ class GymFacadeTest {
         verify(userService).changePassword(passwordChangeRequestDto);
     }
 
+    @Test
+    void refreshToken_callsServiceAndMapper_returnsLoginResponse() {
+        RefreshTokenRequest refreshTokenRequest = createRefreshTokenRequest();
+        RefreshTokenRequestDto refreshTokenRequestDto = createRefreshTokenRequestDto();
+        AuthResponseDto authResponseDto = new AuthResponseDto();
+        authResponseDto.setSuccess(true);
+        authResponseDto.setAccessToken("new.dummy.jwt.token");
+
+        LoginResponse expectedLoginResponse = new LoginResponse();
+        expectedLoginResponse.setSuccess(true);
+        expectedLoginResponse.setAccessToken("new.dummy.jwt.token");
+
+        when(userMapper.toRefreshTokenRequestDto(refreshTokenRequest)).thenReturn(refreshTokenRequestDto);
+        when(authService.refreshToken(refreshTokenRequestDto)).thenReturn(authResponseDto);
+        when(userMapper.toLoginResponse(authResponseDto)).thenReturn(expectedLoginResponse);
+
+        LoginResponse actual = facade.refreshToken(refreshTokenRequest);
+
+        assertTrue(actual.getSuccess(), "LoginResponse success should be true");
+        assertEquals("new.dummy.jwt.token", actual.getAccessToken(), "Access token should match");
+        verify(userMapper).toRefreshTokenRequestDto(refreshTokenRequest);
+        verify(authService).refreshToken(refreshTokenRequestDto);
+        verify(userMapper).toLoginResponse(authResponseDto);
+    }
+
+    @Test
+    void logout_callsServiceAndMapper() {
+        RefreshTokenRequest refreshTokenRequest = createRefreshTokenRequest();
+        LogoutRequestDto logoutRequestDto = createLogoutRequestDto();
+
+        when(userMapper.toLogoutRequestDto(refreshTokenRequest)).thenReturn(logoutRequestDto);
+
+        facade.logout(refreshTokenRequest);
+
+        verify(userMapper).toLogoutRequestDto(refreshTokenRequest);
+        verify(authService).logout(logoutRequestDto);
+        verifyNoMoreInteractions(userMapper, authService);
+    }
+
     private Trainee createTrainee() {
         return Trainee.builder()
                 .id(TRAINEE_ID)
@@ -658,5 +700,26 @@ class GymFacadeTest {
         request.setNewPassword(NEW_PASSWORD);
 
         return request;
+    }
+
+    private RefreshTokenRequest createRefreshTokenRequest() {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken("dummy.refresh.token");
+
+        return request;
+    }
+
+    private RefreshTokenRequestDto createRefreshTokenRequestDto() {
+        RefreshTokenRequestDto dto = new RefreshTokenRequestDto();
+        dto.setRefreshToken("dummy.refresh.token");
+
+        return dto;
+    }
+
+    private LogoutRequestDto createLogoutRequestDto() {
+        LogoutRequestDto dto = new LogoutRequestDto();
+        dto.setRefreshToken("dummy.refresh.token");
+
+        return dto;
     }
 }

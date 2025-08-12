@@ -28,14 +28,14 @@ public interface TraineeMapper {
     @Mapping(source = "user.firstName", target = "firstName")
     @Mapping(source = "user.lastName", target = "lastName")
     @Mapping(source = "user.username", target = "username")
-    @Mapping(source = "user.isActive", target = "isActive")
+    @Mapping(source = "user.active", target = "isActive")
     @Mapping(source = "trainers", target = "trainers")
     TraineeGetResponse toRestModel(Trainee trainee);
 
     @Mapping(source = "user.firstName", target = "firstName")
     @Mapping(source = "user.lastName", target = "lastName")
     @Mapping(source = "user.username", target = "username")
-    @Mapping(source = "user.isActive", target = "isActive")
+    @Mapping(source = "user.active", target = "isActive")
     TraineeUpdateResponse toUpdateRestModel(Trainee trainee);
 
     @Mapping(source = "trainers", target = "trainers")

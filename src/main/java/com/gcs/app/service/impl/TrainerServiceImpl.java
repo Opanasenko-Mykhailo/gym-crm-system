@@ -37,6 +37,8 @@ import static java.util.Optional.ofNullable;
 @Validated
 public class TrainerServiceImpl implements TrainerService {
 
+    private static final String TRAINER_NOT_FOUND_MSG = "Trainer not found with username: %s";
+
     private final TrainerRepository trainerRepository;
     private final TrainingQueryRepository trainingQueryRepository;
     private final UserService userService;
@@ -76,7 +78,7 @@ public class TrainerServiceImpl implements TrainerService {
     public Trainer updateTrainer(@Valid TrainerUpdateRequestDto dto) {
         String username = dto.getUsername();
         Trainer existing = trainerRepository.findByUsername(username)
-                .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINER_NOT_FOUND_MSG, username)));
 
         Trainer updated = buildUpdatedTrainer(existing, dto);
 
@@ -89,7 +91,7 @@ public class TrainerServiceImpl implements TrainerService {
         log.info("Getting trainer by username: {}", username);
 
         return trainerRepository.findByUsername(username)
-                .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINER_NOT_FOUND_MSG, username)));
     }
 
     @Transactional(readOnly = true)
@@ -104,7 +106,7 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public void setTrainerActivationStatus(String username, boolean isActive) {
         Trainer trainer = trainerRepository.findByUsername(username)
-                .orElseThrow(() -> new ServiceException(String.format("Trainer not found with username: %s", username)));
+                .orElseThrow(() -> new ServiceException(String.format(TRAINER_NOT_FOUND_MSG, username)));
 
         User updatedUser = trainer.getUser().toBuilder()
                 .isActive(isActive)
